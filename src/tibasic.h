@@ -15,4 +15,11 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "evalformula.h"
+#ifndef DELWINK_TIBASIC_H
+#define DELWINK_TIBASIC_H
+
+#define TIBASIC_EALLOC -1
+
+#define TIBASIC_EINDEX -2
+
+#endif

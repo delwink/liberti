@@ -15,4 +15,27 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "evalformula.h"
+#ifndef DELWINK_TIBASIC_TISTATE_H
+#define DELWINK_TIBASIC_TISTATE_H
+
+#include <stdlib.h>
+
+#include "tistring.h"
+#include "titype.h"
+
+TI
+tibasic_variable_get (tichar key);
+
+void
+tibasic_variable_set (tichar key, TI value);
+
+bool
+tibasic_variable_exists (tichar key);
+
+TI
+tibasic_Ans_get (void);
+
+void
+tibasic_Ans_set (TI value);
+
+#endif

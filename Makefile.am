@@ -4,11 +4,11 @@ dist_doc_DATA = README.md
 noinst_LIBRARIES = libtibasic.a libliberti.a
 bin_PROGRAMS = liberti tiencode tidecode
 
-libtibasic_a_SOURCES = src/tibasic.c
+libtibasic_a_SOURCES = src/evalformula.c src/tiexpr.c
 libtibasic_a_CFLAGS = -Wall -Wextra -Wunreachable-code -ftrapv -std=c89
 
 
-libliberti_a_SOURCES = src/evalformula.c
+libliberti_a_SOURCES = src/command.c
 libliberti_a_CFLAGS = -Wall -Wextra -Wunreachable-code -ftrapv -std=c89
 
 liberti_SOURCES = src/liberti.c
