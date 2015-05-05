@@ -1,17 +1,17 @@
 AC_PREREQ([2.60])
 AC_INIT([liberti],[0.0.0],[support@delwink.com])
 
-AC_CONFIG_SRCDIR([liberti.c])
+AC_CONFIG_SRCDIR([src/liberti.c])
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_MACRO_DIR([m4])
-AC_INIT_AUTOMAKE([-Wall -Werror foreign subdir-objects])
+AM_INIT_AUTOMAKE([-Wall -Werror foreign subdir-objects])
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES])
 AM_SILENT_RULES([yes])
 AM_PROG_AR
 LT_INIT
 AC_PROG_CC
 
-PKG_CHECK_MODULES([SDL2], [SDL2])
+PKG_CHECK_MODULES([sdl2], [sdl2])
 
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([
