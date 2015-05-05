@@ -1,0 +1,51 @@
+LiberTI
+=======
+
+Libre TI calculator emulator designed for [LibreCalc][1].
+
+Build Instructions
+------------------
+
+You must first satisfy the build dependencies of LiberTI. You need the GNU
+autotools, libtool, a C compiler, and SDL2. On Debian GNU/Linux and
+derivatives, you can install these with the following command:
+
+    # apt-get install build-essential autoconf automake libtool libsdl2-dev
+
+After the dependencies are installed, you can build LiberTI as follows:
+
+    $ ./autogen.sh
+	$ ./configure
+	$ make
+
+If you wish to install LiberTI to the system, you can run the following:
+
+    # make install
+
+Disclaimer
+----------
+
+This project was created independently by David McMackins for Delwink, LLC as a
+**replacement** for LibreCalc's existing TI emulator. LiberTI is not (yet)
+officially endorsed or supported by LibreCalc.
+
+Hacking
+-------
+
+We prefer the GNU coding style for C with a strict limit of 79 columns in the
+source code. Indentations are two spaces, and tab characters are eight
+spaces. It is polite to use a tab character any time eight spaces would be used
+in an indentation, but not required.
+
+To submit a patch, [submit your diff to Delwink][2], or use GitHub's pull
+request system.
+
+License
+-------
+
+LiberTI is free (libre) software, released under the terms of version 3 of the
+GNU Affero General Public License. You are free to copy, modify, and
+redistribute this software and use it for whatever purpose.
+
+[1]: http://librecalc.com/en/
+[2]: mailto:contribute@delwink.com
