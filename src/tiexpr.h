@@ -20,7 +20,8 @@
 
 #include <stdlib.h>
 
-typedef struct {
+typedef struct
+{
   size_t len;
   int *value;
   size_t refs;

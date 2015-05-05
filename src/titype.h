@@ -20,7 +20,8 @@
 
 #include <stdint.h>
 
-union variant {
+union variant
+{
   double real;
   double imaginary;
   char *string;
@@ -28,7 +29,8 @@ union variant {
   char ***matrix;
 };
 
-typedef struct {
+typedef struct
+{
   int8_t type;
   union variant variant;
 } TI;
