@@ -37,7 +37,7 @@ tib_eval_surrounded_function (tib_Expression *expr, int function)
     {
       count = 1;
 
-      for (i = 1; i < len; ++i)
+      for (i = 1; i < len-1; ++i)
 	{
 	  if (is_left_paren (tib_Expression_get_at (expr, i)))
 	    ++count;
