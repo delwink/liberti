@@ -1,5 +1,5 @@
 /*
- *  libtibasic - Read, write, and evaluate TI BASIC programs
+ *  tibencode - Compile a TI BASIC program
  *  Copyright (C) 2015 Delwink, LLC
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -15,11 +15,8 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef DELWINK_TIBASIC_H
-#define DELWINK_TIBASIC_H
-
-#define TIBASIC_EALLOC -1
-
-#define TIBASIC_EINDEX -2
-
-#endif
+int
+main (int argc, char *argv[])
+{
+  return 0;
+}

@@ -1,5 +1,5 @@
 /*
- *  tiencode - Compile a TI BASIC program
+ *  libtib - Read, write, and evaluate TI BASIC programs
  *  Copyright (C) 2015 Delwink, LLC
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -15,8 +15,26 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-int
-main (int argc, char *argv[])
-{
-  return 0;
-}
+#ifndef DELWINK_TIB_TIBSTATE_H
+#define DELWINK_TIB_TIBSTATE_H
+
+#include <stdlib.h>
+
+#include "tibtype.h"
+
+TIB
+tibasic_variable_get (int key);
+
+void
+tibasic_variable_set (int key, TIB value);
+
+bool
+tibasic_variable_exists (int key);
+
+TIB
+tibasic_Ans_get (void);
+
+void
+tibasic_Ans_set (TIB value);
+
+#endif

@@ -1,11 +1,11 @@
 ACLOCAL_AMFLAGS = -I m4 --install
 dist_doc_DATA = README.md
 
-noinst_LIBRARIES = libtibasic.a libliberti.a
-bin_PROGRAMS = liberti tiencode tidecode
+noinst_LIBRARIES = libtib.a libliberti.a
+bin_PROGRAMS = liberti tibencode tibdecode
 
-libtibasic_a_SOURCES = src/evalformula.c src/tiexpr.c
-libtibasic_a_CFLAGS = -Wall -Wextra -Wunreachable-code -ftrapv -std=c89
+libtib_a_SOURCES = src/evalformula.c src/tibexpr.c
+libtib_a_CFLAGS = -Wall -Wextra -Wunreachable-code -ftrapv -std=c89
 
 
 libliberti_a_SOURCES = src/command.c
@@ -14,15 +14,15 @@ libliberti_a_CFLAGS = -Wall -Wextra -Wunreachable-code -ftrapv -std=c89
 liberti_SOURCES = src/liberti.c
 liberti_CFLAGS = -Wall -Wextra -Wunreachable-code -ftrapv -std=c89 \
                  $(sdl2_CFLAGS)
-liberti_LDADD = $(sdl2_LIBS) libtibasic.a libliberti.a
+liberti_LDADD = $(sdl2_LIBS) libtib.a libliberti.a
 
-tiencode_SOURCES = src/tiencode.c
-tiencode_CFLAGS = -Wall -Wextra -Wunreachable-code -ftrapv -std=c89
-tiencode_LDADD = libtibasic.a
+tibencode_SOURCES = src/tibencode.c
+tibencode_CFLAGS = -Wall -Wextra -Wunreachable-code -ftrapv -std=c89
+tibencode_LDADD = libtib.a
 
-tidecode_SOURCES = src/tidecode.c
-tidecode_CFLAGS = -Wall -Wextra -Wunreachable-code -ftrapv -std=c89
-tidecode_LDADD = libtibasic.a
+tibdecode_SOURCES = src/tibdecode.c
+tibdecode_CFLAGS = -Wall -Wextra -Wunreachable-code -ftrapv -std=c89
+tibdecode_LDADD = libtib.a
 
 AM_CFLAGS = $(DEPS_CFLAGS)
 AM_LIBS = $(DEPS_LIBS)

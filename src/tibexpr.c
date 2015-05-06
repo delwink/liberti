@@ -1,5 +1,5 @@
 /*
- *  libtibasic - Read, write, and evaluate TI BASIC programs
+ *  libtib - Read, write, and evaluate TI BASIC programs
  *  Copyright (C) 2015 Delwink, LLC
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -18,13 +18,13 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "tiexpr.h"
-#include "tibasic.h"
+#include "tibexpr.h"
+#include "tib.h"
 
-tibasic_Expression *
-tibasic_new_Expression ()
+tib_Expression *
+tib_new_Expression ()
 {
-  tibasic_Expression *out = malloc (sizeof (tibasic_Expression));
+  tib_Expression *out = malloc (sizeof (tib_Expression));
   if (NULL == out)
     return NULL;
 
@@ -36,13 +36,13 @@ tibasic_new_Expression ()
 }
 
 void
-tibasic_Expression_incref (tibasic_Expression *expr)
+tib_Expression_incref (tib_Expression *expr)
 {
   ++expr->refs;
 }
 
 void
-tibasic_Expression_decref (tibasic_Expression *expr)
+tib_Expression_decref (tib_Expression *expr)
 {
   if (0 == --expr->refs)
     {
@@ -54,7 +54,7 @@ tibasic_Expression_decref (tibasic_Expression *expr)
 }
 
 int
-tibasic_Expression_set (tibasic_Expression *expr, char *s)
+tib_Expression_set (tib_Expression *expr, char *s)
 {
   int *temp = expr->value;
   size_t len = strlen (s);
@@ -63,7 +63,7 @@ tibasic_Expression_set (tibasic_Expression *expr, char *s)
   if (NULL == expr->value)
     {
       expr->value = temp;
-      return TIBASIC_EALLOC;
+      return TIB_EALLOC;
     }
 
   size_t i;
@@ -79,7 +79,7 @@ tibasic_Expression_set (tibasic_Expression *expr, char *s)
 }
 
 void
-tibasic_Expression_clear (tibasic_Expression *expr)
+tib_Expression_clear (tib_Expression *expr)
 {
   free (expr->value);
   expr->value = NULL;
@@ -87,7 +87,7 @@ tibasic_Expression_clear (tibasic_Expression *expr)
 }
 
 char *
-tibasic_Expression_as_str (tibasic_Expression *expr)
+tib_Expression_as_str (tib_Expression *expr)
 {
   if (NULL == expr->value)
     return NULL;
@@ -106,10 +106,10 @@ tibasic_Expression_as_str (tibasic_Expression *expr)
 }
 
 int
-tibasic_Expression_remove (tibasic_Expression *expr, size_t i)
+tib_Expression_remove (tib_Expression *expr, size_t i)
 {
   if (i > expr->len)
-    return TIBASIC_EINDEX;
+    return TIB_EINDEX;
 
   --expr->len;
 
@@ -120,14 +120,14 @@ tibasic_Expression_remove (tibasic_Expression *expr, size_t i)
 }
 
 int
-tibasic_Expression_insert (tibasic_Expression *expr, size_t i, int c)
+tib_Expression_insert (tib_Expression *expr, size_t i, int c)
 {
   ++expr->len;
 
   if (i > expr->len)
     {
       --expr->len;
-      return TIBASIC_EINDEX;
+      return TIB_EINDEX;
     }
 
   int *temp = expr->value;
@@ -136,7 +136,7 @@ tibasic_Expression_insert (tibasic_Expression *expr, size_t i, int c)
   if (NULL == expr->value)
     {
       expr->value = temp;
-      return TIBASIC_EALLOC;
+      return TIB_EALLOC;
     }
 
   size_t j;
@@ -154,58 +154,58 @@ tibasic_Expression_insert (tibasic_Expression *expr, size_t i, int c)
 }
 
 int
-tibasic_Expression_substring (tibasic_Expression *in, tibasic_Expression **out,
-			      size_t beg, size_t end)
+tib_Expression_substring (tib_Expression *in, tib_Expression **out, size_t beg,
+			  size_t end)
 {
   if (beg > in->len || end > in->len || beg > end)
-    return TIBASIC_EINDEX;
+    return TIB_EINDEX;
 
-  char *instr = tibasic_Expression_as_str (in);
+  char *instr = tib_Expression_as_str (in);
   if (NULL == instr)
-    return TIBASIC_EALLOC;
+    return TIB_EALLOC;
 
   char *outstr = malloc ((end - (beg-1)) * sizeof (char));
   if (NULL == outstr)
     {
       free (instr);
-      return TIBASIC_EALLOC;
+      return TIB_EALLOC;
     }
 
   for (; beg <= end; ++beg)
     outstr[beg] = instr[beg];
   free (instr);
 
-  *out = tibasic_new_Expression ();
+  *out = tib_new_Expression ();
   if (NULL == *out)
     {
       free (outstr);
-      return TIBASIC_EALLOC;
+      return TIB_EALLOC;
     }
 
-  int rc = tibasic_Expression_set (*out, outstr);
+  int rc = tib_Expression_set (*out, outstr);
   free (outstr);
 
   if (rc)
-    tibasic_Expression_decref (*out);
+    tib_Expression_decref (*out);
 
   return rc;
 }
 
 int
-tibasic_Expression_cat (tibasic_Expression *dest, tibasic_Expression *src)
+tib_Expression_cat (tib_Expression *dest, tib_Expression *src)
 {
-  char *orig = tibasic_Expression_as_str (dest);
+  char *orig = tib_Expression_as_str (dest);
   if (NULL == orig)
-    return TIBASIC_EALLOC;
+    return TIB_EALLOC;
 
-  char *add = tibasic_Expression_as_str (src);
+  char *add = tib_Expression_as_str (src);
   if (NULL == add)
     {
       free (orig);
-      return TIBASIC_EALLOC;
+      return TIB_EALLOC;
     }
 
-  size_t len = tibasic_Expression_len (dest) + tibasic_Expression_len (src)
+  size_t len = tib_Expression_len (dest) + tib_Expression_len (src)
     + 1;
 
   char *new = malloc (len * sizeof (char));
@@ -213,26 +213,26 @@ tibasic_Expression_cat (tibasic_Expression *dest, tibasic_Expression *src)
     {
       free (orig);
       free (add);
-      return TIBASIC_EALLOC;
+      return TIB_EALLOC;
     }
 
   sprintf (new, "%s%s", orig, add);
   free (orig);
   free (add);
 
-  int rc = tibasic_Expression_set (dest, new);
+  int rc = tib_Expression_set (dest, new);
 
   return rc;
 }
 
 int
-tibasic_Expression_get_at (tibasic_Expression *expr, size_t i)
+tib_Expression_get_at (tib_Expression *expr, size_t i)
 {
   return expr->value[i];
 }
 
 size_t
-tibasic_Expression_len (tibasic_Expression *expr)
+tib_Expression_len (tib_Expression *expr)
 {
   return expr->len;
 }

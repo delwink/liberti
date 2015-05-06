@@ -15,42 +15,42 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef DELWINK_TIBASIC_EVAL_H
-#define DELWINK_TIBASIC_EVAL_H
+#ifndef DELWINK_TIB_EVAL_H
+#define DELWINK_TIB_EVAL_H
 
 #include <stdbool.h>
 
-#include "tiexpr.h"
-#include "titype.h"
+#include "tibexpr.h"
+#include "tibtype.h"
 
-TI *
-eval (tibasic_Expression expr);
-
-bool
-tibasic_eval_surrounded (tibasic_Expression *expr);
+TIB *
+eval (tib_Expression expr);
 
 bool
-tibasic_eval_surrounded_fct (tibasic_Expression *expr, int fct);
+tib_eval_surrounded (tib_Expression *expr);
 
 bool
-tibasic_eval_isnum (tibasic_Expression *expr);
+tib_eval_surrounded_fct (tib_Expression *expr, int fct);
 
 bool
-tibasic_eval_isstr (tibasic_Expression *expr);
+tib_eval_isnum (tib_Expression *expr);
 
 bool
-tibasic_eval_islist (tibasic_Expression *expr);
+tib_eval_isstr (tib_Expression *expr);
 
 bool
-tibasic_eval_ismatrix (tibasic_Expression *expr);
+tib_eval_islist (tib_Expression *expr);
+
+bool
+tib_eval_ismatrix (tib_Expression *expr);
 
 int
-tibasic_eval_find_outside_parens (tibasic_Expression *expr, int c);
+tib_eval_find_outside_parens (tib_Expression *expr, int c);
 
 void
-tibasic_eval_fix_parens (tibasic_Expression **out);
+tib_eval_fix_parens (tib_Expression **out);
 
-tibasic_Expression *
-tibasic_eval_parse_commas (tibasic_Expression *expr);
+tib_Expression *
+tib_eval_parse_commas (tib_Expression *expr);
 
 #endif

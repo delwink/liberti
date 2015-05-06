@@ -1,5 +1,5 @@
 /*
- *  libtibasic - Read, write, and evaluate TI BASIC programs
+ *  libtib - Read, write, and evaluate TI BASIC programs
  *  Copyright (C) 2015 Delwink, LLC
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -15,27 +15,11 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef DELWINK_TIBASIC_TISTATE_H
-#define DELWINK_TIBASIC_TISTATE_H
+#ifndef DELWINK_TIB_H
+#define DELWINK_TIB_H
 
-#include <stdlib.h>
+#define TIB_EALLOC -1
 
-#include "tistring.h"
-#include "titype.h"
-
-TI
-tibasic_variable_get (tichar key);
-
-void
-tibasic_variable_set (tichar key, TI value);
-
-bool
-tibasic_variable_exists (tichar key);
-
-TI
-tibasic_Ans_get (void);
-
-void
-tibasic_Ans_set (TI value);
+#define TIB_EINDEX -2
 
 #endif

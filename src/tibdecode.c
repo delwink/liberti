@@ -1,5 +1,5 @@
 /*
- *  libtibasic - Read, write, and evaluate TI BASIC programs
+ *  tibdecode - Decompile a TI BASIC program
  *  Copyright (C) 2015 Delwink, LLC
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -15,24 +15,8 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef DELWINK_TIBASIC_TITYPE_H
-#define DELWINK_TIBASIC_TITYPE_H
-
-#include <stdint.h>
-
-union variant
+int
+main (int argc, char *argv[])
 {
-  double real;
-  double imaginary;
-  char *string;
-  char **list;
-  char ***matrix;
-};
-
-typedef struct
-{
-  int8_t type;
-  union variant variant;
-} TI;
-
-#endif
+  return 0;
+}
