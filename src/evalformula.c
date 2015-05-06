@@ -16,3 +16,42 @@
  */
 
 #include "evalformula.h"
+#include "tibchar.h"
+
+static bool
+is_left_paren (int c)
+{
+  return ('(' == c || TIB_CHAR_SIN == c || TIB_CHAR_RANDINT == c
+	  || TIB_CHAR_NOT == c || TIB_CHAR_INT == c || TIB_CHAR_DIM == c
+	  || TIB_CHAR_PIXEL_TEST == c);
+}
+
+bool
+tib_eval_surrounded (tib_Expression *expr)
+{
+  int count = 0;
+  size_t i, len = tib_Expression_len (expr);
+
+  if (len > 2 && '(' == tib_Expression_get_at (expr, 0)
+	&& ')' == tib_Expression_get_at (expr, len-1))
+    {
+      count = 1;
+
+      for (i = 0; i < len; ++i)
+	{
+	  if (is_left_paren (tib_Expression_get_at (expr, i)))
+	    ++count;
+
+	  if (')' == tib_Expression_get_at (expr, i))
+	    --count;
+
+	  if (0 == count)
+	    break;
+	}
+
+      if (count > 0)
+	return true;
+    }
+
+  return false;
+}
