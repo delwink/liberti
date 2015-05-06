@@ -30,7 +30,7 @@ bool
 tib_eval_surrounded (tib_Expression *expr);
 
 bool
-tib_eval_surrounded_fct (tib_Expression *expr, int fct);
+tib_eval_surrounded_function (tib_Expression *expr, int function);
 
 bool
 tib_eval_isnum (tib_Expression *expr);

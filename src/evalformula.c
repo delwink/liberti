@@ -26,13 +26,13 @@ is_left_paren (int c)
 	  || TIB_CHAR_PIXEL_TEST == c);
 }
 
-static bool
-eval_surrounded (tib_Expression *expr, bool extra)
+bool
+tib_eval_surrounded_function (tib_Expression *expr, int function)
 {
   int count = 0;
   size_t i, len = tib_Expression_len (expr);
 
-  if (len > 2 && extra && '(' == tib_Expression_get_at (expr, 0)
+  if (len > 2 && function == tib_Expression_get_at (expr, 0)
 	&& ')' == tib_Expression_get_at (expr, len-1))
     {
       count = 1;
@@ -59,11 +59,5 @@ eval_surrounded (tib_Expression *expr, bool extra)
 bool
 tib_eval_surrounded (tib_Expression *expr)
 {
-  return eval_surrounded (expr, true);
-}
-
-bool
-tib_eval_surrounded_fct (tib_Expression *expr, int fct)
-{
-  return eval_surrounded (expr, fct == tib_Expression_get_at (expr, 0));
+  return tib_eval_surrounded_function (expr, '(');
 }
