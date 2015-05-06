@@ -52,6 +52,9 @@ int
 tib_Expression_insert (tib_Expression *expr, size_t i, int c);
 
 int
+tib_Expression_push (tib_Expression *expr, int c);
+
+int
 tib_Expression_substring (tib_Expression *in, tib_Expression **out, size_t beg,
 			  size_t end);
 
