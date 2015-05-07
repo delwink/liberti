@@ -136,6 +136,7 @@ tib_Expression_insert (tib_Expression *expr, size_t i, int c)
   if (NULL == expr->value)
     {
       expr->value = temp;
+      --expr->len
       return TIB_EALLOC;
     }
 
