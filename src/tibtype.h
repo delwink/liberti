@@ -18,6 +18,7 @@
 #ifndef DELWINK_TIB_TIBTYPE_H
 #define DELWINK_TIB_TIBTYPE_H
 
+#include <stdlib.h>
 #include <stdint.h>
 
 #define TIB_TYPE_REAL      1
@@ -30,19 +31,103 @@
 
 #define TIB_TYPE_MATRIX    5
 
-union variant
+#define TIB_TYPE_COMPLEX   6
+
+struct complex
 {
   double real;
   double imaginary;
+};
+
+struct list
+{
+  void *values;
+  size_t len;
+};
+
+struct matrix
+{
+  void **values;
+  size_t width;
+  size_t height;
+};
+
+union variant
+{
+  struct complex number;
   char *string;
-  char **list;
-  char ***matrix;
+  struct list list;
+  struct matrix matrix;
 };
 
 typedef struct
 {
   int8_t type;
   union variant value;
+  size_t refs;
 } TIB;
+
+TIB *
+tib_empty (void);
+
+TIB *
+tib_copy (const TIB *t);
+
+void
+tib_incref (TIB *t);
+
+void
+tib_decref (TIB *t);
+
+TIB *
+tib_new_real (double value);
+
+TIB *
+tib_new_imaginary (double value);
+
+TIB *
+tib_new_str (const char *value);
+
+TIB *
+tib_new_list (const TIB **value, size_t len);
+
+TIB *
+tib_new_matrix (const TIB ***value, size_t w, size_t h);
+
+void
+tib_set_type (TIB *t, int8_t type);
+
+int8_t
+tib_type (const TIB *t);
+
+bool
+tib_isreal (const TIB *t);
+
+bool
+tib_isimaginary (const TIB *t);
+
+bool
+tib_iscomplex (const TIB *t);
+
+bool
+tib_isnum (const TIB *t);
+
+bool
+tib_isstr (const TIB *t);
+
+bool
+tib_islist (const TIB *t);
+
+bool
+tib_ismatrix (const TIB *t);
+
+int
+tib_real_value (const TIB *t, double *out);
+
+int
+tib_imaginary_value (const TIB *t, double *out);
+
+int
+tib_complex_value (const TIB *t, double *real_out, double *imaginary_out);
 
 #endif
