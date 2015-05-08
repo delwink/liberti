@@ -36,7 +36,7 @@ tib_eval_surrounded_function (const tib_Expression *expr, int function)
   size_t i, len = tib_Expression_len (expr);
 
   if (len > 2 && function == tib_Expression_ref (expr, 0)
-	&& ')' == tib_Expression_ref (expr, len-1))
+      && ')' == tib_Expression_ref (expr, len-1))
     {
       count = 1;
 
