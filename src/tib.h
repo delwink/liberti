@@ -18,8 +18,10 @@
 #ifndef DELWINK_TIB_H
 #define DELWINK_TIB_H
 
-#define TIB_EALLOC -1
+#define TIB_EALLOC  -1
 
-#define TIB_EINDEX -2
+#define TIB_EINDEX  -2
+
+#define TIB_EFORMAT -3
 
 #endif
