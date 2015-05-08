@@ -43,7 +43,7 @@ void
 tib_Expression_clear (tib_Expression *expr);
 
 char *
-tib_Expression_as_str (tib_Expression *expr);
+tib_Expression_as_str (const tib_Expression *expr);
 
 int
 tib_Expression_remove (tib_Expression *expr, size_t i);
@@ -55,16 +55,16 @@ int
 tib_Expression_push (tib_Expression *expr, int c);
 
 int
-tib_Expression_substring (tib_Expression *in, tib_Expression **out, size_t beg,
-			  size_t end);
+tib_Expression_substring (const tib_Expression *in, tib_Expression **out,
+			  size_t beg, size_t end);
 
 int
 tib_Expression_cat (tib_Expression *dest, tib_Expression *src);
 
 int
-tib_Expression_get_at (tib_Expression *expr, size_t i);
+tib_Expression_ref (const tib_Expression *expr, size_t i);
 
 size_t
-tib_Expression_len (tib_Expression *expr);
+tib_Expression_len (const tib_Expression *expr);
 
 #endif

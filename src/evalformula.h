@@ -24,33 +24,31 @@
 #include "tibtype.h"
 
 TIB *
-eval (tib_Expression expr);
+eval (tib_Expression *expr);
 
 bool
-tib_eval_surrounded (tib_Expression *expr);
+tib_eval_surrounded (const tib_Expression *expr);
 
 bool
-tib_eval_surrounded_function (tib_Expression *expr, int function);
+tib_eval_surrounded_function (const tib_Expression *expr, int function);
 
 bool
-tib_eval_isnum (tib_Expression *expr);
+tib_eval_isnum (const tib_Expression *expr);
 
 bool
-tib_eval_isstr (tib_Expression *expr);
+tib_eval_isstr (const tib_Expression *expr);
 
 bool
-tib_eval_islist (tib_Expression *expr);
+tib_eval_islist (const tib_Expression *expr);
 
 bool
-tib_eval_ismatrix (tib_Expression *expr);
+tib_eval_ismatrix (const tib_Expression *expr);
 
 int
-tib_eval_find_outside_parens (tib_Expression *expr, int c);
+tib_eval_close_parens (tib_Expression *expr);
 
-void
-tib_eval_fix_parens (tib_Expression **out);
-
-tib_Expression *
-tib_eval_parse_commas (tib_Expression *expr);
+int
+tib_eval_parse_commas (const tib_Expression *expr, tib_Expression ***out,
+		       size_t *out_len);
 
 #endif
