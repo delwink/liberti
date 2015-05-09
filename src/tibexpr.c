@@ -146,8 +146,8 @@ tib_Expression_insert (tib_Expression *expr, size_t i, int c)
 
   expr->value[i] = c;
 
-  for (j = i; j < expr->len; ++j)
-    expr->value[j+1] = temp[j];
+  for (j = i+1; j < expr->len; ++j)
+    expr->value[j] = temp[j-1];
 
   free (temp);
 
