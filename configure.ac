@@ -12,6 +12,7 @@ LT_INIT
 AC_PROG_CC
 
 PKG_CHECK_MODULES([sdl2], [sdl2])
+PKG_CHECK_MODULES([gsl], [gsl])
 
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([
