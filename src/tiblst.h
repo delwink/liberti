@@ -15,26 +15,45 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef DELWINK_TIB_TIBSTATE_H
-#define DELWINK_TIB_TIBSTATE_H
-
-#include <stdlib.h>
+#ifndef DELWINK_TIB_LST_H
+#define DELWINK_TIB_LST_H
 
 #include "tibtype.h"
 
-TIB
-tibasic_variable_get (int key);
+#define tib_foreachlst(L,I) for (I = 0; i < tib_lst_len (L); ++I)
+
+struct tib_el
+{
+  TIB *val;
+  struct tib_el *next;
+  struct tib_el *prev;
+};
+
+struct tib_lst
+{
+  struct tib_el *beg;
+  struct tib_el *end;
+};
+
+struct tib_lst *
+tib_new_lst (void);
 
 void
-tibasic_variable_set (int key, TIB value);
+tib_free_lst (struct tib_lst *lst);
 
-bool
-tibasic_variable_exists (int key);
+int
+tib_lst_insert (struct tib_lst *lst, TIB *t, size_t index);
 
-TIB
-tibasic_Ans_get (void);
+int
+tib_lst_push (struct tib_lst *lst, TIB *t);
 
 void
-tibasic_Ans_set (TIB value);
+tib_lst_remove (struct tib_lst *lst, size_t index);
+
+size_t
+tib_lst_len (const struct tib_lst *lst);
+
+TIB *
+tib_lst_ref (const struct tib_lst *lst, size_t index);
 
 #endif

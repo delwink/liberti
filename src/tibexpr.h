@@ -20,6 +20,8 @@
 
 #include <stdlib.h>
 
+#define tib_foreachexpr(E,I) for (I = 0; I < tib_Expression_len (E); ++I)
+
 typedef struct
 {
   size_t len;

@@ -18,8 +18,9 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "tibexpr.h"
 #include "tib.h"
+#include "tibexpr.h"
+#include "tibchar.h"
 
 tib_Expression *
 tib_new_Expression ()
@@ -89,18 +90,42 @@ tib_Expression_clear (tib_Expression *expr)
 char *
 tib_Expression_as_str (const tib_Expression *expr)
 {
+  size_t i, bump = 0, len = 1;
+  char *s;
+  const char *t;
+
   if (NULL == expr->value)
     return NULL;
 
-  char *s = malloc ((expr->len + 1) * sizeof (char));
+  tib_foreachexpr (expr, i)
+    {
+      t = tib_special_char_text (expr->value[i]);
+      if (t)
+	len += strlen (t);
+      else
+	++len;
+    }
+
+  s = malloc (len * sizeof (char));
   if (NULL == s)
     return NULL;
 
-  size_t i;
-  for (i = 0; i < expr->len; ++i)
-    s[i] = expr->value[i];
+  tib_foreachexpr (expr, i)
+    {
+      t = tib_special_char_text (expr->value[i]);
+      if (t)
+	{
+	  s[i+bump] = '\0';
+	  strcat (s, t);
+	  bump += strlen (t) - 1;
+	}
+      else
+	{
+	  s[i+bump] = expr->value[i];
+	}
+    }
 
-  s[expr->len] = '\0';
+  s[i+bump] = '\0';
 
   return s;
 }

@@ -20,18 +20,20 @@
 
 #include <stdlib.h>
 #include <stdint.h>
+#include <stdbool.h>
 
-#define TIB_TYPE_REAL      1
+enum tib_types
+  {
+    TIB_TYPE_NONE=0,
+    TIB_TYPE_REAL,
+    TIB_TYPE_IMAGINARY,
+    TIB_TYPE_COMPLEX,
+    TIB_TYPE_STRING,
+    TIB_TYPE_LIST,
+    TIB_TYPE_MATRIX
+  };
 
-#define TIB_TYPE_IMAGINARY 2
-
-#define TIB_TYPE_STRING    3
-
-#define TIB_TYPE_LIST      4
-
-#define TIB_TYPE_MATRIX    5
-
-#define TIB_TYPE_COMPLEX   6
+extern int tib_errno;
 
 struct complex
 {
@@ -47,7 +49,7 @@ struct list
 
 struct matrix
 {
-  void **values;
+  void *values;
   size_t width;
   size_t height;
 };
@@ -86,48 +88,48 @@ TIB *
 tib_new_imaginary (double value);
 
 TIB *
+tib_new_complex (double real, double imaginary);
+
+TIB *
 tib_new_str (const char *value);
 
 TIB *
-tib_new_list (const TIB **value, size_t len);
+tib_new_list (const TIB *value, size_t len);
 
 TIB *
-tib_new_matrix (const TIB ***value, size_t w, size_t h);
-
-void
-tib_set_type (TIB *t, int8_t type);
+tib_new_matrix (const TIB **value, size_t w, size_t h);
 
 int8_t
 tib_type (const TIB *t);
 
-bool
-tib_isreal (const TIB *t);
+double
+tib_real_value (const TIB *t);
 
-bool
-tib_isimaginary (const TIB *t);
+double
+tib_imaginary_value (const TIB *t);
 
-bool
-tib_iscomplex (const TIB *t);
+struct complex
+tib_complex_value (const TIB *t);
 
-bool
-tib_isnum (const TIB *t);
+char *
+tib_str_value (const TIB *t);
 
-bool
-tib_isstr (const TIB *t);
+struct list
+tib_list_value (const TIB *t);
 
-bool
-tib_islist (const TIB *t);
+struct matrix
+tib_matrix_value (const TIB *t);
 
-bool
-tib_ismatrix (const TIB *t);
+TIB *
+tib_add (const TIB *t1, const TIB *t2);
 
-int
-tib_real_value (const TIB *t, double *out);
+TIB *
+tib_subtract (const TIB *t1, const TIB *t2);
 
-int
-tib_imaginary_value (const TIB *t, double *out);
+TIB *
+tib_multiply (const TIB *t1, const TIB *t2);
 
-int
-tib_complex_value (const TIB *t, double *real_out, double *imaginary_out);
+TIB *
+tib_divide (const TIB *t1, const TIB *t2);
 
 #endif
