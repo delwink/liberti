@@ -8,7 +8,7 @@ AM_INIT_AUTOMAKE([-Wall -Werror foreign subdir-objects])
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES])
 AM_SILENT_RULES([yes])
 AM_PROG_AR
-LT_INIT
+AC_PROG_RANLIB
 AC_PROG_CC
 
 PKG_CHECK_MODULES([sdl2], [sdl2])

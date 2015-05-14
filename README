@@ -7,16 +7,16 @@ Build Instructions
 ------------------
 
 You must first satisfy the build dependencies of LiberTI. You need the GNU
-autotools, libtool, a C compiler, and SDL2. On Debian GNU/Linux and
-derivatives, you can install these with the following command:
+autotools, a C compiler, the GNU Scientific Library and SDL2. On Debian
+GNU/Linux and derivatives, you can install these with the following command:
 
-    # apt-get install build-essential autoconf automake libtool libsdl2-dev
+    # apt-get install build-essential autoconf automake libgsl0-dev libsdl2-dev
 
 After the dependencies are installed, you can build LiberTI as follows:
 
     $ ./autogen.sh
-	$ ./configure
-	$ make
+    $ ./configure
+    $ make
 
 If you wish to install LiberTI to the system, you can run the following:
 
