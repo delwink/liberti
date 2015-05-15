@@ -21,12 +21,12 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <gsl/gsl_matrix_complex_double.h>
+#include <gsl/gsl_complex.h>
 
 enum tib_types
   {
     TIB_TYPE_NONE=0,
-    TIB_TYPE_REAL,
-    TIB_TYPE_IMAGINARY,
     TIB_TYPE_COMPLEX,
     TIB_TYPE_STRING,
     TIB_TYPE_LIST,
@@ -35,31 +35,12 @@ enum tib_types
 
 extern int tib_errno;
 
-struct complex
-{
-  double real;
-  double imaginary;
-};
-
-struct list
-{
-  void *values;
-  size_t len;
-};
-
-struct matrix
-{
-  void *values;
-  size_t width;
-  size_t height;
-};
-
 union variant
 {
-  struct complex number;
+  gsl_complex number;
   char *string;
-  struct list list;
-  struct matrix matrix;
+  gsl_vector_complex *list;
+  gsl_matrix_complex *matrix;
 };
 
 typedef struct
@@ -82,42 +63,30 @@ void
 tib_decref (TIB *t);
 
 TIB *
-tib_new_real (double value);
-
-TIB *
-tib_new_imaginary (double value);
-
-TIB *
 tib_new_complex (double real, double imaginary);
 
 TIB *
 tib_new_str (const char *value);
 
 TIB *
-tib_new_list (const TIB *value, size_t len);
+tib_new_list (const gsl_complex *value, size_t len);
 
 TIB *
-tib_new_matrix (const TIB **value, size_t w, size_t h);
+tib_new_matrix (const gsl_complex **value, size_t w, size_t h);
 
 int8_t
 tib_type (const TIB *t);
 
-double
-tib_real_value (const TIB *t);
-
-double
-tib_imaginary_value (const TIB *t);
-
-struct complex
+gsl_complex
 tib_complex_value (const TIB *t);
 
 char *
 tib_str_value (const TIB *t);
 
-struct list
+gsl_vector_complex *
 tib_list_value (const TIB *t);
 
-struct matrix
+gsl_matrix_complex *
 tib_matrix_value (const TIB *t);
 
 TIB *

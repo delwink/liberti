@@ -47,24 +47,20 @@ tib_copy (const TIB *t)
     case TIB_TYPE_NONE:
       return tib_empty ();
 
-    case TIB_TYPE_REAL:
-      return tib_new_real (t->value.number.real);
-
-    case TIB_TYPE_IMAGINARY:
-      return tib_new_imaginary (t->value.number.imaginary);
-
     case TIB_TYPE_COMPLEX:
-      return tib_new_complex (t->value.number.real, t->value.number.imaginary);
+      return tib_new_complex (GSL_REAL (t->value.number),
+			      GSL_IMAG (t->value.number));
 
     case TIB_TYPE_STRING:
       return tib_new_str (t->value.string);
 
     case TIB_TYPE_LIST:
-      return tib_new_list (t->value.list.values, t->value.list.len);
+      return tib_new_list ((gsl_complex *) t->value.list->data,
+			   t->value.list->size);
 
     case TIB_TYPE_MATRIX:
-      return tib_new_matrix ((const TIB **) t->value.matrix.values,
-			     t->value.matrix.width, t->value.matrix.height);
+      return tib_new_matrix ((const gsl_complex **) t->value.matrix->data,
+			     t->value.matrix->size1, t->value.matrix->size2);
 
     default:
       return NULL;
@@ -85,11 +81,11 @@ tib_decref (TIB *t)
       switch (t->type)
 	{
 	case TIB_TYPE_LIST:
-	  free (t->value.list.values);
+	  gsl_vector_complex_free (t->value.list);
 	  break;
 
 	case TIB_TYPE_MATRIX:
-	  free (t->value.matrix.values);
+	  gsl_matrix_complex_free (t->value.matrix);
 	  break;
 
 	case TIB_TYPE_STRING:
@@ -99,40 +95,6 @@ tib_decref (TIB *t)
 
       free (t);
     }
-}
-
-TIB *
-tib_new_real (double value)
-{
-  TIB *out = malloc (sizeof (TIB));
-  if (NULL == out)
-    {
-      tib_errno = TIB_EALLOC;
-      return NULL;
-    }
-
-  out->type = TIB_TYPE_REAL;
-  out->refs = 1;
-  out->value.number.real = value;
-
-  return out;
-}
-
-TIB *
-tib_new_imaginary (double value)
-{
-  TIB *out = malloc (sizeof (TIB));
-  if (NULL == out)
-    {
-      tib_errno = TIB_EALLOC;
-      return NULL;
-    }
-
-  out->type = TIB_TYPE_IMAGINARY;
-  out->refs = 1;
-  out->value.number.imaginary = value;
-
-  return out;
 }
 
 TIB *
@@ -147,8 +109,7 @@ tib_new_complex (double real, double imaginary)
 
   out->type = TIB_TYPE_COMPLEX;
   out->refs = 1;
-  out->value.number.real = real;
-  out->value.number.imaginary = imaginary;
+  GSL_SET_COMPLEX (&out->value.number, real, imaginary);
 
   return out;
 }
@@ -181,7 +142,7 @@ tib_new_str (const char *value)
 }
 
 TIB *
-tib_new_list (const TIB *value, size_t len)
+tib_new_list (const gsl_complex *value, size_t len)
 {
   TIB *out = malloc (sizeof (TIB));
   if (NULL == out)
@@ -192,8 +153,8 @@ tib_new_list (const TIB *value, size_t len)
 
   out->type = TIB_TYPE_LIST;
   out->refs = 1;
-  out->value.list.values = malloc (sizeof (TIB[len]));
-  if (NULL == out->value.list.values)
+  out->value.list = gsl_vector_complex_alloc (len);
+  if (!out->value.list)
     {
       tib_errno = TIB_EALLOC;
       free (out);
@@ -203,13 +164,13 @@ tib_new_list (const TIB *value, size_t len)
   size_t i;
   if (value != NULL)
     for (i = 0; i < len; ++i)
-      ((TIB *) out->value.list.values)[i] = value[i];
+      gsl_vector_complex_set (out->value.list, i, value[i]);
 
   return out;
 }
 
 TIB *
-tib_new_matrix (const TIB **value, size_t w, size_t h)
+tib_new_matrix (const gsl_complex **value, size_t w, size_t h)
 {
   TIB *out = malloc (sizeof (TIB));
   if (NULL == out)
@@ -220,8 +181,8 @@ tib_new_matrix (const TIB **value, size_t w, size_t h)
 
   out->type = TIB_TYPE_MATRIX;
   out->refs = 1;
-  out->value.matrix.values = malloc (sizeof (TIB[w][h]));
-  if (NULL == out->value.matrix.values)
+  out->value.matrix = gsl_matrix_complex_alloc (w, h);
+  if (!out->value.matrix)
     {
       tib_errno = TIB_EALLOC;
       free (out);
@@ -232,7 +193,7 @@ tib_new_matrix (const TIB **value, size_t w, size_t h)
   if (value != NULL)
     for (i = 0; i < w; ++i)
       for (j = 0; j < h; ++j)
-	((TIB **) out->value.matrix.values)[i][j] = value[i][j];
+	gsl_matrix_complex_set (out->value.matrix, i, j, value[i][j]);
 
   return out;
 }
@@ -243,34 +204,14 @@ tib_type (const TIB *t)
   return t->type;
 }
 
-double
-tib_real_value (const TIB *t)
-{
-  if (t->type == TIB_TYPE_REAL || t->type == TIB_TYPE_COMPLEX)
-    return t->value.number.real;
-
-  tib_errno = TIB_ETYPE;
-  return 0;
-}
-
-double
-tib_imaginary_value (const TIB *t)
-{
-  if (t->type == TIB_TYPE_IMAGINARY || t->type == TIB_TYPE_COMPLEX)
-    return t->value.number.imaginary;
-
-  tib_errno = TIB_ETYPE;
-  return 0;
-}
-
-struct complex
+gsl_complex
 tib_complex_value (const TIB *t)
 {
   if (t->type == TIB_TYPE_COMPLEX)
     return t->value.number;
 
   tib_errno = TIB_ETYPE;
-  return (struct complex) {0, 0};
+  return (gsl_complex) {.dat = {0, 0}};
 }
 
 char *
@@ -283,31 +224,30 @@ tib_str_value (const TIB *t)
   return NULL;
 }
 
-struct list
+gsl_vector_complex *
 tib_list_value (const TIB *t)
 {
   if (t->type == TIB_TYPE_LIST)
     return t->value.list;
 
   tib_errno = TIB_ETYPE;
-  return (struct list) {NULL, 0};
+  return NULL;
 }
 
-struct matrix
+gsl_matrix_complex *
 tib_matrix_value (const TIB *t)
 {
   if (t->type == TIB_TYPE_MATRIX)
     return t->value.matrix;
 
   tib_errno = TIB_ETYPE;
-  return (struct matrix) {NULL, 0, 0};
+  return NULL;
 }
 
 static bool
 number_type (const TIB *t)
 {
-  return (t->type == TIB_TYPE_REAL || t->type == TIB_TYPE_IMAGINARY
-	  || t->type == TIB_TYPE_COMPLEX);
+  return TIB_TYPE_COMPLEX == t->type;
 }
 
 TIB *
@@ -320,87 +260,53 @@ tib_add (const TIB *t1, const TIB *t2)
     }
 
   char *s;
-  TIB *temp[2];
-  size_t i, j;
+  TIB *temp;
+  int rc;
   switch (t1->type)
     {
-    case TIB_TYPE_REAL:
-    case TIB_TYPE_IMAGINARY:
     case TIB_TYPE_COMPLEX:
-      return tib_new_complex ((t1->value.number.real + t2->value.number.real),
-			      (t1->value.number.imaginary
-			       + t2->value.number.imaginary));
+      return tib_new_complex ((GSL_REAL (t1->value.number)
+			       + GSL_REAL (t2->value.number)),
+			      (GSL_IMAG (t1->value.number)
+			       + GSL_IMAG (t2->value.number)));
 
     case TIB_TYPE_STRING:
       s = malloc ((strlen (t1->value.string) + strlen (t2->value.string) + 1)
 		  * sizeof (char));
       sprintf (s, "%s%s", t1->value.string, t2->value.string);
-      temp[0] = tib_new_str (s);
+      temp = tib_new_str (s);
       free (s);
-      return temp[0];
+      return temp;
 
     case TIB_TYPE_LIST:
-      if (t1->value.list.len != t2->value.list.len)
-	{
-	  tib_errno = TIB_EDIM;
-	  return NULL;
-	}
-
-      temp[0] = tib_new_list (NULL, t1->value.list.len);
-      if (NULL == temp[0])
+      temp = tib_copy (t1);
+      if (NULL == temp)
 	return NULL;
 
-      for (i = 0; i < t1->value.list.len; ++i)
+      rc = gsl_vector_complex_add (temp->value.list, t2->value.list);
+      if (rc)
 	{
-	  temp[1] = tib_add (&((TIB *) t1->value.list.values)[i],
-			     &((TIB *) t2->value.list.values)[i]);
-	  if (NULL == temp[1])
-	    break;
-
-	  ((TIB *) temp[0]->value.list.values)[i] = *temp[1];
-	  tib_decref (temp[1]);
-	}
-
-      if (tib_errno)
-	{
-	  tib_decref (temp[0]);
+	  tib_errno = rc;
+	  tib_decref (temp);
 	  return NULL;
 	}
 
-      return temp[0];
+      return temp;
 
     case TIB_TYPE_MATRIX:
-      if (t1->value.matrix.height != t2->value.matrix.height
-	  || t1->value.matrix.width != t2->value.matrix.width)
-	{
-	  tib_errno = TIB_EDIM;
-	  return NULL;
-	}
-
-      temp[0] = tib_new_matrix (NULL, t1->value.matrix.width,
-				t1->value.matrix.height);
-      if (NULL == temp[0])
+      temp = tib_copy (t1);
+      if (NULL == temp)
 	return NULL;
 
-      for (i = 0; i < t1->value.matrix.width; ++i)
-	for (j = 0; j < t1->value.matrix.height; ++j)
-	  {
-	    temp[1] = tib_add (&((TIB **) t1->value.matrix.values)[i][j],
-			       &((TIB **) t2->value.matrix.values)[i][j]);
-	    if (NULL == temp[1])
-	      break;
-
-	    ((TIB **) temp[0]->value.matrix.values)[i][j] = *temp[1];
-	    tib_decref (temp[1]);
-	  }
-
-      if (tib_errno)
+      rc = gsl_matrix_complex_add (temp->value.matrix, t2->value.matrix);
+      if (rc)
 	{
-	  tib_decref (temp[0]);
+	  tib_errno = rc;
+	  tib_decref (temp);
 	  return NULL;
 	}
 
-      return temp[0];
+      return temp;
 
     default:
       tib_errno = TIB_ETYPE;
