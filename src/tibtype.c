@@ -244,16 +244,10 @@ tib_matrix_value (const TIB *t)
   return NULL;
 }
 
-static bool
-number_type (const TIB *t)
-{
-  return TIB_TYPE_COMPLEX == t->type;
-}
-
 TIB *
 tib_add (const TIB *t1, const TIB *t2)
 {
-  if (t1->type != t2->type && !(number_type (t1) && number_type (t2)))
+  if (t1->type != t2->type)
     {
       tib_errno = TIB_ETYPE;
       return NULL;
