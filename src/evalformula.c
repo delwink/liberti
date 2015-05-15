@@ -1,5 +1,5 @@
 /*
- *  libtibasic - Read, write, and evaluate TI BASIC programs
+ *  libtib - Read, write, and evaluate TI BASIC programs
  *  Copyright (C) 2015 Delwink, LLC
  *
  *  This program is free software: you can redistribute it and/or modify
