@@ -307,3 +307,58 @@ tib_add (const TIB *t1, const TIB *t2)
       return NULL;
     }
 }
+
+TIB *
+tib_sub (const TIB *t1, const TIB *t2)
+{
+  if (t1->type != t2->type)
+    {
+      tib_errno = TIB_ETYPE;
+      return NULL;
+    }
+
+  TIB *temp;
+  int rc;
+  switch (t1->type)
+    {
+    case TIB_TYPE_COMPLEX:
+      return tib_new_complex ((GSL_REAL (t1->value.number)
+			       - GSL_REAL (t2->value.number)),
+			      (GSL_IMAG (t1->value.number)
+			       - GSL_IMAG (t2->value.number)));
+
+    case TIB_TYPE_LIST:
+      temp = tib_copy (t1);
+      if (NULL == temp)
+	return NULL;
+
+      rc = gsl_vector_complex_sub (temp->value.list, t2->value.list);
+      if (rc)
+	{
+	  tib_errno = rc;
+	  tib_decref (temp);
+	  return NULL;
+	}
+
+      return temp;
+
+    case TIB_TYPE_MATRIX:
+      temp = tib_copy (t1);
+      if (NULL == temp)
+	return NULL;
+
+      rc = gsl_matrix_complex_sub (temp->value.matrix, t2->value.matrix);
+      if (rc)
+	{
+	  tib_errno = rc;
+	  tib_decref (temp);
+	  return NULL;
+	}
+
+      return temp;
+
+    default:
+      tib_errno = TIB_ETYPE;
+      return NULL;
+    }
+}

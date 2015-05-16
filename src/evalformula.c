@@ -205,7 +205,6 @@ eval (tib_Expression *expr, TIB **out)
 
   /* resolve divided expressions, and store the values for later */
   /* TODO: test for more than just parenthesized expressions */
-  size_t beg, end;
   for (i = 0; i < len; ++i)
     {
       int c = tib_Expression_ref (expr, i);

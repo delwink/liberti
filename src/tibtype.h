@@ -93,12 +93,21 @@ TIB *
 tib_add (const TIB *t1, const TIB *t2);
 
 TIB *
-tib_subtract (const TIB *t1, const TIB *t2);
+tib_sub (const TIB *t1, const TIB *t2);
 
 TIB *
-tib_multiply (const TIB *t1, const TIB *t2);
+tib_mul (const TIB *t1, const TIB *t2);
 
 TIB *
-tib_divide (const TIB *t1, const TIB *t2);
+tib_div (const TIB *t1, const TIB *t2);
+
+TIB *
+tib_pow (const TIB *t1, const TIB *t2);
+
+TIB *
+tib_sqrt (const TIB *t);
+
+TIB *
+tib_log (const TIB *t);
 
 #endif
