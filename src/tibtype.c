@@ -42,6 +42,8 @@ tib_empty ()
 TIB *
 tib_copy (const TIB *t)
 {
+  TIB *temp;
+
   switch (t->type)
     {
     case TIB_TYPE_NONE:
@@ -55,8 +57,29 @@ tib_copy (const TIB *t)
       return tib_new_str (t->value.string);
 
     case TIB_TYPE_LIST:
-      return tib_new_list ((gsl_complex *) t->value.list->data,
-			   t->value.list->size);
+      temp = tib_empty ();
+      if (NULL == temp)
+	return NULL;
+
+      temp->type = TIB_TYPE_LIST;
+
+      temp->value.list = gsl_vector_complex_alloc (t->value.list->size);
+      if (!temp->value.list)
+	{
+	  tib_errno = TIB_EALLOC;
+	  tib_decref (temp);
+	  return NULL;
+	}
+
+      tib_errno = gsl_vector_complex_memcpy (temp->value.list, t->value.list);
+      if (tib_errno)
+	{
+	  tib_decref (temp);
+	  return NULL;
+	}
+
+      return temp;
+      
 
     case TIB_TYPE_MATRIX:
       return tib_new_matrix ((const gsl_complex **) t->value.matrix->data,
