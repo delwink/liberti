@@ -82,8 +82,30 @@ tib_copy (const TIB *t)
       
 
     case TIB_TYPE_MATRIX:
-      return tib_new_matrix ((const gsl_complex **) t->value.matrix->data,
-			     t->value.matrix->size1, t->value.matrix->size2);
+      temp = tib_empty ();
+      if (NULL == temp)
+	return NULL;
+
+      temp->type = TIB_TYPE_MATRIX;
+
+      temp->value.matrix = gsl_matrix_complex_alloc (t->value.matrix->size1,
+						     t->value.matrix->size2);
+      if (!temp->value.matrix)
+	{
+	  tib_errno = TIB_EALLOC;
+	  tib_decref (temp);
+	  return NULL;
+	}
+
+      tib_errno = gsl_matrix_complex_memcpy (temp->value.matrix,
+					     t->value.matrix);
+      if (tib_errno)
+	{
+	  tib_decref (temp);
+	  return NULL;
+	}
+
+      return temp;
 
     default:
       return NULL;
