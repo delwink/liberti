@@ -9,7 +9,7 @@ Build Instructions
 You must first satisfy the build dependencies of LiberTI.
 
 | Library/Tool               | Purpose                                       |
-|----------------------------+-----------------------------------------------|
+|----------------------------|-----------------------------------------------|
 | GNU Autotools              | Automatic build scripts                       |
 | ANSI C Compiler            | (Prefer GCC or Clang) Source compilation      |
 | GNU Scientific Library     | Complex math calculations and data structures |
