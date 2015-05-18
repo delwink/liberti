@@ -79,7 +79,6 @@ tib_copy (const TIB *t)
 	}
 
       return temp;
-      
 
     case TIB_TYPE_MATRIX:
       temp = tib_empty ();
@@ -300,7 +299,6 @@ tib_add (const TIB *t1, const TIB *t2)
 
   char *s;
   TIB *temp;
-  int rc;
   switch (t1->type)
     {
     case TIB_TYPE_COMPLEX:
@@ -322,10 +320,9 @@ tib_add (const TIB *t1, const TIB *t2)
       if (NULL == temp)
 	return NULL;
 
-      rc = gsl_vector_complex_add (temp->value.list, t2->value.list);
-      if (rc)
+      tib_errno = gsl_vector_complex_add (temp->value.list, t2->value.list);
+      if (tib_errno)
 	{
-	  tib_errno = rc;
 	  tib_decref (temp);
 	  return NULL;
 	}
@@ -337,10 +334,10 @@ tib_add (const TIB *t1, const TIB *t2)
       if (NULL == temp)
 	return NULL;
 
-      rc = gsl_matrix_complex_add (temp->value.matrix, t2->value.matrix);
-      if (rc)
+      tib_errno = gsl_matrix_complex_add (temp->value.matrix,
+					  t2->value.matrix);
+      if (tib_errno)
 	{
-	  tib_errno = rc;
 	  tib_decref (temp);
 	  return NULL;
 	}
@@ -363,7 +360,6 @@ tib_sub (const TIB *t1, const TIB *t2)
     }
 
   TIB *temp;
-  int rc;
   switch (t1->type)
     {
     case TIB_TYPE_COMPLEX:
@@ -377,10 +373,9 @@ tib_sub (const TIB *t1, const TIB *t2)
       if (NULL == temp)
 	return NULL;
 
-      rc = gsl_vector_complex_sub (temp->value.list, t2->value.list);
-      if (rc)
+      tib_errno = gsl_vector_complex_sub (temp->value.list, t2->value.list);
+      if (tib_errno)
 	{
-	  tib_errno = rc;
 	  tib_decref (temp);
 	  return NULL;
 	}
@@ -392,10 +387,10 @@ tib_sub (const TIB *t1, const TIB *t2)
       if (NULL == temp)
 	return NULL;
 
-      rc = gsl_matrix_complex_sub (temp->value.matrix, t2->value.matrix);
-      if (rc)
+      tib_errno = gsl_matrix_complex_sub (temp->value.matrix,
+					  t2->value.matrix);
+      if (tib_errno)
 	{
-	  tib_errno = rc;
 	  tib_decref (temp);
 	  return NULL;
 	}
