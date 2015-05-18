@@ -6,9 +6,17 @@ Libre TI calculator emulator designed for [LibreCalc][1].
 Build Instructions
 ------------------
 
-You must first satisfy the build dependencies of LiberTI. You need the GNU
-autotools, a C compiler, the GNU Scientific Library, and SDL2. On Debian
-GNU/Linux and derivatives, you can install these with the following command:
+You must first satisfy the build dependencies of LiberTI.
+
+| Library/Tool               | Purpose                                       |
+|----------------------------+-----------------------------------------------|
+| GNU Autotools              | Automatic build scripts                       |
+| ANSI C Compiler            | (Prefer GCC or Clang) Source compilation      |
+| GNU Scientific Library     | Complex math calculations and data structures |
+| Simple DirectMedia Layer 2 | Graphics and threading                        |
+
+On Debian GNU/Linux and derivatives, you can install these with the following
+command:
 
     # apt-get install build-essential autoconf automake libgsl0-dev libsdl2-dev
 
