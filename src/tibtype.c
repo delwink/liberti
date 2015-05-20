@@ -291,7 +291,9 @@ tib_matrix_value (const TIB *t)
 TIB *
 tib_add (const TIB *t1, const TIB *t2)
 {
-  if (t1->type != t2->type)
+  if (t1->type != t2->type
+      && !(TIB_TYPE_COMPLEX == t1->type && TIB_TYPE_LIST == t2->type)
+      && !(TIB_TYPE_LIST == t1->type && TIB_TYPE_COMPLEX == t2->type))
     {
       tib_errno = TIB_ETYPE;
       return NULL;
@@ -353,7 +355,9 @@ tib_add (const TIB *t1, const TIB *t2)
 TIB *
 tib_sub (const TIB *t1, const TIB *t2)
 {
-  if (t1->type != t2->type)
+  if (t1->type != t2->type
+      && !(TIB_TYPE_COMPLEX == t1->type && TIB_TYPE_LIST == t2->type)
+      && !(TIB_TYPE_LIST == t1->type && TIB_TYPE_COMPLEX == t2->type))
     {
       tib_errno = TIB_ETYPE;
       return NULL;
@@ -396,6 +400,45 @@ tib_sub (const TIB *t1, const TIB *t2)
 	}
 
       return temp;
+
+    default:
+      tib_errno = TIB_ETYPE;
+      return NULL;
+    }
+}
+
+TIB *
+tib_mul (const TIB *t1, const TIB *t2)
+{
+  if (t1->type != t2->type)
+    {
+      switch (t1->type)
+	{
+	case TIB_TYPE_COMPLEX:
+	  if (TIB_TYPE_NONE == t2->type || TIB_TYPE_STRING == t2->type)
+	    {
+	      tib_errno = TIB_ETYPE;
+	      return NULL;
+	    }
+	  break;
+
+	case TIB_TYPE_LIST:
+	case TIB_TYPE_MATRIX:
+	  if (TIB_TYPE_COMPLEX != t2->type)
+	    {
+	      tib_errno = TIB_ETYPE;
+	      return NULL;
+	    }
+	  break;
+
+	default:
+	  tib_errno = TIB_ETYPE;
+	  return NULL;
+	}
+    }
+
+  switch (t1->type)
+    {
 
     default:
       tib_errno = TIB_ETYPE;
