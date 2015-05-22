@@ -17,6 +17,7 @@
 
 #include <string.h>
 #include <stdio.h>
+#include <gsl/gsl_complex_math.h>
 
 #include "tib.h"
 #include "tibtype.h"
@@ -301,13 +302,32 @@ tib_add (const TIB *t1, const TIB *t2)
 
   char *s;
   TIB *temp;
+  size_t i;
   switch (t1->type)
     {
     case TIB_TYPE_COMPLEX:
-      return tib_new_complex ((GSL_REAL (t1->value.number)
-			       + GSL_REAL (t2->value.number)),
-			      (GSL_IMAG (t1->value.number)
-			       + GSL_IMAG (t2->value.number)));
+      if (TIB_TYPE_COMPLEX == t2->type)
+	{
+	  return tib_new_complex ((GSL_REAL (t1->value.number)
+				   + GSL_REAL (t2->value.number)),
+				  (GSL_IMAG (t1->value.number)
+				   + GSL_IMAG (t2->value.number)));
+	}
+      else
+	{
+	  temp = tib_copy (t2);
+	  if (NULL == temp)
+	    return NULL;
+
+	  for (i = 0; i < temp->value.list->size; ++i)
+	    {
+	      gsl_complex a = gsl_vector_complex_get (t2->value.list, i);
+	      gsl_complex sum = gsl_complex_add (a, t1->value.number);
+	      gsl_vector_complex_set (temp->value.list, i, sum);
+	    }
+
+	  return temp;
+	}
 
     case TIB_TYPE_STRING:
       s = malloc ((strlen (t1->value.string) + strlen (t2->value.string) + 1)
@@ -318,18 +338,25 @@ tib_add (const TIB *t1, const TIB *t2)
       return temp;
 
     case TIB_TYPE_LIST:
-      temp = tib_copy (t1);
-      if (NULL == temp)
-	return NULL;
-
-      tib_errno = gsl_vector_complex_add (temp->value.list, t2->value.list);
-      if (tib_errno)
+      if (TIB_TYPE_LIST == t2->type)
 	{
-	  tib_decref (temp);
-	  return NULL;
-	}
+	  temp = tib_copy (t1);
+	  if (NULL == temp)
+	    return NULL;
 
-      return temp;
+	  tib_errno = gsl_vector_complex_add (temp->value.list, t2->value.list);
+	  if (tib_errno)
+	    {
+	      tib_decref (temp);
+	      return NULL;
+	    }
+
+	  return temp;
+	}
+      else
+	{
+	  return tib_add (t2, t1);
+	}
 
     case TIB_TYPE_MATRIX:
       temp = tib_copy (t1);
