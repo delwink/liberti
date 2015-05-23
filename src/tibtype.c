@@ -391,27 +391,64 @@ tib_sub (const TIB *t1, const TIB *t2)
     }
 
   TIB *temp;
+  size_t i;
   switch (t1->type)
     {
     case TIB_TYPE_COMPLEX:
-      return tib_new_complex ((GSL_REAL (t1->value.number)
-			       - GSL_REAL (t2->value.number)),
-			      (GSL_IMAG (t1->value.number)
-			       - GSL_IMAG (t2->value.number)));
-
-    case TIB_TYPE_LIST:
-      temp = tib_copy (t1);
-      if (NULL == temp)
-	return NULL;
-
-      tib_errno = gsl_vector_complex_sub (temp->value.list, t2->value.list);
-      if (tib_errno)
+      if (TIB_TYPE_COMPLEX == t2->type)
 	{
-	  tib_decref (temp);
-	  return NULL;
+	  return tib_new_complex ((GSL_REAL (t1->value.number)
+				   - GSL_REAL (t2->value.number)),
+				  (GSL_IMAG (t1->value.number)
+				   - GSL_IMAG (t2->value.number)));
+	}
+      else
+	{
+	  temp = tib_copy (t2);
+	  if (NULL == temp)
+	    return NULL;
+
+	  for (i = 0; i < temp->value.list->size; ++i)
+	    {
+	      gsl_complex a = gsl_vector_complex_get (t2->value.list, i);
+	      gsl_complex diff = gsl_complex_sub (a, t1->value.number);
+	      gsl_vector_complex_set (temp->value.list, i, diff);
+	    }
+
+	  return temp;
 	}
 
-      return temp;
+    case TIB_TYPE_LIST:
+      if (TIB_TYPE_LIST == t2->type)
+	{
+	  temp = tib_copy (t1);
+	  if (NULL == temp)
+	    return NULL;
+
+	  tib_errno = gsl_vector_complex_sub (temp->value.list, t2->value.list);
+	  if (tib_errno)
+	    {
+	      tib_decref (temp);
+	      return NULL;
+	    }
+
+	  return temp;
+	}
+      else
+	{
+	  temp = tib_copy (t2);
+	  if (NULL == temp)
+	    return NULL;
+
+	  for (i = 0; i < temp->value.list->size; ++i)
+	    {
+	      gsl_complex a = gsl_vector_complex_get (t2->value.list, i);
+	      gsl_complex diff = gsl_complex_sub (t1->value.number, a);
+	      gsl_vector_complex_set (temp->value.list, i, diff);
+	    }
+
+	  return temp;
+	}
 
     case TIB_TYPE_MATRIX:
       temp = tib_copy (t1);
