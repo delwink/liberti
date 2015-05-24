@@ -308,10 +308,14 @@ tib_add (const TIB *t1, const TIB *t2)
     case TIB_TYPE_COMPLEX:
       if (TIB_TYPE_COMPLEX == t2->type)
 	{
-	  return tib_new_complex ((GSL_REAL (t1->value.number)
-				   + GSL_REAL (t2->value.number)),
-				  (GSL_IMAG (t1->value.number)
-				   + GSL_IMAG (t2->value.number)));
+	  temp = tib_copy (t1);
+	  if (NULL == temp)
+	    return NULL;
+
+	  temp->value.number = gsl_complex_add (t1->value.number,
+						t2->value.number);
+
+	  return temp;
 	}
       else
 	{
@@ -397,10 +401,14 @@ tib_sub (const TIB *t1, const TIB *t2)
     case TIB_TYPE_COMPLEX:
       if (TIB_TYPE_COMPLEX == t2->type)
 	{
-	  return tib_new_complex ((GSL_REAL (t1->value.number)
-				   - GSL_REAL (t2->value.number)),
-				  (GSL_IMAG (t1->value.number)
-				   - GSL_IMAG (t2->value.number)));
+	  temp = tib_copy (t1);
+	  if (NULL == temp)
+	    return NULL;
+
+	  temp->value.number = gsl_complex_sub (t1->value.number,
+						t2->value.number);
+
+	  return temp;
 	}
       else
 	{
@@ -425,7 +433,8 @@ tib_sub (const TIB *t1, const TIB *t2)
 	  if (NULL == temp)
 	    return NULL;
 
-	  tib_errno = gsl_vector_complex_sub (temp->value.list, t2->value.list);
+	  tib_errno = gsl_vector_complex_sub (temp->value.list,
+					      t2->value.list);
 	  if (tib_errno)
 	    {
 	      tib_decref (temp);
