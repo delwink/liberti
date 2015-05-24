@@ -501,8 +501,21 @@ tib_mul (const TIB *t1, const TIB *t2)
 	}
     }
 
+  TIB *temp;
   switch (t1->type)
     {
+    case TIB_TYPE_COMPLEX:
+      if (TIB_TYPE_COMPLEX == t2->type)
+	{
+	  temp = tib_copy (t1);
+	  if (NULL == temp)
+	    return NULL;
+
+	  temp->value.number = gsl_complex_mul (t1->value.number,
+						t2->value.number);
+
+	  return temp;
+	}
 
     default:
       tib_errno = TIB_ETYPE;
