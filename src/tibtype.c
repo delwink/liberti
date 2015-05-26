@@ -511,7 +511,7 @@ tib_mul (const TIB *t1, const TIB *t2)
     }
 
   TIB *temp;
-  size_t i;
+  size_t i, j;
   switch (t1->type)
     {
     case TIB_TYPE_COMPLEX:
@@ -526,17 +526,32 @@ tib_mul (const TIB *t1, const TIB *t2)
 
 	  return temp;
 	}
-      else if (TIB_TYPE_LIST == t2->type)
+      else
 	{
 	  temp = tib_copy (t2);
 	  if (NULL == temp)
 	    return NULL;
 
-	  for (i = 0; i < t2->value.list->size; ++i)
+	  if (TIB_TYPE_LIST == t2->type)
 	    {
-	      gsl_complex a = gsl_vector_complex_get (t2->value.list, i);
-	      gsl_complex product = gsl_complex_mul (t1->value.number, a);
-	      gsl_vector_complex_set (temp->value.list, i, product);
+	      for (i = 0; i < t2->value.list->size; ++i)
+		{
+		  gsl_complex a = gsl_vector_complex_get (t2->value.list, i);
+		  gsl_complex product = gsl_complex_mul (t1->value.number, a);
+		  gsl_vector_complex_set (temp->value.list, i, product);
+		}
+	    }
+	  else /* must be matrix */
+	    {
+	      for (i = 0; i < t2->value.matrix->size1; ++i)
+		for (j = 0; j < t2->value.matrix->size2; ++j)
+		  {
+		    gsl_complex a = gsl_matrix_complex_get (t2->value.matrix,
+							    i, j);
+		    gsl_complex product = gsl_complex_mul (t1->value.number,
+							   a);
+		    gsl_matrix_complex_set (temp->value.matrix, i, j, product);
+		  }
 	    }
 
 	  return temp;
