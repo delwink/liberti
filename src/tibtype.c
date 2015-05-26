@@ -532,12 +532,13 @@ tib_mul (const TIB *t1, const TIB *t2)
 	  if (NULL == temp)
 	    return NULL;
 
+	  gsl_complex a, product;
 	  if (TIB_TYPE_LIST == t2->type)
 	    {
 	      for (i = 0; i < t2->value.list->size; ++i)
 		{
-		  gsl_complex a = gsl_vector_complex_get (t2->value.list, i);
-		  gsl_complex product = gsl_complex_mul (t1->value.number, a);
+		  a = gsl_vector_complex_get (t2->value.list, i);
+		  product = gsl_complex_mul (t1->value.number, a);
 		  gsl_vector_complex_set (temp->value.list, i, product);
 		}
 	    }
@@ -546,10 +547,8 @@ tib_mul (const TIB *t1, const TIB *t2)
 	      for (i = 0; i < t2->value.matrix->size1; ++i)
 		for (j = 0; j < t2->value.matrix->size2; ++j)
 		  {
-		    gsl_complex a = gsl_matrix_complex_get (t2->value.matrix,
-							    i, j);
-		    gsl_complex product = gsl_complex_mul (t1->value.number,
-							   a);
+		    a = gsl_matrix_complex_get (t2->value.matrix, i, j);
+		    product = gsl_complex_mul (t1->value.number, a);
 		    gsl_matrix_complex_set (temp->value.matrix, i, j, product);
 		  }
 	    }
