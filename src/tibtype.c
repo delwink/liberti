@@ -511,6 +511,7 @@ tib_mul (const TIB *t1, const TIB *t2)
     }
 
   TIB *temp;
+  size_t i;
   switch (t1->type)
     {
     case TIB_TYPE_COMPLEX:
@@ -522,6 +523,21 @@ tib_mul (const TIB *t1, const TIB *t2)
 
 	  temp->value.number = gsl_complex_mul (t1->value.number,
 						t2->value.number);
+
+	  return temp;
+	}
+      else if (TIB_TYPE_LIST == t2->type)
+	{
+	  temp = tib_copy (t2);
+	  if (NULL == temp)
+	    return NULL;
+
+	  for (i = 0; i < t2->value.list->size; ++i)
+	    {
+	      gsl_complex a = gsl_vector_complex_get (t2->value.list, i);
+	      gsl_complex product = gsl_complex_mul (t1->value.number, a);
+	      gsl_vector_complex_set (temp->value.list, i, product);
+	    }
 
 	  return temp;
 	}
