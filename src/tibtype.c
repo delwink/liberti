@@ -496,7 +496,7 @@ matrix_mul (gsl_matrix_complex *out, gsl_matrix_complex *m1,
       {
 	for (k = 0; k < DIM; ++k)
 	  in[k] = gsl_complex_mul (gsl_matrix_complex_get (m1, i, k),
-				   gsl_matrix_complex_get (m2, k, i));
+				   gsl_matrix_complex_get (m2, k, j));
 
 	gsl_complex sum;
 	sum.dat[0] = 0;
