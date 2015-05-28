@@ -556,6 +556,34 @@ tib_mul (const TIB *t1, const TIB *t2)
 	  return temp;
 	}
 
+    case TIB_TYPE_LIST:
+      if (TIB_TYPE_LIST == t2->type)
+	{
+	  if (t1->value.list->size != t2->value.list->size)
+	    {
+	      tib_errno = TIB_EDIM;
+	      return NULL;
+	    }
+
+	  temp = tib_copy (t1);
+	  if (NULL == temp)
+	    return NULL;
+
+	  for (i = 0; i < temp->value.list->size; ++i)
+	    {
+	      gsl_complex a = gsl_vector_complex_get (t1->value.list, i);
+	      gsl_complex b = gsl_vector_complex_get (t2->value.list, i);
+	      gsl_complex product = gsl_complex_mul (a, b);
+	      gsl_vector_complex_set (temp->value.list, i, product);
+	    }
+
+	  return temp;
+	}
+      else
+	{
+	  return tib_mul (t2, t1);
+	}
+
     default:
       tib_errno = TIB_ETYPE;
       return NULL;
