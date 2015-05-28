@@ -480,6 +480,38 @@ tib_sub (const TIB *t1, const TIB *t2)
     }
 }
 
+static int
+matrix_mul (gsl_matrix_complex *out, gsl_matrix_complex *m1,
+	    gsl_matrix_complex *m2)
+{
+  size_t i, j, k;
+  const size_t DIM = m1->size2;
+
+  gsl_complex *in = malloc (sizeof (gsl_complex[DIM]));
+  if (NULL == in)
+    return TIB_EALLOC;
+
+  for (i = 0; i < m1->size1; ++i)
+    for (j = 0; k < m2->size2; ++j)
+      {
+	for (k = 0; k < DIM; ++k)
+	  in[k] = gsl_complex_mul (gsl_matrix_complex_get (m1, i, k),
+				   gsl_matrix_complex_get (m2, k, i));
+
+	gsl_complex sum;
+	sum.dat[0] = 0;
+	sum.dat[1] = 0;
+
+	for (k = 0; k < DIM; ++k)
+	  sum = gsl_complex_add (sum, in[k]);
+
+	gsl_matrix_complex_set (out, i, j, sum);
+      }
+
+  free (in);
+  return 0;
+}
+
 TIB *
 tib_mul (const TIB *t1, const TIB *t2)
 {
@@ -575,6 +607,35 @@ tib_mul (const TIB *t1, const TIB *t2)
 	      gsl_complex b = gsl_vector_complex_get (t2->value.list, i);
 	      gsl_complex product = gsl_complex_mul (a, b);
 	      gsl_vector_complex_set (temp->value.list, i, product);
+	    }
+
+	  return temp;
+	}
+      else
+	{
+	  return tib_mul (t2, t1);
+	}
+
+    case TIB_TYPE_MATRIX:
+      if (TIB_TYPE_MATRIX == t2->type)
+	{
+	  if (t1->value.matrix->size2 != t2->value.matrix->size1)
+	    {
+	      tib_errno = TIB_EDIM;
+	      return NULL;
+	    }
+
+	  temp = tib_new_matrix (NULL, t1->value.matrix->size1,
+				 t2->value.matrix->size2);
+	  if (NULL == temp)
+	    return NULL;
+
+	  tib_errno = matrix_mul (temp->value.matrix, t1->value.matrix,
+				  t2->value.matrix);
+	  if (tib_errno)
+	    {
+	      tib_decref (temp);
+	      return NULL;
 	    }
 
 	  return temp;
