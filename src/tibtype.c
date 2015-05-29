@@ -655,8 +655,14 @@ tib_mul (const TIB *t1, const TIB *t2)
 static bool
 less_than_0 (gsl_complex x)
 {
-  double abs_val = sqrt (pow (GSL_REAL (x), 2) + pow (GSL_IMAG (x), 2));
-  return abs_val < 0;
+  return gsl_complex_abs (x) < 0;
+}
+
+static TIB *
+inverse (TIB *t)
+{
+  /* TODO: convert t to the inverse of t */
+  return t;
 }
 
 TIB *
@@ -668,11 +674,21 @@ tib_pow (const TIB *t, gsl_complex exp)
 
   if (less_than_0 (exp))
     {
-      /* TODO: convert temp to the inverse of temp */
+      temp = inverse (temp);
+      if (NULL == temp)
+	{
+	  tib_decref (temp);
+	  return NULL;
+	}
     }
+
+  double abs_exp = gsl_complex_abs (exp);
 
   switch (t->type)
     {
+    case TIB_TYPE_COMPLEX:
+      temp->value.number = gsl_complex_pow_real (t->value.number, abs_exp);
+      return temp;
 
     default:
       tib_errno = TIB_ETYPE;
