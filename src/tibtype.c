@@ -18,6 +18,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <gsl/gsl_complex_math.h>
+#include <math.h>
 
 #include "tib.h"
 #include "tibtype.h"
@@ -644,6 +645,34 @@ tib_mul (const TIB *t1, const TIB *t2)
 	{
 	  return tib_mul (t2, t1);
 	}
+
+    default:
+      tib_errno = TIB_ETYPE;
+      return NULL;
+    }
+}
+
+static bool
+less_than_0 (gsl_complex x)
+{
+  double abs_val = sqrt (pow (GSL_REAL (x), 2) + pow (GSL_IMAG (x), 2));
+  return abs_val < 0;
+}
+
+TIB *
+tib_pow (const TIB *t, gsl_complex exp)
+{
+  TIB *temp = tib_copy (t);
+  if (NULL == temp)
+    return NULL;
+
+  if (less_than_0 (exp))
+    {
+      /* TODO: convert temp to the inverse of temp */
+    }
+
+  switch (t->type)
+    {
 
     default:
       tib_errno = TIB_ETYPE;

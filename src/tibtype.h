@@ -102,7 +102,7 @@ TIB *
 tib_div (const TIB *t1, const TIB *t2);
 
 TIB *
-tib_pow (const TIB *t1, const TIB *t2);
+tib_pow (const TIB *t, gsl_complex exp);
 
 TIB *
 tib_sqrt (const TIB *t);
