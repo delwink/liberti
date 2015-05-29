@@ -260,7 +260,7 @@ tib_complex_value (const TIB *t)
   return (gsl_complex) {.dat = {0, 0}};
 }
 
-char *
+const char *
 tib_str_value (const TIB *t)
 {
   if (t->type == TIB_TYPE_STRING)
@@ -270,7 +270,7 @@ tib_str_value (const TIB *t)
   return NULL;
 }
 
-gsl_vector_complex *
+const gsl_vector_complex *
 tib_list_value (const TIB *t)
 {
   if (t->type == TIB_TYPE_LIST)
@@ -280,7 +280,7 @@ tib_list_value (const TIB *t)
   return NULL;
 }
 
-gsl_matrix_complex *
+const gsl_matrix_complex *
 tib_matrix_value (const TIB *t)
 {
   if (t->type == TIB_TYPE_MATRIX)

@@ -80,13 +80,13 @@ tib_type (const TIB *t);
 gsl_complex
 tib_complex_value (const TIB *t);
 
-char *
+const char *
 tib_str_value (const TIB *t);
 
-gsl_vector_complex *
+const gsl_vector_complex *
 tib_list_value (const TIB *t);
 
-gsl_matrix_complex *
+const gsl_matrix_complex *
 tib_matrix_value (const TIB *t);
 
 TIB *
