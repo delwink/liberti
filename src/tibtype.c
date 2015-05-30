@@ -658,10 +658,10 @@ less_than_0 (gsl_complex x)
 }
 
 static TIB *
-inverse (TIB *t)
+inverse (const TIB *t)
 {
   /* TODO: convert t to the inverse of t */
-  return t;
+  return tib_copy (t);
 }
 
 TIB *
