@@ -500,8 +500,7 @@ matrix_mul (gsl_matrix_complex *out, gsl_matrix_complex *m1,
 				   gsl_matrix_complex_get (m2, k, j));
 
 	gsl_complex sum;
-	sum.dat[0] = 0;
-	sum.dat[1] = 0;
+	GSL_SET_COMPLEX (&sum, 0, 0);
 
 	for (k = 0; k < DIM; ++k)
 	  sum = gsl_complex_add (sum, in[k]);
