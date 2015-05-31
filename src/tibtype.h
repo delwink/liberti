@@ -105,7 +105,7 @@ TIB *
 tib_pow (const TIB *t, gsl_complex exp);
 
 TIB *
-tib_sqrt (const TIB *t);
+tib_root (const TIB *t, gsl_complex root);
 
 TIB *
 tib_log (const TIB *t);
