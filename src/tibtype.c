@@ -66,19 +66,9 @@ tib_copy (const TIB *t)
       return tib_new_str (t->value.string);
 
     case TIB_TYPE_LIST:
-      temp = tib_empty ();
+      temp = tib_new_list (NULL, t->value.list->size);
       if (NULL == temp)
 	return NULL;
-
-      temp->type = TIB_TYPE_LIST;
-
-      temp->value.list = gsl_vector_complex_alloc (t->value.list->size);
-      if (!temp->value.list)
-	{
-	  tib_errno = TIB_EALLOC;
-	  tib_decref (temp);
-	  return NULL;
-	}
 
       tib_errno = gsl_vector_complex_memcpy (temp->value.list, t->value.list);
       if (tib_errno)
@@ -90,20 +80,10 @@ tib_copy (const TIB *t)
       return temp;
 
     case TIB_TYPE_MATRIX:
-      temp = tib_empty ();
+      temp = tib_new_matrix (NULL, t->value.matrix->size1,
+			     t->value.matrix->size2);
       if (NULL == temp)
 	return NULL;
-
-      temp->type = TIB_TYPE_MATRIX;
-
-      temp->value.matrix = gsl_matrix_complex_alloc (t->value.matrix->size1,
-						     t->value.matrix->size2);
-      if (!temp->value.matrix)
-	{
-	  tib_errno = TIB_EALLOC;
-	  tib_decref (temp);
-	  return NULL;
-	}
 
       tib_errno = gsl_matrix_complex_memcpy (temp->value.matrix,
 					     t->value.matrix);
