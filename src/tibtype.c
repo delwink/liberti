@@ -20,6 +20,7 @@
 #include <math.h>
 #include <gsl/gsl_complex_math.h>
 #include <gsl/gsl_blas.h>
+#include <gsl/gsl_linalg.h>
 
 #include "tib.h"
 #include "tibtype.h"
@@ -624,8 +625,54 @@ less_than_0 (gsl_complex x)
 static TIB *
 inverse (const TIB *t)
 {
-  /* TODO: convert t to the inverse of t */
-  return tib_copy (t);
+  TIB *temp = tib_copy (t);
+  if (NULL == temp)
+    return NULL;
+
+  gsl_complex one = { .dat={1, 0} };
+  gsl_permutation p;
+  int signum;
+  size_t i;
+  switch (t->type)
+    {
+    case TIB_TYPE_COMPLEX:
+      temp->value.number = gsl_complex_div (one, t->value.number);
+      return temp;
+
+    case TIB_TYPE_LIST:
+      for (i = 0; i < t->value.list->size; ++i)
+	{
+	  gsl_complex z = gsl_vector_complex_get (t->value.list, i);
+	  gsl_vector_complex_set (temp->value.list, i,
+				  gsl_complex_div (one, z));
+	}
+
+      return temp;
+
+    case TIB_TYPE_MATRIX:
+      tib_errno = gsl_linalg_complex_LU_decomp (temp->value.matrix, &p,
+						&signum);
+      if (tib_errno)
+	{
+	  tib_decref (temp);
+	  return NULL;
+	}
+
+      tib_errno = gsl_linalg_complex_LU_invert (temp->value.matrix, &p,
+						temp->value.matrix);
+      if (tib_errno)
+	{
+	  tib_decref (temp);
+	  return NULL;
+	}
+
+      return temp;
+
+    default:
+      tib_decref (temp);
+      tib_errno = TIB_ETYPE;
+      return NULL;
+    }
 }
 
 TIB *
