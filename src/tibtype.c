@@ -225,8 +225,8 @@ tib_new_matrix (const gsl_complex **value, size_t w, size_t h)
 
   size_t i, j;
   if (value != NULL)
-    for (i = 0; i < w; ++i)
-      for (j = 0; j < h; ++j)
+    for (i = 0; i < h; ++i)
+      for (j = 0; j < w; ++j)
 	gsl_matrix_complex_set (out->value.matrix, i, j, value[i][j]);
 
   return out;
