@@ -215,7 +215,7 @@ tib_new_matrix (const gsl_complex **value, size_t w, size_t h)
 
   out->type = TIB_TYPE_MATRIX;
   out->refs = 1;
-  out->value.matrix = gsl_matrix_complex_alloc (w, h);
+  out->value.matrix = gsl_matrix_complex_alloc (h, w);
   if (!out->value.matrix)
     {
       tib_errno = TIB_EALLOC;
