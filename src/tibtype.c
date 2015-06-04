@@ -709,43 +709,54 @@ tib_pow (const TIB *t, gsl_complex exp)
       return NULL;
     }
 
-  if (!is_int (exp))
-    {
-      gsl_complex one, root, fl;
-      GSL_SET_COMPLEX (&one, 1, 0);
-      GSL_SET_COMPLEX (&root, fmod (GSL_REAL (exp), 1.0),
-		       fmod (GSL_IMAG (exp), 1.0));
-      GSL_SET_COMPLEX (&fl, floor (GSL_REAL (exp)), floor (GSL_IMAG (exp)));
-
-      root = gsl_complex_div (one, root);
-
-      TIB *raised, *partial;
-      raised = tib_pow (temp, fl);
-      if (NULL == raised)
-	{
-	  tib_decref (temp);
-	  return NULL;
-	}
-
-      partial = tib_root (temp, root);
-      tib_decref (temp);
-      if (NULL == partial)
-	{
-	  tib_decref (raised);
-	  return NULL;
-	}
-
-      temp = tib_mul (raised, partial);
-      tib_decref (raised);
-      tib_decref (partial);
-      return temp;
-    }
-
+  size_t i;
   switch (t->type)
     {
     case TIB_TYPE_COMPLEX:
       temp->value.number = gsl_complex_pow (t->value.number, exp);
       return temp;
+
+    case TIB_TYPE_LIST:
+      for (i = 0; i < t->value.list->size; ++i)
+	{
+	  gsl_complex a = gsl_vector_complex_get (t->value.list, i);
+	  gsl_vector_complex_set (temp->value.list, i,
+				  gsl_complex_pow (a, exp));
+	}
+      return temp;
+
+    case TIB_TYPE_MATRIX:
+      if (!is_int (exp))
+	{
+	  gsl_complex one, root, fl;
+	  GSL_SET_COMPLEX (&one, 1, 0);
+	  GSL_SET_COMPLEX (&root, fmod (GSL_REAL (exp), 1.0),
+			   fmod (GSL_IMAG (exp), 1.0));
+	  GSL_SET_COMPLEX (&fl, floor (GSL_REAL (exp)), floor (GSL_IMAG (exp)));
+
+	  root = gsl_complex_div (one, root);
+
+	  TIB *raised, *partial;
+	  raised = tib_pow (temp, fl);
+	  if (NULL == raised)
+	    {
+	      tib_decref (temp);
+	      return NULL;
+	    }
+
+	  partial = tib_root (temp, root);
+	  tib_decref (temp);
+	  if (NULL == partial)
+	    {
+	      tib_decref (raised);
+	      return NULL;
+	    }
+
+	  temp = tib_mul (raised, partial);
+	  tib_decref (raised);
+	  tib_decref (partial);
+	  return temp;
+	}
 
     default:
       tib_errno = TIB_ETYPE;
