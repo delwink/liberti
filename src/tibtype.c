@@ -675,11 +675,60 @@ inverse (const TIB *t)
     }
 }
 
+static bool
+good_enough_complex (gsl_complex guess, gsl_complex orig, gsl_complex root)
+{
+  gsl_complex test = gsl_complex_pow (guess, root);
+  double cmp = fabs (gsl_complex_abs (test) - gsl_complex_abs (orig));
+
+  return cmp <= 0.00000000001;
+}
+
+static gsl_complex
+complex_average (gsl_complex a, gsl_complex b)
+{
+  gsl_complex two, c = gsl_complex_add (a, b);
+  GSL_SET_COMPLEX (&two, 2, 0);
+
+  return gsl_complex_div (c, two);
+}
+
+static gsl_complex
+improve_complex_root_guess (gsl_complex guess, gsl_complex orig)
+{
+  return complex_average (guess, gsl_complex_div (orig, guess));
+}
+
+static gsl_complex
+complex_root (gsl_complex z, gsl_complex root)
+{
+  gsl_complex guess;
+  GSL_SET_COMPLEX (&guess, 1, 0);
+
+  while (!good_enough_complex (guess, z, root))
+    guess = improve_complex_root_guess (guess, z);
+
+  return guess;
+}
+
 TIB *
 tib_root (const TIB *t, gsl_complex root)
 {
-  /* TODO: Compute arbitrary root of t */
-  return tib_copy (t);
+  TIB *temp = tib_copy (t);
+  if (NULL == temp)
+    return NULL;
+
+  switch (t->type)
+    {
+    case TIB_TYPE_COMPLEX:
+      temp->value.number = complex_root (t->value.number, root);
+      return temp;
+
+    default:
+      tib_errno = TIB_ETYPE;
+      tib_decref (temp);
+      return NULL;
+    }
 }
 
 static bool
