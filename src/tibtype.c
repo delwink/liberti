@@ -576,7 +576,7 @@ tib_mul (const TIB *t1, const TIB *t2)
 
 	  return temp;
 	}
-      else
+      else /* must be complex */
 	{
 	  return tib_mul (t2, t1);
 	}
@@ -605,7 +605,7 @@ tib_mul (const TIB *t1, const TIB *t2)
 
 	  return temp;
 	}
-      else
+      else /* must be complex */
 	{
 	  return tib_mul (t2, t1);
 	}
