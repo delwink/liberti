@@ -726,6 +726,13 @@ tib_pow (const TIB *t, gsl_complex exp)
       return temp;
 
     case TIB_TYPE_MATRIX:
+      if (t->value.matrix->size1 != t->value.matrix->size2)
+	{
+	  tib_errno = TIB_EDIM;
+	  tib_decref (temp);
+	  return NULL;
+	}
+
       if (!is_int (exp))
 	{
 	  gsl_complex one, root, fl;
