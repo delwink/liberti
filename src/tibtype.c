@@ -739,7 +739,8 @@ tib_pow (const TIB *t, gsl_complex exp)
 	  GSL_SET_COMPLEX (&one, 1, 0);
 	  GSL_SET_COMPLEX (&root, fmod (GSL_REAL (exp), 1.0),
 			   fmod (GSL_IMAG (exp), 1.0));
-	  GSL_SET_COMPLEX (&fl, floor (GSL_REAL (exp)), floor (GSL_IMAG (exp)));
+	  GSL_SET_COMPLEX (&fl, floor (GSL_REAL (exp)),
+			   floor (GSL_IMAG (exp)));
 
 	  root = gsl_complex_div (one, root);
 
