@@ -177,7 +177,7 @@ eval (tib_Expression *expr)
 	    tib_errno = tib_Expression_insert (expr, i, '*');
 	  else if (')' == c
 		   && needs_mult_right (tib_Expression_ref (expr, i+1)))
-	    tib_errno = tib_Expression_insert (expr, i+1, '*');
+	    tib_errno = tib_Expression_insert (expr, ++i, '*');
 	  else
 	    tib_errno = 0;
 
