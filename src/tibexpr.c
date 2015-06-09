@@ -18,7 +18,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "tib.h"
+#include "tiberr.h"
 #include "tibexpr.h"
 #include "tibchar.h"
 

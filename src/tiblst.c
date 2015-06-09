@@ -17,7 +17,7 @@
 
 #include <stdlib.h>
 
-#include "tib.h"
+#include "tiberr.h"
 #include "tiblst.h"
 
 struct tib_lst *

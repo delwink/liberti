@@ -18,8 +18,8 @@
 #include <ctype.h>
 #include <string.h>
 
-#include "tib.h"
-#include "evalformula.h"
+#include "tiberr.h"
+#include "tibeval.h"
 #include "tibchar.h"
 #include "tiblst.h"
 

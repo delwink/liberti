@@ -22,7 +22,7 @@
 #include <gsl/gsl_blas.h>
 #include <gsl/gsl_linalg.h>
 
-#include "tib.h"
+#include "tiberr.h"
 #include "tibtype.h"
 
 TIB *
