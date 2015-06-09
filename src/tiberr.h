@@ -20,11 +20,12 @@
 
 enum tib_err
   {
-    TIB_EALLOC  = -1,
-    TIB_EINDEX  = -2,
-    TIB_ESYNTAX = -3,
-    TIB_ETYPE   = -4,
-    TIB_EDIM    = -5
+    TIB_EALLOC   = -1,
+    TIB_EINDEX   = -2,
+    TIB_ESYNTAX  = -3,
+    TIB_ETYPE    = -4,
+    TIB_EDIM     = -5,
+    TIB_ENULLPTR = -6
   };
 
 extern int tib_errno;

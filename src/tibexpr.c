@@ -95,7 +95,10 @@ tib_Expression_as_str (const tib_Expression *expr)
   const char *t;
 
   if (NULL == expr->value)
-    return NULL;
+    {
+      tib_errno = TIB_ENULLPTR;
+      return NULL;
+    }
 
   tib_foreachexpr (expr, i)
     {
@@ -108,7 +111,10 @@ tib_Expression_as_str (const tib_Expression *expr)
 
   s = malloc (len * sizeof (char));
   if (NULL == s)
-    return NULL;
+    {
+      tib_errno = TIB_EALLOC;
+      return NULL;
+    }
 
   tib_foreachexpr (expr, i)
     {

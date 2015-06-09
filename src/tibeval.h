@@ -23,8 +23,8 @@
 #include "tibexpr.h"
 #include "tibtype.h"
 
-int
-eval (tib_Expression *expr, TIB **out);
+TIB *
+tib_eval (tib_Expression *expr);
 
 bool
 tib_eval_surrounded (const tib_Expression *expr);

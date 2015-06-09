@@ -81,35 +81,30 @@ contains_i (const tib_Expression *expr)
   return false;
 }
 
-int
-eval (tib_Expression *expr, TIB **out)
+TIB *
+eval (tib_Expression *expr)
 {
-  int rc;
   size_t i, len = tib_Expression_len (expr);
 
   if (0 == len)
-    {
-      *out = tib_empty ();
-      return 0;
-    }
+    return tib_empty ();
 
   /* check for implicit closing parentheses and close them */
-  rc = tib_eval_close_parens (expr);
-  if (rc)
-    {
-      *out = NULL;
-      return rc;
-    }
+  tib_errno = tib_eval_close_parens (expr);
+  if (tib_errno)
+    return NULL;
 
   /* if the expression is a valid number, resolve it and return */
   if (tib_eval_isnum (expr))
     {
-      rc = 0;
       size_t numop = sign_count (expr);
 
       char *s = tib_Expression_as_str (expr);
       if (NULL == s)
-	return TIB_EALLOC;
+	{
+	  tib_errno = TIB_EALLOC;
+	  return NULL;
+	}
 
       char *i_start = NULL;
       if (contains_i (expr))
@@ -150,11 +145,7 @@ eval (tib_Expression *expr, TIB **out)
 
       free (s);
 
-      *out = tib_new_complex (real, imag);
-      if (NULL == *out)
-	rc = TIB_EALLOC;
-
-      return rc;
+      return tib_new_complex (real, imag);
     }
 
   /* if the expression is a valid string, resolve it and return */
@@ -162,15 +153,12 @@ eval (tib_Expression *expr, TIB **out)
     {
       char *s = tib_Expression_as_str (expr);
       if (NULL == s)
-	return TIB_EALLOC;
+	return NULL;
 
-      *out = tib_new_str (s);
+      TIB *temp = tib_new_str (s);
       free (s);
 
-      if (NULL == *out)
-	return TIB_EALLOC;
-
-      return 0;
+      return temp;
     }
 
   /* add multiplication operators between implicit multiplications */
@@ -186,22 +174,25 @@ eval (tib_Expression *expr, TIB **out)
 	{
 	  if (is_left_paren (c) && i
 	      && needs_mult_left (tib_Expression_ref (expr, i)))
-	    rc = tib_Expression_insert (expr, i, '*');
+	    tib_errno = tib_Expression_insert (expr, i, '*');
 	  else if (')' == c
 		   && needs_mult_right (tib_Expression_ref (expr, i+1)))
-	    rc = tib_Expression_insert (expr, i+1, '*');
+	    tib_errno = tib_Expression_insert (expr, i+1, '*');
 	  else
-	    rc = 0;
+	    tib_errno = 0;
 
-	  if (rc)
-	    return rc;
+	  if (tib_errno)
+	    return NULL;
 	}
     }
 
   /* this is temp storage for internally-resolved portions */
   struct tib_lst *resolved = tib_new_lst ();
   if (NULL == resolved)
-    return TIB_EALLOC;
+    {
+      tib_errno = TIB_EALLOC;
+      return NULL;
+    }
 
   /* resolve divided expressions, and store the values for later */
   /* TODO: test for more than just parenthesized expressions */
@@ -227,35 +218,35 @@ eval (tib_Expression *expr, TIB **out)
 
 	  if (numpar)
 	    {
-	      rc = TIB_ESYNTAX;
+	      tib_errno = TIB_ESYNTAX;
 	      break;
 	    }
 
 	  tib_Expression *sub;
-	  rc = tib_Expression_substring (expr, &sub, i+1, close);
-	  if (rc)
+	  tib_errno = tib_Expression_substring (expr, &sub, i+1, close);
+	  if (tib_errno)
 	    break;
 
-	  TIB *res;
-	  rc = eval (sub, &res);
+	  TIB *res = eval (sub);
 	  tib_Expression_decref (sub);
-	  if (rc)
+	  if (NULL == res)
 	    break;
 
-	  rc = tib_lst_push (resolved, res);
+	  tib_errno = tib_lst_push (resolved, res);
 	  tib_decref (res);
 	}
     }
 
-  if (rc)
+  if (tib_errno)
     {
       tib_free_lst (resolved);
-      return rc;
+      return NULL;
     }
 
   /* TODO: loop through resolved parts and do arithmetic */
 
-  return TIB_ESYNTAX;
+  tib_errno = TIB_ESYNTAX;
+  return NULL;
 }
 
 bool
