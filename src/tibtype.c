@@ -25,8 +25,6 @@
 #include "tib.h"
 #include "tibtype.h"
 
-int tib_errno = 0;
-
 TIB *
 tib_empty ()
 {

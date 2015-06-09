@@ -15,19 +15,4 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef DELWINK_TIB_H
-#define DELWINK_TIB_H
-
-#define TIB_EALLOC  -1
-
-#define TIB_EINDEX  -2
-
-#define TIB_ESYNTAX -3
-
-#define TIB_ETYPE   -4
-
-#define TIB_EDIM    -5
-
-extern int tib_errno;
-
-#endif
+int tib_errno = 0;

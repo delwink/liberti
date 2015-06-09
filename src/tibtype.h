@@ -33,8 +33,6 @@ enum tib_types
     TIB_TYPE_MATRIX
   };
 
-extern int tib_errno;
-
 union variant
 {
   gsl_complex number;

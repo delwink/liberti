@@ -4,8 +4,8 @@ dist_doc_DATA = README.md
 noinst_LIBRARIES = libtib.a libliberti.a
 bin_PROGRAMS = liberti tibencode tibdecode
 
-libtib_a_SOURCES = src/evalformula.c src/tibexpr.c src/tibchar.c src/tiblst.c \
-                   src/tibtype.c
+libtib_a_SOURCES = src/evalformula.c src/tib.c src/tibexpr.c src/tibchar.c \
+                   src/tiblst.c src/tibtype.c
 libtib_a_CFLAGS = -Wall -Wextra -Wunreachable-code -ftrapv -std=c89 \
                   $(gsl_CFLAGS) $(gsl_LIBS)
 
