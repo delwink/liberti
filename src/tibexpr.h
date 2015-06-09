@@ -19,6 +19,7 @@
 #define DELWINK_TIB_TIBEXPR_H
 
 #include <stdlib.h>
+#include <gsl/gsl_complex.h>
 
 #define tib_foreachexpr(E,I) for (I = 0; I < tib_Expression_len (E); ++I)
 
@@ -46,6 +47,9 @@ tib_Expression_clear (tib_Expression *expr);
 
 char *
 tib_Expression_as_str (const tib_Expression *expr);
+
+int
+tib_Expression_as_num (const tib_Expression *expr, gsl_complex *out);
 
 int
 tib_Expression_remove (tib_Expression *expr, size_t i);

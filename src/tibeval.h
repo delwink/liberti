@@ -23,6 +23,15 @@
 #include "tibexpr.h"
 #include "tibtype.h"
 
+bool
+sign_operator (int c);
+
+size_t
+sign_count (const tib_Expression *expr);
+
+bool
+contains_i (const tib_Expression *expr);
+
 TIB *
 tib_eval (tib_Expression *expr);
 

@@ -21,6 +21,7 @@
 #include "tiberr.h"
 #include "tibexpr.h"
 #include "tibchar.h"
+#include "tibeval.h"
 
 tib_Expression *
 tib_new_Expression ()
@@ -134,6 +135,53 @@ tib_Expression_as_str (const tib_Expression *expr)
   s[i+bump] = '\0';
 
   return s;
+}
+
+int
+tib_Expression_as_num (const tib_Expression *expr, gsl_complex *out)
+{
+  if (!tib_eval_isnum (expr))
+    return TIB_ESYNTAX;
+
+  size_t i, numop = sign_count (expr);
+
+  char *s = tib_Expression_as_str (expr);
+  if (NULL == s)
+    return TIB_EALLOC;
+
+  char *i_start = NULL;
+  if (contains_i (expr))
+    for (i = 0; i < strlen(s); ++i)
+      {
+	if ('i' == s[i])
+	  {
+	    i_start = s;
+	    break;
+	  }
+	else if (sign_operator (s[i]) && --numop == 0)
+	  {
+	    i_start = &(s[i]);
+	    break;
+	  }
+      }
+
+  if (s == i_start)
+    GSL_SET_REAL (out, 0);
+  else
+    GSL_SET_REAL (out, strtod (s, NULL));
+
+  if (s == i_start)
+    {
+      if (sign_operator (*i_start) && 'i' == i_start[1])
+	i_start[1] = '1';
+      else if ('i' == *i_start)
+	*i_start = '1';
+    }
+
+  GSL_SET_IMAG (out, strtod (i_start, NULL));
+
+  free (s);
+  return 0;
 }
 
 int

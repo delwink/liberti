@@ -51,13 +51,13 @@ needs_mult_left (int c)
   return (needs_mult_common (c) || ')' == c);
 }
 
-static bool
+bool
 sign_operator (int c)
 {
   return ('+' == c || '-' == c);
 }
 
-static size_t
+size_t
 sign_count (const tib_Expression *expr)
 {
   size_t i, out = 0;
@@ -69,7 +69,7 @@ sign_count (const tib_Expression *expr)
   return out;
 }
 
-static bool
+bool
 contains_i (const tib_Expression *expr)
 {
   size_t i;
@@ -97,55 +97,10 @@ eval (tib_Expression *expr)
   /* if the expression is a valid number, resolve it and return */
   if (tib_eval_isnum (expr))
     {
-      size_t numop = sign_count (expr);
+      gsl_complex z;
+      tib_errno = tib_Expression_as_num (expr, &z);
 
-      char *s = tib_Expression_as_str (expr);
-      if (NULL == s)
-	{
-	  tib_errno = TIB_EALLOC;
-	  return NULL;
-	}
-
-      char *i_start = NULL;
-      if (contains_i (expr))
-	for (i = 0; i < strlen(s); ++i)
-	  {
-	    if ('i' == s[i])
-	      {
-		i_start = s;
-		break;
-	      }
-	    else if (sign_operator (s[i]) && --numop == 0)
-	      {
-		i_start = &(s[i]);
-		break;
-	      }
-	  }
-
-      double real, imag;
-
-      if (s == i_start)
-	real = 0;
-      else
-	real = strtod (s, NULL);
-
-      if (s == i_start)
-	{
-	  if (sign_operator (*i_start) && 'i' == i_start[1])
-	    i_start[1] = '1';
-	  else if ('i' == *i_start)
-	    *i_start = '1';
-
-	  imag = strtod (i_start, NULL);
-	}
-      else
-	{
-	  imag = strtod (i_start, NULL);
-	}
-
-      free (s);
-
-      return tib_new_complex (real, imag);
+      return tib_errno ? NULL : tib_new_complex (GSL_REAL (z), GSL_IMAG (z));
     }
 
   /* if the expression is a valid string, resolve it and return */
@@ -297,7 +252,7 @@ char_count (const tib_Expression *expr, int c)
   return count;
 }
 
-static size_t
+size_t
 i_count (const tib_Expression *expr)
 {
   return char_count (expr, 'i');
@@ -315,7 +270,7 @@ is_number_char (int c)
   return (isdigit (c) || '.' == c || 'i' == c || sign_operator (c));
 }
 
-static size_t
+size_t
 get_char_pos (const tib_Expression *expr, int c, size_t which)
 {
   size_t i, found = 0;
