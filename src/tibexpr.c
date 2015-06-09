@@ -165,20 +165,17 @@ tib_Expression_as_num (const tib_Expression *expr, gsl_complex *out)
 	  }
       }
 
-  if (s == i_start)
-    GSL_SET_REAL (out, 0);
-  else
-    GSL_SET_REAL (out, strtod (s, NULL));
+  GSL_SET_REAL (out, s == i_start ? 0 : strtod (s, NULL));
 
-  if (s == i_start)
+  if (i_start)
     {
-      if (sign_operator (*i_start) && 'i' == i_start[1])
+      if (sign_operator (i_start[0]) && 'i' == i_start[1])
 	i_start[1] = '1';
-      else if ('i' == *i_start)
-	*i_start = '1';
+      else if ('i' == i_start[0])
+	i_start[0] = '1';
     }
 
-  GSL_SET_IMAG (out, strtod (i_start, NULL));
+  GSL_SET_IMAG (out, NULL == i_start ? 0 : strtod (i_start, NULL));
 
   free (s);
   return 0;
