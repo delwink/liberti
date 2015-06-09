@@ -18,15 +18,14 @@
 #ifndef DELWINK_TIB_H
 #define DELWINK_TIB_H
 
-#define TIB_EALLOC  -1
-
-#define TIB_EINDEX  -2
-
-#define TIB_ESYNTAX -3
-
-#define TIB_ETYPE   -4
-
-#define TIB_EDIM    -5
+enum tib_err
+  {
+    TIB_EALLOC  = -1,
+    TIB_EINDEX  = -2,
+    TIB_ESYNTAX = -3,
+    TIB_ETYPE   = -4,
+    TIB_EDIM    = -5
+  };
 
 extern int tib_errno;
 
