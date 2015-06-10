@@ -648,6 +648,11 @@ inverse (const TIB *t)
       return temp;
 
     case TIB_TYPE_MATRIX:
+      /* This needs work. The decomp and invert calls here will not work,
+	 because `p` is not properly initialized for use with the matrix here.
+	 The following call will have undefined behavior, tending to fail more
+	 than succeed, because `p.size` is not equal to
+	 `temp->value.matrix->size1`. */
       tib_errno = gsl_linalg_complex_LU_decomp (temp->value.matrix, &p,
 						&signum);
       if (tib_errno)
