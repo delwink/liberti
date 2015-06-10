@@ -793,13 +793,27 @@ tib_pow (const TIB *t, gsl_complex exp)
 	  return NULL;
 	}
 
+      TIB *tempmat = tib_copy (temp);
+      if (NULL == tempmat)
+	{
+	  tib_decref (temp);
+	  return NULL;
+	}
+
       for (i = 0; i < GSL_REAL (exp); ++i)
 	{
-	  tib_errno = matrix_mul (temp->value.matrix, t->value.matrix,
+	  tib_errno = matrix_mul (temp->value.matrix, tempmat->value.matrix,
 				  t->value.matrix);
 	  if (tib_errno)
 	    break;
+
+	  tib_errno = gsl_matrix_complex_memcpy (tempmat->value.matrix,
+						 temp->value.matrix);
+	  if (tib_errno)
+	    break;
 	}
+
+      tib_decref (tempmat);
 
       if (tib_errno)
 	{
