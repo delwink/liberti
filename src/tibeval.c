@@ -82,12 +82,16 @@ contains_i (const tib_Expression *expr)
 }
 
 TIB *
-eval (tib_Expression *expr)
+eval (const tib_Expression *in)
 {
-  size_t i, len = tib_Expression_len (expr);
+  size_t i, len = tib_Expression_len (in);
 
   if (0 == len)
     return tib_empty ();
+
+  tib_Expression *expr = tib_copy_Expression (in);
+  if (NULL == expr)
+    return NULL;
 
   /* check for implicit closing parentheses and close them */
   tib_errno = tib_eval_close_parens (expr);
@@ -149,6 +153,15 @@ eval (tib_Expression *expr)
       return NULL;
     }
 
+  /* this is to remember the operations to be executed */
+  tib_Expression *calc = tib_new_Expression ();
+  if (NULL == calc)
+    {
+      tib_free_lst (resolved);
+      tib_errno = TIB_EALLOC;
+      return NULL;
+    }
+
   /* resolve divided expressions, and store the values for later */
   /* TODO: test for more than just parenthesized expressions */
   for (i = 0; i < len; ++i)
@@ -195,6 +208,7 @@ eval (tib_Expression *expr)
   if (tib_errno)
     {
       tib_free_lst (resolved);
+      tib_Expression_decref (calc);
       return NULL;
     }
 

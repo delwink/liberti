@@ -33,7 +33,7 @@ bool
 contains_i (const tib_Expression *expr);
 
 TIB *
-tib_eval (tib_Expression *expr);
+tib_eval (const tib_Expression *expr);
 
 bool
 tib_eval_surrounded (const tib_Expression *expr);

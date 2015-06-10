@@ -28,11 +28,38 @@ tib_new_Expression ()
 {
   tib_Expression *out = malloc (sizeof (tib_Expression));
   if (NULL == out)
-    return NULL;
+    {
+      tib_errno = TIB_EALLOC;
+      return NULL;
+    }
 
   out->len = 0;
   out->refs = 1;
   out->value = NULL;
+
+  return out;
+}
+
+tib_Expression *
+tib_copy_Expression (const tib_Expression *expr)
+{
+  tib_Expression *out = tib_new_Expression ();
+  if (NULL == out)
+    return NULL;
+
+  size_t i;
+  tib_foreachexpr (expr, i)
+    {
+      tib_errno = tib_Expression_push (out, tib_Expression_ref (expr, i));
+      if (tib_errno)
+	break;
+    }
+
+  if (tib_errno)
+    {
+      tib_Expression_decref (out);
+      return NULL;
+    }
 
   return out;
 }

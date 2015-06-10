@@ -33,6 +33,9 @@ typedef struct
 tib_Expression *
 tib_new_Expression (void);
 
+tib_Expression *
+tib_copy_Expression (const tib_Expression *expr);
+
 void
 tib_Expression_incref (tib_Expression *expr);
 
