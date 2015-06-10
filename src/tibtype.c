@@ -776,35 +776,9 @@ tib_pow (const TIB *t, gsl_complex exp)
 
       if (!is_int (exp))
 	{
-	  gsl_complex one, root, fl;
-	  GSL_SET_COMPLEX (&one, 1, 0);
-	  GSL_SET_COMPLEX (&root, fmod (GSL_REAL (exp), 1.0),
-			   fmod (GSL_IMAG (exp), 1.0));
-	  GSL_SET_COMPLEX (&fl, floor (GSL_REAL (exp)),
-			   floor (GSL_IMAG (exp)));
-
-	  root = gsl_complex_div (one, root);
-
-	  TIB *raised, *partial;
-	  raised = tib_pow (temp, fl);
-	  if (NULL == raised)
-	    {
-	      tib_decref (temp);
-	      return NULL;
-	    }
-
-	  partial = tib_root (temp, root);
+	  tib_errno = TIB_EDOMAIN;
 	  tib_decref (temp);
-	  if (NULL == partial)
-	    {
-	      tib_decref (raised);
-	      return NULL;
-	    }
-
-	  temp = tib_mul (raised, partial);
-	  tib_decref (raised);
-	  tib_decref (partial);
-	  return temp;
+	  return NULL;
 	}
 
     default:
