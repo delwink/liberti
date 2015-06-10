@@ -683,18 +683,12 @@ good_enough_complex (gsl_complex guess, gsl_complex orig, gsl_complex root)
 }
 
 static gsl_complex
-complex_average (gsl_complex a, gsl_complex b)
+improve_complex_root_guess (gsl_complex guess, gsl_complex orig,
+			    gsl_complex root)
 {
-  gsl_complex two, c = gsl_complex_add (a, b);
-  GSL_SET_COMPLEX (&two, 2, 0);
-
-  return gsl_complex_div (c, two);
-}
-
-static gsl_complex
-improve_complex_root_guess (gsl_complex guess, gsl_complex orig)
-{
-  return complex_average (guess, gsl_complex_div (orig, guess));
+  gsl_complex numer = gsl_complex_sub (gsl_complex_pow (guess, root), orig);
+  gsl_complex denom = gsl_complex_mul (guess, root);
+  return gsl_complex_sub (guess, gsl_complex_div (numer, denom));
 }
 
 static gsl_complex
@@ -704,7 +698,7 @@ complex_root (gsl_complex z, gsl_complex root)
   GSL_SET_COMPLEX (&guess, 1, 0);
 
   while (!good_enough_complex (guess, z, root))
-    guess = improve_complex_root_guess (guess, z);
+    guess = improve_complex_root_guess (guess, z, root);
 
   return guess;
 }
