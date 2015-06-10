@@ -96,7 +96,10 @@ eval (const tib_Expression *in)
   /* check for implicit closing parentheses and close them */
   tib_errno = tib_eval_close_parens (expr);
   if (tib_errno)
-    return NULL;
+    {
+      tib_Expression_decref (expr);
+      return NULL;
+    }
 
   /* if the expression is a valid number, resolve it and return */
   if (tib_eval_isnum (expr))
@@ -104,6 +107,7 @@ eval (const tib_Expression *in)
       gsl_complex z;
       tib_errno = tib_Expression_as_num (expr, &z);
 
+      tib_Expression_decref (expr);
       return tib_errno ? NULL : tib_new_complex (GSL_REAL (z), GSL_IMAG (z));
     }
 
@@ -111,6 +115,7 @@ eval (const tib_Expression *in)
   if (tib_eval_isstr (expr))
     {
       char *s = tib_Expression_as_str (expr);
+      tib_Expression_decref (expr);
       if (NULL == s)
 	return NULL;
 
@@ -149,6 +154,7 @@ eval (const tib_Expression *in)
   struct tib_lst *resolved = tib_new_lst ();
   if (NULL == resolved)
     {
+      tib_Expression_decref (expr);
       tib_errno = TIB_EALLOC;
       return NULL;
     }
@@ -157,6 +163,7 @@ eval (const tib_Expression *in)
   tib_Expression *calc = tib_new_Expression ();
   if (NULL == calc)
     {
+      tib_Expression_decref (expr);
       tib_free_lst (resolved);
       tib_errno = TIB_EALLOC;
       return NULL;
@@ -207,6 +214,7 @@ eval (const tib_Expression *in)
 
   if (tib_errno)
     {
+      tib_Expression_decref (expr);
       tib_free_lst (resolved);
       tib_Expression_decref (calc);
       return NULL;
@@ -214,6 +222,7 @@ eval (const tib_Expression *in)
 
   /* TODO: loop through resolved parts and do arithmetic */
 
+  tib_Expression_decref (expr);
   tib_errno = TIB_ESYNTAX;
   return NULL;
 }
