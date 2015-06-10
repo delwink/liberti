@@ -781,6 +781,29 @@ tib_pow (const TIB *t, gsl_complex exp)
 	  return NULL;
 	}
 
+      if (GSL_IMAG (exp))
+	{
+	  tib_errno = TIB_ETYPE;
+	  tib_decref (temp);
+	  return NULL;
+	}
+
+      for (i = 0; i < GSL_REAL (exp); ++i)
+	{
+	  tib_errno = matrix_mul (temp->value.matrix, t->value.matrix,
+				  t->value.matrix);
+	  if (tib_errno)
+	    break;
+	}
+
+      if (tib_errno)
+	{
+	  tib_decref (temp);
+	  return NULL;
+	}
+
+      return temp;
+
     default:
       tib_errno = TIB_ETYPE;
       return NULL;
