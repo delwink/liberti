@@ -126,7 +126,7 @@ eval (const tib_Expression *in)
     }
 
   /* add multiplication operators between implicit multiplications */
-  bool add = true;
+  bool add = tib_Expression_ref (expr, 0) != '"';
   for (i = 1; i < len-1; ++i)
     {
       int c = tib_Expression_ref (expr, i);
