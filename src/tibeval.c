@@ -81,6 +81,53 @@ contains_i (const tib_Expression *expr)
   return false;
 }
 
+static TIB *
+single_eval (const tib_Expression *in)
+{
+  size_t len = tib_Expression_len (in);
+
+  if (0 == len)
+    return tib_empty ();
+
+  tib_Expression *expr = tib_copy_Expression (in);
+  if (NULL == expr)
+    return NULL;
+
+  while (tib_eval_surrounded (expr))
+    {
+      tib_Expression *temp = tib_Expression_substring (expr, 1, len-1);
+      tib_Expression_decref (expr);
+      if (NULL == temp)
+	return NULL;
+
+      expr = temp;
+    }
+
+  if (tib_eval_isnum (expr))
+    {
+      gsl_complex z;
+      tib_errno = tib_Expression_as_num (expr, &z);
+
+      tib_Expression_decref (expr);
+      return tib_errno ? NULL : tib_new_complex (GSL_REAL (z), GSL_IMAG (z));
+    }
+
+  if (tib_eval_isstr (expr))
+    {
+      char *s = tib_Expression_as_str (expr);
+      tib_Expression_decref (expr);
+      if (NULL == s)
+	return NULL;
+
+      TIB *temp = tib_new_str (s);
+      free (s);
+
+      return temp;
+    }
+
+  return NULL;
+}
+
 TIB *
 eval (const tib_Expression *in)
 {
@@ -99,30 +146,6 @@ eval (const tib_Expression *in)
     {
       tib_Expression_decref (expr);
       return NULL;
-    }
-
-  /* if the expression is a valid number, resolve it and return */
-  if (tib_eval_isnum (expr))
-    {
-      gsl_complex z;
-      tib_errno = tib_Expression_as_num (expr, &z);
-
-      tib_Expression_decref (expr);
-      return tib_errno ? NULL : tib_new_complex (GSL_REAL (z), GSL_IMAG (z));
-    }
-
-  /* if the expression is a valid string, resolve it and return */
-  if (tib_eval_isstr (expr))
-    {
-      char *s = tib_Expression_as_str (expr);
-      tib_Expression_decref (expr);
-      if (NULL == s)
-	return NULL;
-
-      TIB *temp = tib_new_str (s);
-      free (s);
-
-      return temp;
     }
 
   /* add multiplication operators between implicit multiplications */
@@ -197,9 +220,8 @@ eval (const tib_Expression *in)
 	      break;
 	    }
 
-	  tib_Expression *sub;
-	  tib_errno = tib_Expression_substring (expr, &sub, i+1, close);
-	  if (tib_errno)
+	  tib_Expression *sub = tib_Expression_substring (expr, i+1, close);
+	  if (NULL == sub)
 	    break;
 
 	  TIB *res = eval (sub);
@@ -429,15 +451,14 @@ tib_eval_islist (const tib_Expression *expr)
 static bool
 sub_isnum (const tib_Expression *expr, size_t beg, size_t end)
 {
-  int rc;
   tib_Expression *temp;
   bool out;
 
   if (end > beg)
     return false;
 
-  rc = tib_Expression_substring (expr, &temp, beg, end);
-  if (rc)
+  temp = tib_Expression_substring (expr, beg, end);
+  if (NULL == temp)
     return false;
 
   out = tib_eval_isnum (temp);
@@ -541,7 +562,6 @@ int
 tib_eval_parse_commas (const tib_Expression *expr, tib_Expression ***out,
 		       size_t *out_len)
 {
-  int rc = 0;
   size_t i, j, last = 0, elements = 1, len = tib_Expression_len (expr);
 
   if (0 == len)
@@ -565,19 +585,21 @@ tib_eval_parse_commas (const tib_Expression *expr, tib_Expression ***out,
 
   for (i = 0; i <= elements; ++i)
     {
+      tib_errno = 0;
+
       for (j = last; j < len; ++j)
 	if (',' == tib_Expression_ref (expr, j) || j == len-1)
 	  {
-	    rc = tib_Expression_substring (expr, &(*out[i]), last, j-1);
+	    *out[i] = tib_Expression_substring (expr, last, j-1);
 	    last = j + 1;
 	    break;
 	  }
 
-      if (rc)
+      if (NULL == *out[i])
 	break;
     }
 
-  if (rc)
+  if (tib_errno)
     {
       for (j = 0; j < i; ++j)
 	tib_Expression_decref (*out[j]);
@@ -587,5 +609,5 @@ tib_eval_parse_commas (const tib_Expression *expr, tib_Expression ***out,
       *out = NULL;
     }
 
-  return rc;
+  return tib_errno;
 }

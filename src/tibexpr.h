@@ -63,12 +63,11 @@ tib_Expression_insert (tib_Expression *expr, size_t i, int c);
 int
 tib_Expression_push (tib_Expression *expr, int c);
 
-int
-tib_Expression_substring (const tib_Expression *in, tib_Expression **out,
-			  size_t beg, size_t end);
+tib_Expression *
+tib_Expression_substring (const tib_Expression *in, size_t beg, size_t end);
 
 int
-tib_Expression_cat (tib_Expression *dest, tib_Expression *src);
+tib_Expression_cat (tib_Expression *dest, const tib_Expression *src);
 
 int
 tib_Expression_ref (const tib_Expression *expr, size_t i);

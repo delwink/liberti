@@ -263,46 +263,37 @@ tib_Expression_push (tib_Expression *expr, int c)
   return tib_Expression_insert (expr, tib_Expression_len (expr), c);
 }
 
-int
-tib_Expression_substring (const tib_Expression *in, tib_Expression **out,
-			  size_t beg, size_t end)
+tib_Expression *
+tib_Expression_substring (const tib_Expression *in, size_t beg, size_t end)
 {
   if (beg > in->len || end > in->len || beg > end)
-    return TIB_EINDEX;
-
-  char *instr = tib_Expression_as_str (in);
-  if (NULL == instr)
-    return TIB_EALLOC;
-
-  char *outstr = malloc ((end - (beg-1)) * sizeof (char));
-  if (NULL == outstr)
     {
-      free (instr);
-      return TIB_EALLOC;
+      tib_errno = TIB_EINDEX;
+      return NULL;
     }
+
+  tib_Expression *out = tib_new_Expression ();
+  if (NULL == out)
+    return NULL;
 
   for (; beg <= end; ++beg)
-    outstr[beg] = instr[beg];
-  free (instr);
-
-  *out = tib_new_Expression ();
-  if (NULL == *out)
     {
-      free (outstr);
-      return TIB_EALLOC;
+      tib_errno = tib_Expression_push (out, tib_Expression_ref (in, beg));
+      if (tib_errno)
+	break;
     }
 
-  int rc = tib_Expression_set (*out, outstr);
-  free (outstr);
+  if (tib_errno)
+    {
+      tib_Expression_decref (out);
+      return NULL;
+    }
 
-  if (rc)
-    tib_Expression_decref (*out);
-
-  return rc;
+  return out;
 }
 
 int
-tib_Expression_cat (tib_Expression *dest, tib_Expression *src)
+tib_Expression_cat (tib_Expression *dest, const tib_Expression *src)
 {
   char *orig = tib_Expression_as_str (dest);
   if (NULL == orig)
