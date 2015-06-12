@@ -134,6 +134,8 @@ single_eval (const tib_Expression *in)
       return temp;
     }
 
+  /* TODO: resolve TI-BASIC function calls such as sin() */
+
   tib_Expression_decref (expr);
   tib_errno = TIB_ESYNTAX;
   return NULL;
