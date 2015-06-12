@@ -57,6 +57,12 @@ sign_operator (int c)
   return ('+' == c || '-' == c);
 }
 
+static bool
+is_arith_operator (int c)
+{
+  return sign_operator (c) || '*' == c || '/' == c;
+}
+
 size_t
 sign_count (const tib_Expression *expr)
 {
@@ -84,6 +90,9 @@ contains_i (const tib_Expression *expr)
 static TIB *
 single_eval (const tib_Expression *in)
 {
+  if (NULL == in)
+    return NULL;
+
   size_t len = tib_Expression_len (in);
 
   if (0 == len)
@@ -125,6 +134,8 @@ single_eval (const tib_Expression *in)
       return temp;
     }
 
+  tib_Expression_decref (expr);
+  tib_errno = TIB_ESYNTAX;
   return NULL;
 }
 
@@ -193,44 +204,27 @@ eval (const tib_Expression *in)
     }
 
   /* resolve divided expressions, and store the values for later */
-  /* TODO: test for more than just parenthesized expressions */
+  size_t beg = 0;
   for (i = 0; i < len; ++i)
     {
       int c = tib_Expression_ref (expr, i);
 
-      if ('(' == c)
+      if (is_arith_operator (c))
 	{
-	  expr->value[i] = TIB_FORMAT_CHAR;
-
-	  size_t close, numpar = 1;
-	  for (close = i+1; close < len; ++close)
-	    {
-	      int temp = tib_Expression_ref (expr, close);
-
-	      if ('(' == temp)
-		++numpar;
-
-	      if (')' == temp && --numpar == 0)
-		break;
-	    }
-
-	  if (numpar)
-	    {
-	      tib_errno = TIB_ESYNTAX;
-	      break;
-	    }
-
-	  tib_Expression *sub = tib_Expression_substring (expr, i+1, close);
-	  if (NULL == sub)
+	  tib_errno = tib_Expression_push (calc, c);
+	  if (tib_errno)
 	    break;
 
-	  TIB *res = eval (sub);
-	  tib_Expression_decref (sub);
-	  if (NULL == res)
+	  TIB *temp = single_eval (tib_Expression_substring (expr, beg, i-1));
+	  if (NULL == temp)
 	    break;
 
-	  tib_errno = tib_lst_push (resolved, res);
-	  tib_decref (res);
+	  tib_errno = tib_lst_push (resolved, temp);
+	  tib_decref (temp);
+	  if (tib_errno)
+	    break;
+
+	  beg = i+1;
 	}
     }
 
