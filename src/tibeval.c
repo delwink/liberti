@@ -203,7 +203,7 @@ eval (const tib_Expression *in)
       return NULL;
     }
 
-  /* resolve divided expressions, and store the values for later */
+  /* resolve operand expressions, and store the values for later */
   size_t beg = 0;
   for (i = 0; i < len; ++i)
     {
@@ -228,9 +228,10 @@ eval (const tib_Expression *in)
 	}
     }
 
+  tib_Expression_decref (expr);
+
   if (tib_errno)
     {
-      tib_Expression_decref (expr);
       tib_free_lst (resolved);
       tib_Expression_decref (calc);
       return NULL;
@@ -238,7 +239,6 @@ eval (const tib_Expression *in)
 
   /* TODO: loop through resolved parts and do arithmetic */
 
-  tib_Expression_decref (expr);
   tib_errno = TIB_ESYNTAX;
   return NULL;
 }
