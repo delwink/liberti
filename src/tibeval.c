@@ -239,7 +239,30 @@ eval (const tib_Expression *in)
       return NULL;
     }
 
-  /* TODO: loop through resolved parts and do arithmetic */
+  for (i = 0; i < tib_Expression_len (calc); ++i)
+    {
+      int operator = tib_Expression_ref (calc, i);
+      TIB *temp;
+
+      if ('*' == operator)
+	temp = tib_mul (tib_lst_ref (resolved, i),
+			tib_lst_ref (resolved, i+1));
+      else if ('/' == operator)
+	temp = tib_div (tib_lst_ref (resolved, i),
+			tib_lst_ref (resolved, i+1));
+      else
+	continue;
+
+      if (NULL == temp)
+	break;
+
+      tib_lst_remove (resolved, i);
+      tib_lst_remove (resolved, i+1);
+
+      tib_errno = tib_lst_insert (resolved, temp, i);
+      if (tib_errno)
+	break;
+    }
 
   tib_free_lst (resolved);
   tib_Expression_decref (calc);
