@@ -239,6 +239,9 @@ eval (const tib_Expression *in)
 
   /* TODO: loop through resolved parts and do arithmetic */
 
+  tib_free_lst (resolved);
+  tib_Expression_decref (calc);
+
   tib_errno = TIB_ESYNTAX;
   return NULL;
 }
