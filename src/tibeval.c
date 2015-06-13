@@ -23,8 +23,6 @@
 #include "tibchar.h"
 #include "tiblst.h"
 
-#define TIB_FORMAT_CHAR 999
-
 static bool
 is_left_paren (int c)
 {
