@@ -232,6 +232,9 @@ tib_eval (const tib_Expression *in)
 
   tib_Expression_decref (expr);
 
+  if (!tib_errno && tib_lst_len (resolved) != tib_Expression_len (calc) + 1)
+    tib_errno = TIB_ESYNTAX;
+
   if (tib_errno)
     {
       tib_free_lst (resolved);
