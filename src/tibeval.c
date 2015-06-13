@@ -102,14 +102,16 @@ single_eval (const tib_Expression *in)
   if (NULL == expr)
     return NULL;
 
-  while (tib_eval_surrounded (expr))
+  if (tib_eval_surrounded (expr))
     {
       tib_Expression *temp = tib_Expression_substring (expr, 1, len-1);
       tib_Expression_decref (expr);
       if (NULL == temp)
 	return NULL;
 
-      expr = temp;
+      TIB *out = tib_eval (temp);
+      tib_Expression_decref (temp);
+      return out;
     }
 
   if (tib_eval_isnum (expr))
@@ -142,7 +144,7 @@ single_eval (const tib_Expression *in)
 }
 
 TIB *
-eval (const tib_Expression *in)
+tib_eval (const tib_Expression *in)
 {
   size_t i, len = tib_Expression_len (in);
 
