@@ -59,7 +59,7 @@ sign_operator (int c)
 static bool
 is_arith_operator (int c)
 {
-  return sign_operator (c) || '*' == c || '/' == c;
+  return sign_operator (c) || '*' == c || '/' == c || '^' == c;
 }
 
 size_t
@@ -252,6 +252,46 @@ tib_eval (const tib_Expression *in)
 
   if (!tib_errno && tib_lst_len (resolved) != tib_Expression_len (calc) + 1)
     tib_errno = TIB_ESYNTAX;
+
+  if (tib_errno)
+    {
+      tib_free_lst (resolved);
+      tib_Expression_decref (calc);
+      return NULL;
+    }
+
+  for (i = 0; i < tib_Expression_len (calc); ++i)
+    {
+      int operator = tib_Expression_ref (calc, i);
+      TIB *temp;
+
+      if ('^' == operator)
+	{
+	  TIB *power = tib_lst_ref (resolved, i+1);
+	  if (TIB_TYPE_COMPLEX != tib_type (power))
+	    {
+	      tib_errno = TIB_ETYPE;
+	      break;
+	    }
+
+	  temp = tib_pow (tib_lst_ref (resolved, i),
+			  tib_complex_value (power));
+	}
+      else
+	{
+	  continue;
+	}
+
+      if (NULL == temp)
+	break;
+
+      tib_lst_remove (resolved, i);
+      tib_lst_remove (resolved, i+1);
+
+      tib_errno = tib_lst_insert (resolved, temp, i);
+      if (tib_errno)
+	break;
+    }
 
   if (tib_errno)
     {
