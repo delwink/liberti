@@ -17,6 +17,7 @@
 
 #include <ctype.h>
 #include <string.h>
+#include <stdint.h>
 
 #include "tiberr.h"
 #include "tibeval.h"
@@ -207,11 +208,21 @@ tib_eval (const tib_Expression *in)
 
   /* resolve operand expressions, and store the values for later */
   size_t beg = 0;
+  int64_t numpar = 0;
   for (i = 0; i < len; ++i)
     {
       int c = tib_Expression_ref (expr, i);
 
-      if (is_arith_operator (c))
+      if (is_left_paren (c))
+	++numpar;
+
+      if (')' == c && --numpar < 0)
+	{
+	  tib_errno = TIB_ESYNTAX;
+	  break;
+	}
+
+      if (!numpar && is_arith_operator (c))
 	{
 	  tib_errno = tib_Expression_push (calc, c);
 	  if (tib_errno)
@@ -228,6 +239,13 @@ tib_eval (const tib_Expression *in)
 
 	  beg = i+1;
 	}
+    }
+
+  if (!tib_errno && tib_lst_len (resolved) == 0)
+    {
+      TIB *temp = single_eval (expr);
+      tib_errno = tib_lst_push (resolved, temp);
+      tib_decref (temp);
     }
 
   tib_Expression_decref (expr);
