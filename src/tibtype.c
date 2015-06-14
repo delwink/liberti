@@ -95,6 +95,7 @@ tib_copy (const TIB *t)
       return temp;
 
     default:
+      tib_errno = TIB_ETYPE;
       return NULL;
     }
 }

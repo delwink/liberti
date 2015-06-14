@@ -357,11 +357,12 @@ tib_eval (const tib_Expression *in)
 	break;
     }
 
+  TIB *out = tib_copy (tib_lst_ref (resolved, 0));
+
   tib_free_lst (resolved);
   tib_Expression_decref (calc);
 
-  tib_errno = TIB_ESYNTAX;
-  return NULL;
+  return out;
 }
 
 bool
