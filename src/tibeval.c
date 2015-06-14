@@ -57,7 +57,7 @@ sign_operator (int c)
 }
 
 static bool
-is_arith_operator (int c)
+is_math_operator (int c)
 {
   return sign_operator (c) || '*' == c || '/' == c || '^' == c;
 }
@@ -222,7 +222,7 @@ tib_eval (const tib_Expression *in)
 	  break;
 	}
 
-      if (!numpar && is_arith_operator (c))
+      if (!numpar && is_math_operator (c))
 	{
 	  tib_errno = tib_Expression_push (calc, c);
 	  if (tib_errno)
