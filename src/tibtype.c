@@ -679,34 +679,13 @@ inverse (const TIB *t)
     }
 }
 
-static bool
-good_enough_complex (gsl_complex guess, gsl_complex orig, gsl_complex root)
-{
-  gsl_complex test = gsl_complex_pow (guess, root);
-  double cmp = fabs (gsl_complex_abs (test) - gsl_complex_abs (orig));
-
-  return cmp <= 0.00000000001;
-}
-
-static gsl_complex
-improve_complex_root_guess (gsl_complex guess, gsl_complex orig,
-			    gsl_complex root)
-{
-  gsl_complex numer = gsl_complex_sub (gsl_complex_pow (guess, root), orig);
-  gsl_complex denom = gsl_complex_mul (guess, root);
-  return gsl_complex_sub (guess, gsl_complex_div (numer, denom));
-}
-
 static gsl_complex
 complex_root (gsl_complex z, gsl_complex root)
 {
-  gsl_complex guess;
-  GSL_SET_COMPLEX (&guess, 1, 0);
+  gsl_complex one;
+  GSL_SET_COMPLEX (&one, 1, 0);
 
-  while (!good_enough_complex (guess, z, root))
-    guess = improve_complex_root_guess (guess, z, root);
-
-  return guess;
+  return gsl_complex_pow (z, gsl_complex_div (one, root));
 }
 
 TIB *
