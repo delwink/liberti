@@ -284,7 +284,7 @@ tib_eval (const tib_Expression *in)
       return NULL;
     }
 
-  for (i = 0; i < tib_Expression_len (calc); ++i)
+  tib_foreachexpr (calc, i)
     {
       int operator = tib_Expression_ref (calc, i);
       TIB *temp;
@@ -325,7 +325,7 @@ tib_eval (const tib_Expression *in)
       return NULL;
     }
 
-  for (i = 0; i < tib_Expression_len (calc); ++i)
+  tib_foreachexpr (calc, i)
     {
       do_arith (resolved, i, tib_Expression_ref (calc, i), '*', tib_mul, '/',
 		tib_div);
@@ -340,7 +340,7 @@ tib_eval (const tib_Expression *in)
       return NULL;
     }
 
-  for (i = 0; i < tib_Expression_len (calc); ++i)
+  tib_foreachexpr (calc, i)
     {
       do_arith (resolved, i, tib_Expression_ref (calc, i), '+', tib_add, '-',
 		tib_sub);
