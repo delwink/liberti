@@ -142,6 +142,29 @@ single_eval (const tib_Expression *in)
   return NULL;
 }
 
+static void
+do_arith (struct tib_lst *resolved, size_t i, int operator, char arith1,
+	  TIB *(*func1) (const TIB *t1, const TIB *t2), char arith2,
+	  TIB *(*func2) (const TIB *t1, const TIB *t2))
+{
+  TIB *temp;
+
+  if (arith1 == operator)
+    temp = (*func1) (tib_lst_ref (resolved, i), tib_lst_ref (resolved, i+1));
+  else if (arith2 == operator)
+    temp = (*func2) (tib_lst_ref (resolved, i), tib_lst_ref (resolved, i+1));
+  else
+    return;
+
+  if (NULL == temp)
+    return;
+
+  tib_lst_remove (resolved, i);
+  tib_lst_remove (resolved, i+1);
+
+  tib_errno = tib_lst_insert (resolved, temp, i);
+}
+
 TIB *
 tib_eval (const tib_Expression *in)
 {
@@ -302,25 +325,8 @@ tib_eval (const tib_Expression *in)
 
   for (i = 0; i < tib_Expression_len (calc); ++i)
     {
-      int operator = tib_Expression_ref (calc, i);
-      TIB *temp;
-
-      if ('*' == operator)
-	temp = tib_mul (tib_lst_ref (resolved, i),
-			tib_lst_ref (resolved, i+1));
-      else if ('/' == operator)
-	temp = tib_div (tib_lst_ref (resolved, i),
-			tib_lst_ref (resolved, i+1));
-      else
-	continue;
-
-      if (NULL == temp)
-	break;
-
-      tib_lst_remove (resolved, i);
-      tib_lst_remove (resolved, i+1);
-
-      tib_errno = tib_lst_insert (resolved, temp, i);
+      do_arith (resolved, i, tib_Expression_ref (calc, i), '*', tib_mul, '/',
+		tib_div);
       if (tib_errno)
 	break;
     }
@@ -334,25 +340,8 @@ tib_eval (const tib_Expression *in)
 
   for (i = 0; i < tib_Expression_len (calc); ++i)
     {
-      int operator = tib_Expression_ref (calc, i);
-      TIB *temp;
-
-      if ('+' == operator)
-	temp = tib_add (tib_lst_ref (resolved, i),
-			tib_lst_ref (resolved, i+1));
-      else if ('-' == operator)
-	temp = tib_sub (tib_lst_ref (resolved, i),
-			tib_lst_ref (resolved, i+1));
-      else
-	continue;
-
-      if (NULL == temp)
-	break;
-
-      tib_lst_remove (resolved, i);
-      tib_lst_remove (resolved, i+1);
-
-      tib_errno = tib_lst_insert (resolved, temp, i);
+      do_arith (resolved, i, tib_Expression_ref (calc, i), '+', tib_add, '-',
+		tib_sub);
       if (tib_errno)
 	break;
     }
