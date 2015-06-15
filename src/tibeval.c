@@ -163,6 +163,7 @@ do_arith (struct tib_lst *resolved, size_t i, int operator, char arith1,
   tib_lst_remove (resolved, i+1);
 
   tib_errno = tib_lst_insert (resolved, temp, i);
+  tib_decref (temp);
 }
 
 TIB *
@@ -312,6 +313,7 @@ tib_eval (const tib_Expression *in)
       tib_lst_remove (resolved, i+1);
 
       tib_errno = tib_lst_insert (resolved, temp, i);
+      tib_decref (temp);
       if (tib_errno)
 	break;
     }
