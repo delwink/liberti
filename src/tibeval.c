@@ -346,10 +346,11 @@ tib_eval (const tib_Expression *in)
 	break;
     }
 
+  tib_Expression_decref (calc);
+
   TIB *out = tib_copy (tib_lst_ref (resolved, 0));
 
   tib_free_lst (resolved);
-  tib_Expression_decref (calc);
 
   return out;
 }
