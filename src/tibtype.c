@@ -621,6 +621,8 @@ less_than_0 (gsl_complex x)
   return gsl_complex_abs (x) < 0;
 }
 
+#define COMPLEX_ONE ((gsl_complex) { .dat = { 1, 0 } })
+
 static TIB *
 inverse (const TIB *t)
 {
@@ -628,14 +630,13 @@ inverse (const TIB *t)
   if (NULL == temp)
     return NULL;
 
-  gsl_complex one = { .dat={1, 0} };
   gsl_permutation p;
   int signum;
   size_t i;
   switch (t->type)
     {
     case TIB_TYPE_COMPLEX:
-      temp->value.number = gsl_complex_div (one, t->value.number);
+      temp->value.number = gsl_complex_div (COMPLEX_ONE, t->value.number);
       return temp;
 
     case TIB_TYPE_LIST:
@@ -643,7 +644,7 @@ inverse (const TIB *t)
 	{
 	  gsl_complex z = gsl_vector_complex_get (t->value.list, i);
 	  gsl_vector_complex_set (temp->value.list, i,
-				  gsl_complex_div (one, z));
+				  gsl_complex_div (COMPLEX_ONE, z));
 	}
 
       return temp;
@@ -682,10 +683,7 @@ inverse (const TIB *t)
 static gsl_complex
 complex_root (gsl_complex z, gsl_complex root)
 {
-  gsl_complex one;
-  GSL_SET_COMPLEX (&one, 1, 0);
-
-  return gsl_complex_pow (z, gsl_complex_div (one, root));
+  return gsl_complex_pow (z, gsl_complex_div (COMPLEX_ONE, root));
 }
 
 TIB *
