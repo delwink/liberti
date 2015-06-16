@@ -691,7 +691,16 @@ complex_root (gsl_complex z, gsl_complex root)
 TIB *
 tib_root (const TIB *t, gsl_complex root)
 {
-  TIB *temp = tib_copy (t);
+  TIB *temp;
+  size_t i;
+
+  if (TIB_TYPE_COMPLEX != t->type || TIB_TYPE_LIST != t->type)
+    {
+      tib_errno = TIB_ETYPE;
+      return NULL;
+    }
+
+  temp = tib_copy (t);
   if (NULL == temp)
     return NULL;
 
@@ -701,10 +710,13 @@ tib_root (const TIB *t, gsl_complex root)
       temp->value.number = complex_root (t->value.number, root);
       return temp;
 
-    default:
-      tib_errno = TIB_ETYPE;
-      tib_decref (temp);
-      return NULL;
+    case TIB_TYPE_LIST:
+      for (i = 0; i < t->value.list->size; ++i)
+	{
+	  gsl_complex a = gsl_vector_complex_get (t->value.list, i);
+	  gsl_vector_complex_set (temp->value.list, i, complex_root (a, root));
+	}
+      return temp;
     }
 }
 
