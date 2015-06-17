@@ -26,7 +26,8 @@ enum tib_err
     TIB_ETYPE    = -4,
     TIB_EDIM     = -5,
     TIB_ENULLPTR = -6,
-    TIB_EDOMAIN  = -7
+    TIB_EDOMAIN  = -7,
+    TIB_EBADCHAR = -8
   };
 
 extern int tib_errno;

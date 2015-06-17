@@ -5,7 +5,7 @@ noinst_LIBRARIES = libtib.a libliberti.a
 bin_PROGRAMS = liberti tibencode tibdecode
 
 libtib_a_SOURCES = src/tibeval.c src/tiberr.c src/tibexpr.c src/tibchar.c \
-                   src/tiblst.c src/tibtype.c
+                   src/tiblst.c src/tibtranscode.c src/tibtype.c
 libtib_a_CFLAGS = -Wall -Wextra -Wunreachable-code -ftrapv -std=c89 \
                   $(gsl_CFLAGS) $(gsl_LIBS)
 
