@@ -336,7 +336,8 @@ tib_add (const TIB *t1, const TIB *t2)
 	  if (NULL == temp)
 	    return NULL;
 
-	  tib_errno = gsl_vector_complex_add (temp->value.list, t2->value.list);
+	  tib_errno = gsl_vector_complex_add (temp->value.list,
+					      t2->value.list);
 	  if (tib_errno)
 	    {
 	      tib_decref (temp);
@@ -680,6 +681,75 @@ inverse (const TIB *t)
     }
 }
 
+TIB *
+tib_div (const TIB *t1, const TIB *t2)
+{
+  if (!(TIB_TYPE_COMPLEX == t1->type || TIB_TYPE_LIST == t1->type)
+      || !(TIB_TYPE_COMPLEX == t2->type || TIB_TYPE_LIST == t2->type))
+    {
+      tib_errno = TIB_ETYPE;
+      return NULL;
+    }
+
+  TIB *temp;
+  size_t i;
+  switch (t1->type)
+    {
+    case TIB_TYPE_COMPLEX:
+      if (TIB_TYPE_COMPLEX == t2->type)
+	{
+	  temp = tib_copy (t1);
+	  if (NULL == temp)
+	    return NULL;
+
+	  temp->value.number = gsl_complex_div (t1->value.number,
+						t2->value.number);
+	}
+      else /* must be list */
+	{
+	  temp = tib_copy (t2);
+	  if (NULL == temp)
+	    return NULL;
+
+	  for (i = 0; i < temp->value.list->size; ++i)
+	    {
+	      gsl_complex a = gsl_vector_complex_get (t2->value.list, i);
+	      gsl_complex quotient = gsl_complex_div (t1->value.number, a);
+	      gsl_vector_complex_set (temp->value.list, i, quotient);
+	    }
+	}
+
+      return temp;
+
+    case TIB_TYPE_LIST:
+      temp = tib_copy (t1);
+      if (NULL == temp)
+	return NULL;
+
+      if (TIB_TYPE_LIST == t2->type)
+	for (i = 0; i < temp->value.list->size; ++i)
+	  {
+	    gsl_complex a = gsl_vector_complex_get (t1->value.list, i);
+	    gsl_complex b = gsl_vector_complex_get (t2->value.list, i);
+	    gsl_complex quotient = gsl_complex_div (a, b);
+	    gsl_vector_complex_set (temp->value.list, i, quotient);
+	  }
+      else /* must be complex */
+	for (i = 0; i < temp->value.list->size; ++i)
+	    {
+	      gsl_complex a = gsl_vector_complex_get (t1->value.list, i);
+	      gsl_complex quotient = gsl_complex_div (t2->value.number, a);
+	      gsl_vector_complex_set (temp->value.list, i, quotient);
+	    }
+
+      return temp;
+
+    default:
+      tib_errno = TIB_ETYPE;
+      return NULL;
+    }
+}
+
 static gsl_complex
 complex_root (gsl_complex z, gsl_complex root)
 {
@@ -692,7 +762,7 @@ tib_root (const TIB *t, gsl_complex root)
   TIB *temp;
   size_t i;
 
-  if (TIB_TYPE_COMPLEX != t->type || TIB_TYPE_LIST != t->type)
+  if (TIB_TYPE_COMPLEX != t->type && TIB_TYPE_LIST != t->type)
     {
       tib_errno = TIB_ETYPE;
       return NULL;
@@ -715,6 +785,10 @@ tib_root (const TIB *t, gsl_complex root)
 	  gsl_vector_complex_set (temp->value.list, i, complex_root (a, root));
 	}
       return temp;
+
+    default:
+      tib_errno = TIB_ETYPE;
+      return NULL;
     }
 }
 
