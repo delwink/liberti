@@ -23,7 +23,7 @@
 tib_Expression *
 tib_fread (const char *path, size_t *parsed);
 
-void
-tib_fwrite (const char *path, const tib_Expression *program);
+int
+tib_fwrite (const char *path, const tib_Expression *program, size_t *written);
 
 #endif

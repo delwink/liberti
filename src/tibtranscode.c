@@ -410,7 +410,56 @@ tib_fread (const char *path, size_t *parsed)
   return out;
 }
 
-void
-tib_fwrite (const char *path, const tib_Expression *program)
+int
+tib_fwrite (const char *path, const tib_Expression *program, size_t *written)
 {
+  FILE *out = stdout;
+  int rc;
+  size_t i;
+
+  if (path)
+    {
+      out = fopen (path, "wb");
+      if (NULL == out)
+	return errno;
+    }
+
+  for (*written = 0; *written <= 71; ++(*written))
+    {
+      rc = fputc (0, out);
+      if (rc)
+	break;
+    }
+
+  if (rc)
+    {
+      if (path)
+	fclose (out);
+      return TIB_EWRITE;
+    }
+
+  tib_foreachexpr (program, i)
+    {
+      int c = tib_Expression_ref (program, i);
+      switch (c)
+	{
+
+	default:
+	  if ((c >= '0' && c <= '9') || (c >= 'A' && c <= 'Z'))
+	    rc = fputc (c, out);
+	  else
+	    rc = EOF;
+	  break;
+	}
+
+      if (EOF == rc)
+	break;
+
+      ++(*written);
+    }
+
+  if (path)
+    fclose (out);
+
+  return EOF == rc ? TIB_EWRITE : 0;
 }
