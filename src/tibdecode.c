@@ -38,7 +38,8 @@ main (int argc, char *argv[])
 
   struct option longopts[] =
     {
-      {"version", no_argument, 0, 'v'}
+      {"version", no_argument, 0, 'v'},
+      {0, 0, 0, 0}
     };
 
   if (argc > 1)
@@ -51,10 +52,10 @@ main (int argc, char *argv[])
 	    {
 	    case 'v':
 	      puts (VERSION_INFO);
-	      exit (0);
+	      return 0;
 
 	    case '?':
-	      exit (1);
+	      return 1;
 	    }
 	}
     }
