@@ -16,9 +16,18 @@
  */
 
 #include <stdio.h>
+#include <unistd.h>
+#include <getopt.h>
 
 #include "tibtranscode.h"
 #include "tiberr.h"
+
+#define VERSION_INFO "tibdecode (Delwink LiberTI) 1.0.0\n\
+Copyright (C) 2015 Delwink, LLC\n\
+License AGPLv3: GNU AGPL version 3 only <http://gnu.org/licenses/agpl.html>.\n\
+This is libre software: you are free to change and redistribute it.\n\
+There is NO WARRANTY, to the extent permitted by law.\n\n\
+Written by David McMackins II."
 
 int
 main (int argc, char *argv[])
@@ -27,8 +36,31 @@ main (int argc, char *argv[])
   char *inpath = NULL;
   size_t parsed;
 
-  if (2 == argc)
-    inpath = argv[1];
+  struct option longopts[] =
+    {
+      {"version", no_argument, 0, 'v'}
+    };
+
+  if (argc > 1)
+    {
+      int c;
+      int longindex;
+      while ((c = getopt_long (argc, argv, "v", longopts, &longindex)) != -1)
+	{
+	  switch (c)
+	    {
+	    case 'v':
+	      puts (VERSION_INFO);
+	      exit (0);
+
+	    case '?':
+	      exit (1);
+	    }
+	}
+    }
+
+  if (optind < argc)
+    inpath = argv[optind];
 
   tib_Expression *translated = tib_fread (inpath, &parsed);
   if (NULL == translated)
