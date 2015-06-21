@@ -387,7 +387,7 @@ tib_fread (const char *path, size_t *parsed)
 
   while ((c = fgetc (program)) != EOF)
     {
-      (*parsed)++;
+      ++(*parsed);
 
       int trans = trans_from ((char) c, &tib_errno, program, parsed);
       if (tib_errno)
