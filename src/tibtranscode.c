@@ -385,6 +385,15 @@ tib_fread (const char *path, size_t *parsed)
   while ((c = fgetc (program)) != EOF && *parsed < 71)
     ++(*parsed);
 
+  if (*parsed != 71)
+    {
+      if (path)
+	fclose (program);
+      tib_Expression_decref (out);
+      tib_errno = TIB_EBADFILE;
+      return NULL;
+    }
+
   while ((c = fgetc (program)) != EOF)
     {
       ++(*parsed);
