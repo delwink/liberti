@@ -238,7 +238,7 @@ tib_Expression_insert (tib_Expression *expr, size_t i, int c)
   expr->value = malloc (expr->len * sizeof (int));
   if (NULL == expr->value)
     {
-      expr->value = temp;
+      free (temp);
       --expr->len;
       return TIB_EALLOC;
     }
