@@ -28,13 +28,13 @@ need_next (int c, int *err, FILE *program, size_t *parsed)
 {
   int next;
 
-  ++(*parsed);
-
   if ((next = fgetc (program)) == EOF)
     {
       *err = TIB_EBADCHAR;
       return EOF;
     }
+
+  ++(*parsed);
 
   switch (c)
     {
