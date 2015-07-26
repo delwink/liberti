@@ -19,18 +19,18 @@
 #define DELWINK_TIB_H
 
 enum tib_err
-  {
-    TIB_EALLOC   = -1,
-    TIB_EINDEX   = -2,
-    TIB_ESYNTAX  = -3,
-    TIB_ETYPE    = -4,
-    TIB_EDIM     = -5,
-    TIB_ENULLPTR = -6,
-    TIB_EDOMAIN  = -7,
-    TIB_EBADCHAR = -8,
-    TIB_EWRITE   = -9,
-    TIB_EBADFILE = -10
-  };
+{
+  TIB_EALLOC   = -1,
+  TIB_EINDEX   = -2,
+  TIB_ESYNTAX  = -3,
+  TIB_ETYPE    = -4,
+  TIB_EDIM     = -5,
+  TIB_ENULLPTR = -6,
+  TIB_EDOMAIN  = -7,
+  TIB_EBADCHAR = -8,
+  TIB_EWRITE   = -9,
+  TIB_EBADFILE = -10
+};
 
 extern int tib_errno;
 

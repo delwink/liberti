@@ -25,13 +25,13 @@
 #include <gsl/gsl_complex.h>
 
 enum tib_types
-  {
-    TIB_TYPE_NONE=0,
-    TIB_TYPE_COMPLEX,
-    TIB_TYPE_STRING,
-    TIB_TYPE_LIST,
-    TIB_TYPE_MATRIX
-  };
+{
+  TIB_TYPE_NONE=0,
+  TIB_TYPE_COMPLEX,
+  TIB_TYPE_STRING,
+  TIB_TYPE_LIST,
+  TIB_TYPE_MATRIX
+};
 
 union variant
 {
