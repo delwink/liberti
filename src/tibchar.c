@@ -24,98 +24,62 @@ tib_special_char_text (int c)
 {
   switch (c)
     {
-    case TIB_CHAR_SIN:
-      return "sin(";
-
-    case TIB_CHAR_IF:
-      return "If ";
-
-    case TIB_CHAR_END:
-      return "End";
-
-    case TIB_CHAR_THEN:
-      return "Then";
-
-    case TIB_CHAR_ELSE:
-      return "Else";
-
-    case TIB_CHAR_WHILE:
-      return "While ";
-
-    case TIB_CHAR_OUTPUT:
-      return "Output(";
-
-    case TIB_CHAR_CLEARHOME:
-      return "ClrHome";
-
-    case TIB_CHAR_RANDINT:
-      return "RandInt(";
-
     case TIB_CHAR_AND:
       return " And ";
-
-    case TIB_CHAR_OR:
-      return " Or ";
-
-    case TIB_CHAR_GETKEY:
-      return "GetKey";
-
-    case TIB_CHAR_FOR:
-      return "For(";
-
-    case TIB_CHAR_LABEL:
-      return "Lbl ";
-
-    case TIB_CHAR_GOTO:
-      return "Goto ";
-
-    case TIB_CHAR_NOT:
-      return "Not(";
-
-    case TIB_CHAR_PAUSE:
-      return "Pause ";
-
-    case TIB_CHAR_REPEAT:
-      return "Repeat ";
 
     case TIB_CHAR_ANS:
       return "Ans";
 
-    case TIB_CHAR_RAND:
-      return "RAND";
+    case TIB_CHAR_AXESOFF:
+      return "AxesOff";
 
-    case TIB_CHAR_ROUND:
-      return "Round(";
+    case TIB_CHAR_CLEARDRAW:
+      return "ClrDraw";
 
-    case TIB_CHAR_INT:
-      return "int(";
-
-    case TIB_CHAR_DELVAR:
-      return "DelVar";
-
-    case TIB_CHAR_DISP:
-      return "Disp(";
-
-    case TIB_CHAR_RETURN:
-      return "Return ";
-
-    case TIB_CHAR_MENU:
-      return "Menu(";
-
-    case TIB_CHAR_DIM:
-      return "Dim(";
-
-    case TIB_CHAR_FILL:
-      return "Fill(";
+    case TIB_CHAR_CLEARHOME:
+      return "ClrHome";
 
     case TIB_CHAR_CLRLIST:
       return "ClrList";
 
+    case TIB_CHAR_DELVAR:
+      return "DelVar";
+
+    case TIB_CHAR_DIM:
+      return "Dim(";
+
+    case TIB_CHAR_DISP:
+      return "Disp(";
+
+    case TIB_CHAR_ELSE:
+      return "Else";
+
+    case TIB_CHAR_END:
+      return "End";
+
+    case TIB_CHAR_EPOW10:
+      return "*10^";
+
+    case TIB_CHAR_FILL:
+      return "Fill(";
+
+    case TIB_CHAR_FOR:
+      return "For(";
+
+    case TIB_CHAR_GETKEY:
+      return "GetKey";
+
+    case TIB_CHAR_GOTO:
+      return "Goto ";
+
+    case TIB_CHAR_IF:
+      return "If ";
+
     case TIB_CHAR_INPUT:
       return "Input ";
 
-    case TIB_CHAR_STOP:
-      return "Stop ";
+    case TIB_CHAR_INT:
+      return "int(";
 
     case TIB_CHAR_L1:
       return "L&";
@@ -144,6 +108,12 @@ tib_special_char_text (int c)
     case TIB_CHAR_L9:
       return "L\x87";
 
+    case TIB_CHAR_LABEL:
+      return "Lbl ";
+
+    case TIB_CHAR_LINE:
+      return "Line(";
+
     case TIB_CHAR_MATA:
       return "[[A]]";
 
@@ -171,17 +141,65 @@ tib_special_char_text (int c)
     case TIB_CHAR_MATI:
       return "[[I]]";
 
-    case TIB_CHAR_CLEARDRAW:
-      return "ClrDraw";
+    case TIB_CHAR_MENU:
+      return "Menu(";
 
-    case TIB_CHAR_AXESOFF:
-      return "AxesOff";
+    case TIB_CHAR_NOT:
+      return "Not(";
 
-    case TIB_CHAR_YMIN:
-      return "YMin";
+    case TIB_CHAR_OR:
+      return " Or ";
 
-    case TIB_CHAR_YMAX:
-      return "YMax";
+    case TIB_CHAR_OUTPUT:
+      return "Output(";
+
+    case TIB_CHAR_PAUSE:
+      return "Pause ";
+
+    case TIB_CHAR_PIC1:
+      return "Pic1";
+
+    case TIB_CHAR_PIXEL_TEST:
+      return "pxl-Test(";
+
+    case TIB_CHAR_RAND:
+      return "RAND";
+
+    case TIB_CHAR_RANDINT:
+      return "RandInt(";
+
+    case TIB_CHAR_RECALLPIC:
+      return "RecallPic ";
+
+    case TIB_CHAR_REPEAT:
+      return "Repeat ";
+
+    case TIB_CHAR_RETURN:
+      return "Return ";
+
+    case TIB_CHAR_ROUND:
+      return "Round(";
+
+    case TIB_CHAR_SIN:
+      return "sin(";
+
+    case TIB_CHAR_STOP:
+      return "Stop ";
+
+    case TIB_CHAR_STOREPIC:
+      return "StorePic ";
+
+    case TIB_CHAR_TEXT:
+      return "Text(";
+
+    case TIB_CHAR_THEN:
+      return "Then";
+
+    case TIB_CHAR_THETA:
+      return "Theta";
+
+    case TIB_CHAR_WHILE:
+      return "While ";
 
     case TIB_CHAR_XMIN:
       return "XMin";
@@ -189,27 +207,13 @@ tib_special_char_text (int c)
     case TIB_CHAR_XMAX:
       return "XMax";
 
-    case TIB_CHAR_LINE:
-      return "Line(";
+    case TIB_CHAR_YMIN:
+      return "YMin";
 
-    case TIB_CHAR_STOREPIC:
-      return "StorePic ";
-
-    case TIB_CHAR_RECALLPIC:
-      return "RecallPic ";
-
-    case TIB_CHAR_PIC1:
-      return "Pic1";
-
-    case TIB_CHAR_TEXT:
-      return "Text(";
-
-    case TIB_CHAR_PIXEL_TEST:
-      return "pxl-Test(";
+    case TIB_CHAR_YMAX:
+      return "YMax";
 
     default:
       return NULL;
     }
-
-  return NULL; /* should not be able to get here */
 }

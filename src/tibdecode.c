@@ -15,12 +15,15 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <stdio.h>
-#include <unistd.h>
+#include <ctype.h>
 #include <getopt.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <string.h>
+#include <unistd.h>
 
-#include "tibtranscode.h"
 #include "tiberr.h"
+#include "tibtranscode.h"
 
 #define VERSION_INFO "tibdecode (Delwink LiberTI) 1.0.0\n\
 Copyright (C) 2015 Delwink, LLC\n\
@@ -32,10 +35,12 @@ Written by David McMackins II."
 int
 main (int argc, char *argv[])
 {
-  size_t parsed;
+  bool debug = false;
+  size_t i;
 
   struct option longopts[] =
     {
+      {"debug",   no_argument, 0, 'd'},
       {"version", no_argument, 0, 'v'},
       {0, 0, 0, 0}
     };
@@ -44,10 +49,14 @@ main (int argc, char *argv[])
     {
       int c;
       int longindex;
-      while ((c = getopt_long (argc, argv, "v", longopts, &longindex)) != -1)
+      while ((c = getopt_long (argc, argv, "dv", longopts, &longindex)) != -1)
 	{
 	  switch (c)
 	    {
+	    case 'd':
+	      debug = true;
+	      break;
+
 	    case 'v':
 	      puts (VERSION_INFO);
 	      return 0;
@@ -58,12 +67,12 @@ main (int argc, char *argv[])
 	}
     }
 
-  tib_Expression *translated = tib_fread (stdin, &parsed);
+  tib_Expression *translated = tib_fread (stdin, &i);
   if (NULL == translated)
     {
       fprintf (stderr, "tibdecode: Error %d occurred while processing. "
 	       "Parsed %lu characters.\n",
-	       tib_errno, parsed);
+	       tib_errno, i);
       return tib_errno;
     }
 
@@ -76,7 +85,15 @@ main (int argc, char *argv[])
       return tib_errno;
     }
 
-  printf ("%s", s);
+  size_t len = strlen (s);
+  for (i = 0; i < len; ++i)
+    {
+      if (debug && !isascii (s[i]))
+	printf ("{%d}", s[i]);
+      else
+	putchar (s[i]);
+    }
+
   free (s);
 
   return 0;
