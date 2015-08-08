@@ -16,7 +16,6 @@
  */
 
 #include <stdio.h>
-#include <errno.h>
 #include <limits.h>
 
 #include "tibtranscode.h"
@@ -357,29 +356,14 @@ trans_from (int c, int *err, FILE *program, size_t *parsed)
 }
 
 tib_Expression *
-tib_fread (const char *path, size_t *parsed)
+tib_fread (FILE *program, size_t *parsed)
 {
-  FILE *program = stdin;
   tib_Expression *out;
   int c;
 
-  if (path)
-    {
-      program = fopen (path, "rb");
-      if (NULL == program)
-	{
-	  tib_errno = errno;
-	  return NULL;
-	}
-    }
-
   out = tib_new_Expression ();
   if (NULL == out)
-    {
-      if (path)
-	fclose (program);
-      return NULL;
-    }
+    return NULL;
 
   *parsed = 0;
   while ((c = fgetc (program)) != EOF && *parsed < 71)
@@ -387,8 +371,6 @@ tib_fread (const char *path, size_t *parsed)
 
   if (*parsed != 71)
     {
-      if (path)
-	fclose (program);
       tib_Expression_decref (out);
       tib_errno = TIB_EBADFILE;
       return NULL;
@@ -407,9 +389,6 @@ tib_fread (const char *path, size_t *parsed)
 	break;
     }
 
-  if (path)
-    fclose (program);
-
   if (tib_errno)
     {
       tib_Expression_decref (out);
@@ -420,18 +399,10 @@ tib_fread (const char *path, size_t *parsed)
 }
 
 int
-tib_fwrite (const char *path, const tib_Expression *program, size_t *written)
+tib_fwrite (FILE *out, const tib_Expression *program, size_t *written)
 {
-  FILE *out = stdout;
   int rc;
   size_t i;
-
-  if (path)
-    {
-      out = fopen (path, "wb");
-      if (NULL == out)
-	return errno;
-    }
 
   for (*written = 0; *written <= 71; ++(*written))
     {
@@ -441,11 +412,7 @@ tib_fwrite (const char *path, const tib_Expression *program, size_t *written)
     }
 
   if (rc)
-    {
-      if (path)
-	fclose (out);
-      return TIB_EWRITE;
-    }
+    return TIB_EWRITE;
 
   tib_foreachexpr (program, i)
     {
@@ -930,9 +897,6 @@ tib_fwrite (const char *path, const tib_Expression *program, size_t *written)
 
       ++(*written);
     }
-
-  if (path)
-    fclose (out);
 
   return EOF == rc ? TIB_EWRITE : 0;
 }

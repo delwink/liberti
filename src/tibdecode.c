@@ -32,8 +32,6 @@ Written by David McMackins II."
 int
 main (int argc, char *argv[])
 {
-  FILE *out = stdout;
-  char *inpath = NULL;
   size_t parsed;
 
   struct option longopts[] =
@@ -60,10 +58,7 @@ main (int argc, char *argv[])
 	}
     }
 
-  if (optind < argc)
-    inpath = argv[optind];
-
-  tib_Expression *translated = tib_fread (inpath, &parsed);
+  tib_Expression *translated = tib_fread (stdin, &parsed);
   if (NULL == translated)
     {
       fprintf (stderr, "tibdecode: Error %d occurred while processing. "
@@ -81,7 +76,7 @@ main (int argc, char *argv[])
       return tib_errno;
     }
 
-  fprintf (out, "%s\n", s);
+  printf ("%s", s);
   free (s);
 
   return 0;

@@ -32,8 +32,6 @@ Written by David McMackins II."
 int
 main (int argc, char *argv[])
 {
-  FILE *out = stdout;
-  char *inpath = NULL;
   size_t written;
 
   struct option longopts[] =
@@ -60,12 +58,9 @@ main (int argc, char *argv[])
 	}
     }
 
-  if (optind < argc)
-    inpath = argv[optind];
-
   tib_Expression *translated = NULL; /* TODO: Convert expression from string */
 
-  tib_errno = tib_fwrite (inpath, translated, &written);
+  tib_errno = tib_fwrite (stdout, translated, &written);
 
   if (tib_errno)
     {
@@ -76,7 +71,7 @@ main (int argc, char *argv[])
     }
 
   /* TODO: print translated expression */
-  fprintf (out, "You get nothing. You lose. Good day, sir.");
+  printf ("You get nothing. You lose. Good day, sir.");
 
   return 0;
 }
