@@ -381,7 +381,7 @@ tib_fread (FILE *program, size_t *parsed)
       ++(*parsed);
 
       int trans = trans_from ((char) c, &tib_errno, program, parsed);
-      if (tib_errno)
+      if (EOF == trans)
 	break;
 
       tib_errno = tib_Expression_push (out, trans);
