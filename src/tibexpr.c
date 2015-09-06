@@ -295,33 +295,18 @@ tib_Expression_substring (const tib_Expression *in, size_t beg, size_t end)
 int
 tib_Expression_cat (tib_Expression *dest, const tib_Expression *src)
 {
-  char *orig = tib_Expression_as_str (dest);
-  if (NULL == orig)
-    return TIB_EALLOC;
+  int rc;
+  size_t i, oldlen = tib_Expression_len (dest);
 
-  char *add = tib_Expression_as_str (src);
-  if (NULL == add)
+  tib_foreachexpr (src, i)
     {
-      free (orig);
-      return TIB_EALLOC;
+      rc = tib_Expression_push (dest, tib_Expression_ref (src, i));
+      if (rc)
+	break;
     }
 
-  size_t len = tib_Expression_len (dest) + tib_Expression_len (src)
-    + 1;
-
-  char *new = malloc (len * sizeof (char));
-  if (NULL == new)
-    {
-      free (orig);
-      free (add);
-      return TIB_EALLOC;
-    }
-
-  sprintf (new, "%s%s", orig, add);
-  free (orig);
-  free (add);
-
-  int rc = tib_Expression_set (dest, new);
+  if (rc)
+    dest->len = oldlen;
 
   return rc;
 }

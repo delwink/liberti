@@ -15,11 +15,11 @@ libliberti_a_CFLAGS = -Wall -Wextra -Wunreachable-code -ftrapv -std=c89
 liberti_SOURCES = src/liberti.c
 liberti_CFLAGS = -Wall -Wextra -Wunreachable-code -ftrapv -std=c89 \
                  $(sdl2_CFLAGS)
-liberti_LDADD = libtib.a libliberti.a $(sdl2_LIBS) $(gsl_LIBS)
+liberti_LDADD = libtib.a libliberti.a $(gsl_LIBS) $(sdl2_LIBS)
 
 tibencode_SOURCES = src/tibencode.c
 tibencode_CFLAGS = -Wall -Wextra -Wunreachable-code -ftrapv -std=c89
-tibencode_LDADD = libtib.a $(gsl_LIBS)
+tibencode_LDADD = libtib.a $(gsl_LIBS) $(pfxtree_LIBS)
 
 tibdecode_SOURCES = src/tibdecode.c
 tibdecode_CFLAGS = -Wall -Wextra -Wunreachable-code -ftrapv -std=c89

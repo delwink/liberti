@@ -14,11 +14,15 @@ You must first satisfy the build dependencies of LiberTI.
 | ANSI C Compiler            | (Prefer GCC or Clang) Source compilation      |
 | GNU Scientific Library     | Complex math calculations and data structures |
 | Simple DirectMedia Layer 2 | Graphics and threading                        |
+| Delwink's libpfxtree       | Keyword parsing for the encoder               |
 
 On Debian GNU/Linux and derivatives, you can install these with the following
 command:
 
     # apt-get install build-essential autoconf automake libgsl0-dev libsdl2-dev
+
+For libpfxtree, download the latest stable source from [Delwink's site][3], and
+build/install according to the README inside.
 
 After the dependencies are installed, you can build LiberTI as follows:
 
@@ -57,3 +61,4 @@ redistribute this software and use it for whatever purpose.
 
 [1]: http://www.librecalc.com/en/
 [2]: mailto:contribute@delwink.com
+[3]: http://delwink.com/software/libpfxtree.html
