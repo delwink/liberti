@@ -118,7 +118,7 @@ tokenize (char *beg)
 	}
 
       bool found = false;
-      for (end = beg + 1; end <= beg + len; ++end)
+      for (end = beg + 1; end <= orig + len; ++end)
 	{
 	  temp = *end;
 	  *end = '\0';
@@ -205,7 +205,7 @@ main (int argc, char *argv[])
       return TIB_EALLOC;
     }
 
-  size_t max_line_len = 256;
+  size_t max_line_len = 128;
   char *buf = malloc (max_line_len * sizeof (char));
   if (NULL == buf)
     {
