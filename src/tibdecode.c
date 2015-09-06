@@ -36,6 +36,7 @@ int
 main (int argc, char *argv[])
 {
   bool debug = false;
+  unsigned long parsed;
   size_t i;
 
   struct option longopts[] =
@@ -67,12 +68,12 @@ main (int argc, char *argv[])
 	}
     }
 
-  tib_Expression *translated = tib_fread (stdin, &i);
+  tib_Expression *translated = tib_fread (stdin, &parsed);
   if (NULL == translated)
     {
       fprintf (stderr, "tibdecode: Error %d occurred while processing. "
 	       "Parsed %lu characters.\n",
-	       tib_errno, i);
+	       tib_errno, parsed);
       return tib_errno;
     }
 
