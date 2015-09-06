@@ -295,7 +295,7 @@ tib_Expression_substring (const tib_Expression *in, size_t beg, size_t end)
 int
 tib_Expression_cat (tib_Expression *dest, const tib_Expression *src)
 {
-  int rc;
+  int rc = 0;
   size_t i, oldlen = tib_Expression_len (dest);
 
   tib_foreachexpr (src, i)
