@@ -356,7 +356,7 @@ trans_from (int c, int *err, FILE *program, size_t *parsed)
 }
 
 tib_Expression *
-tib_fread (FILE *program, size_t *parsed)
+tib_fread (FILE *program, unsigned long *parsed)
 {
   tib_Expression *out;
   int c;
@@ -399,7 +399,7 @@ tib_fread (FILE *program, size_t *parsed)
 }
 
 int
-tib_fwrite (FILE *out, const tib_Expression *program, size_t *written)
+tib_fwrite (FILE *out, const tib_Expression *program, unsigned long *written)
 {
   int rc;
   size_t i;

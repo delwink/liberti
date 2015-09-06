@@ -21,9 +21,9 @@
 #include "tibexpr.h"
 
 tib_Expression *
-tib_fread (FILE *program, size_t *parsed);
+tib_fread (FILE *program, unsigned long *parsed);
 
 int
-tib_fwrite (FILE *out, const tib_Expression *program, size_t *written);
+tib_fwrite (FILE *out, const tib_Expression *program, unsigned long *written);
 
 #endif
