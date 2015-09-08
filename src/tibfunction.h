@@ -15,25 +15,29 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef DELWINK_TIB_H
-#define DELWINK_TIB_H
+#ifndef DELWINK_TIB_FUNCTION_H
+#define DELWINK_TIB_FUNCTION_H
 
-enum tib_err
-{
-  TIB_EALLOC   = -1,
-  TIB_EINDEX   = -2,
-  TIB_ESYNTAX  = -3,
-  TIB_ETYPE    = -4,
-  TIB_EDIM     = -5,
-  TIB_ENULLPTR = -6,
-  TIB_EDOMAIN  = -7,
-  TIB_EBADCHAR = -8,
-  TIB_EWRITE   = -9,
-  TIB_EBADFILE = -10,
-  TIB_EBADFUNC = -11,
-  TIB_EARGNUM  = -12
-};
+#include <stdbool.h>
 
-extern int tib_errno;
+#include "tibexpr.h"
+#include "tibtype.h"
+
+typedef TIB *(*tib_Function) (const tib_Expression *);
+
+int
+tib_registry_init (void);
+
+void
+tib_registry_free (void);
+
+int
+tib_registry_add (int key, tib_Function f);
+
+bool
+tib_is_func (int key);
+
+TIB *
+tib_call (int key, const tib_Expression *expr);
 
 #endif
