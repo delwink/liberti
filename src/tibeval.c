@@ -100,14 +100,15 @@ single_eval (const tib_Expression *in)
   if (NULL == expr)
     return NULL;
 
-  if (tib_eval_surrounded (expr))
+  int func = tib_eval_surrounded (expr);
+  if (func)
     {
       tib_Expression *temp = tib_Expression_substring (expr, 1, len-1);
       tib_Expression_decref (expr);
       if (NULL == temp)
 	return NULL;
 
-      TIB *out = tib_eval (temp);
+      TIB *out = tib_call (func, temp);
       tib_Expression_decref (temp);
       return out;
     }
@@ -133,8 +134,6 @@ single_eval (const tib_Expression *in)
 
       return temp;
     }
-
-  /* TODO: resolve TI-BASIC function calls such as sin() */
 
   tib_Expression_decref (expr);
   tib_errno = TIB_ESYNTAX;
