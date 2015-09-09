@@ -35,11 +35,8 @@ contains_i (const tib_Expression *expr);
 TIB *
 tib_eval (const tib_Expression *expr);
 
-bool
+int
 tib_eval_surrounded (const tib_Expression *expr);
-
-bool
-tib_eval_surrounded_function (const tib_Expression *expr, int function);
 
 bool
 tib_eval_isnum (const tib_Expression *expr);

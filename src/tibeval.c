@@ -358,13 +358,13 @@ tib_eval (const tib_Expression *in)
   return out;
 }
 
-bool
-tib_eval_surrounded_function (const tib_Expression *expr, int function)
+int
+tib_eval_surrounded (const tib_Expression *expr)
 {
   int count = 0;
   size_t i, len = tib_Expression_len (expr);
 
-  if (len > 2 && function == tib_Expression_ref (expr, 0)
+  if (len > 2 && is_left_paren (tib_Expression_ref (expr, 0))
       && ')' == tib_Expression_ref (expr, len-1))
     {
       count = 1;
@@ -382,16 +382,10 @@ tib_eval_surrounded_function (const tib_Expression *expr, int function)
 	}
 
       if (count > 0)
-	return true;
+	return tib_Expression_ref (expr, 0);
     }
 
-  return false;
-}
-
-bool
-tib_eval_surrounded (const tib_Expression *expr)
-{
-  return tib_eval_surrounded_function (expr, '(');
+  return 0;
 }
 
 static size_t
