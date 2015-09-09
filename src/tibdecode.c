@@ -15,7 +15,6 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <ctype.h>
 #include <getopt.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -31,6 +30,16 @@ License AGPLv3: GNU AGPL version 3 only <http://gnu.org/licenses/agpl.html>.\n\
 This is libre software: you are free to change and redistribute it.\n\
 There is NO WARRANTY, to the extent permitted by law.\n\n\
 Written by David McMackins II."
+
+#if defined (_BSD_SOURCE) || defined (_SVID_SOURCE) || defined (_XOPEN_SOURCE)
+# include <ctype.h>
+#else
+static int
+isascii (int c)
+{
+  return c >= 0 && c < 128;
+}
+#endif
 
 int
 main (int argc, char *argv[])
