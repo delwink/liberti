@@ -19,17 +19,16 @@
 #include <string.h>
 #include <stdint.h>
 
+#include "tibchar.h"
 #include "tiberr.h"
 #include "tibeval.h"
-#include "tibchar.h"
+#include "tibfunction.h"
 #include "tiblst.h"
 
 static bool
 is_left_paren (int c)
 {
-  return ('(' == c || TIB_CHAR_SIN == c || TIB_CHAR_RANDINT == c
-	  || TIB_CHAR_NOT == c || TIB_CHAR_INT == c || TIB_CHAR_DIM == c
-	  || TIB_CHAR_PIXEL_TEST == c);
+  return tib_is_func (c);
 }
 
 static bool
@@ -41,7 +40,7 @@ needs_mult_common (int c)
 static bool
 needs_mult_right (int c)
 {
-  return (needs_mult_common (c) || '(' == c);
+  return (needs_mult_common (c) || is_left_paren (c));
 }
 
 static bool
