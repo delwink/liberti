@@ -236,7 +236,7 @@ tib_call (int key, const tib_Expression *expr)
   size_t i;
   for (i = 0; i < registry.len; ++i)
     if (key == registry.nodes[i].key)
-      return (*registry.nodes[i].f) (expr);
+      return registry.nodes[i].f (expr);
 
   tib_errno = TIB_EBADFUNC;
   return NULL;

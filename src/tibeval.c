@@ -148,9 +148,9 @@ do_arith (struct tib_lst *resolved, size_t i, int operator, char arith1,
   TIB *temp;
 
   if (arith1 == operator)
-    temp = (*func1) (tib_lst_ref (resolved, i), tib_lst_ref (resolved, i+1));
+    temp = func1 (tib_lst_ref (resolved, i), tib_lst_ref (resolved, i+1));
   else if (arith2 == operator)
-    temp = (*func2) (tib_lst_ref (resolved, i), tib_lst_ref (resolved, i+1));
+    temp = func2 (tib_lst_ref (resolved, i), tib_lst_ref (resolved, i+1));
   else
     return;
 
