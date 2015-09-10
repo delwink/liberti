@@ -6,7 +6,7 @@ bin_PROGRAMS = liberti tibencode tibdecode
 
 libtib_a_SOURCES = src/tibchar.c src/tiberr.c src/tibeval.c src/tibexpr.c \
                    src/tibfunction.c src/tiblst.c src/tibtranscode.c \
-                   src/tibtype.c
+                   src/tibtype.c src/tibvar.c
 libtib_a_CFLAGS = -Wall -Wextra -Wunreachable-code -ftrapv -std=c89 \
                   $(gsl_CFLAGS)
 
