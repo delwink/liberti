@@ -31,7 +31,7 @@ This is libre software: you are free to change and redistribute it.\n\
 There is NO WARRANTY, to the extent permitted by law.\n\n\
 Written by David McMackins II."
 
-#if defined (_BSD_SOURCE) || defined (_SVID_SOURCE) || defined (_XOPEN_SOURCE)
+#if _BSD_SOURCE || _SVID_SOURCE || _XOPEN_SOURCE
 # include <ctype.h>
 #else
 static int
