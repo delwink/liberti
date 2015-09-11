@@ -40,6 +40,8 @@ struct registry
   struct registry_node *nodes;
 };
 
+static gsl_rng *rng = NULL;
+
 static struct registry registry =
   {
     .len = 0,
@@ -137,15 +139,6 @@ func_randint (const tib_Expression *expr)
 
   double diff = GSL_REAL (max) - GSL_REAL (min);
 
-  gsl_rng *rng = gsl_rng_alloc (gsl_rng_taus2);
-  if (NULL == rng)
-    {
-      tib_errno = TIB_EALLOC;
-      return NULL;
-    }
-
-  gsl_rng_set (rng, (unsigned long) time (NULL));
-
   len = (size_t) GSL_REAL (count);
   gsl_complex vals[len];
   for (i = 0; i < len; ++i)
@@ -158,8 +151,6 @@ func_randint (const tib_Expression *expr)
 	GSL_SET_REAL (&vals[i], GSL_REAL (vals[i]) - diff);
     }
 
-  gsl_rng_free (rng);
-
   return tib_new_list (vals, len);
 }
 
@@ -168,8 +159,14 @@ tib_registry_init ()
 {
   int rc;
 
-  if (registry.nodes != NULL)
+  if (registry.nodes != NULL || rng != NULL)
     tib_registry_free ();
+
+  rng = gsl_rng_alloc (gsl_rng_taus2);
+  if (NULL == rng)
+    return TIB_EALLOC;
+
+  gsl_rng_set (rng, (unsigned long) time (NULL));
 
 #define ADD(K,F) rc = tib_registry_add (K, F); if (rc) goto fail;
 
@@ -189,9 +186,11 @@ void
 tib_registry_free ()
 {
   free (registry.nodes);
+  gsl_rng_free (rng);
 
   registry.len = 0;
   registry.nodes = NULL;
+  rng = NULL;
 }
 
 int
