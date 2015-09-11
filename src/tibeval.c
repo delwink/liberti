@@ -24,6 +24,7 @@
 #include "tibeval.h"
 #include "tibfunction.h"
 #include "tiblst.h"
+#include "tibvar.h"
 
 static bool
 is_left_paren (int c)
@@ -34,7 +35,7 @@ is_left_paren (int c)
 static bool
 needs_mult_common (int c)
 {
-  return (isdigit (c));
+  return (isdigit (c) || tib_is_var (c));
 }
 
 static bool
@@ -95,6 +96,9 @@ single_eval (const tib_Expression *in)
 
   if (0 == len)
     return tib_empty ();
+
+  if (1 == len && tib_is_var (tib_Expression_ref (in, 0)))
+    return tib_var_get (tib_Expression_ref (in, 0));
 
   tib_Expression *expr = tib_copy_Expression (in);
   if (NULL == expr)
