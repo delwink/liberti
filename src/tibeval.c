@@ -87,28 +87,23 @@ contains_i (const tib_Expression *expr)
 }
 
 static TIB *
-single_eval (const tib_Expression *in)
+single_eval (const tib_Expression *expr)
 {
-  if (NULL == in)
+  if (NULL == expr)
     return NULL;
 
-  size_t len = tib_Expression_len (in);
+  size_t len = tib_Expression_len (expr);
 
   if (0 == len)
     return tib_empty ();
 
-  if (1 == len && tib_is_var (tib_Expression_ref (in, 0)))
-    return tib_var_get (tib_Expression_ref (in, 0));
-
-  tib_Expression *expr = tib_copy_Expression (in);
-  if (NULL == expr)
-    return NULL;
+  if (1 == len && tib_is_var (tib_Expression_ref (expr, 0)))
+    return tib_var_get (tib_Expression_ref (expr, 0));
 
   int func = tib_eval_surrounded (expr);
   if (func)
     {
       tib_Expression *temp = tib_Expression_substring (expr, 1, len-1);
-      tib_Expression_decref (expr);
       if (NULL == temp)
 	return NULL;
 
@@ -122,14 +117,12 @@ single_eval (const tib_Expression *in)
       gsl_complex z;
       tib_errno = tib_Expression_as_num (expr, &z);
 
-      tib_Expression_decref (expr);
       return tib_errno ? NULL : tib_new_complex (GSL_REAL (z), GSL_IMAG (z));
     }
 
   if (tib_eval_isstr (expr))
     {
       char *s = tib_Expression_as_str (expr);
-      tib_Expression_decref (expr);
       if (NULL == s)
 	return NULL;
 
@@ -139,7 +132,6 @@ single_eval (const tib_Expression *in)
       return temp;
     }
 
-  tib_Expression_decref (expr);
   tib_errno = TIB_ESYNTAX;
   return NULL;
 }
