@@ -185,8 +185,10 @@ tib_registry_init ()
 void
 tib_registry_free ()
 {
-  free (registry.nodes);
-  gsl_rng_free (rng);
+  if (registry.nodes)
+    free (registry.nodes);
+  if (rng)
+    gsl_rng_free (rng);
 
   registry.len = 0;
   registry.nodes = NULL;
