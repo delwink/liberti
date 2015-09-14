@@ -258,6 +258,8 @@ trans_from (int c, int *err, FILE *program, size_t *parsed)
       return '|';
 
     /* 24 was simply skipped in the original emulator; could cause problems */
+    case 24:
+      return 0;
 
     case 41:
       return ' ';
@@ -384,9 +386,12 @@ tib_fread (FILE *program, unsigned long *parsed)
       if (EOF == trans)
 	break;
 
-      tib_errno = tib_Expression_push (out, trans);
-      if (tib_errno)
-	break;
+      if (trans)
+	{
+	  tib_errno = tib_Expression_push (out, trans);
+	  if (tib_errno)
+	    break;
+	}
     }
 
   if (tib_errno)
