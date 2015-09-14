@@ -233,26 +233,21 @@ tib_Expression_insert (tib_Expression *expr, size_t i, int c)
       return TIB_EINDEX;
     }
 
-  int *temp = expr->value;
+  int *old = expr->value;
 
-  expr->value = malloc (expr->len * sizeof (int));
+  expr->value = realloc (expr->value, expr->len * sizeof (int));
   if (NULL == expr->value)
     {
-      free (temp);
+      expr->value = old;
       --expr->len;
       return TIB_EALLOC;
     }
 
   size_t j;
-  for (j = 0; j < i; ++j)
-    expr->value[j] = temp[j];
+  for (j = expr->len - 1; j > i; --j)
+    expr->value[j] = expr->value[j-1];
 
   expr->value[i] = c;
-
-  for (j = i+1; j < expr->len; ++j)
-    expr->value[j] = temp[j-1];
-
-  free (temp);
 
   return 0;
 }
