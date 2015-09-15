@@ -15,86 +15,96 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "lbtcharmap.h"
 #include "lbtscreen.h"
 #include "tiberr.h"
 #include "tibexpr.h"
 
-static bool **screen = NULL;
-static struct lbt_screen_dim d;
-
-int
-lbt_screen_init (struct lbt_screen_dim dims)
+lbt_Screen *
+lbt_new_Screen (size_t width, size_t height)
 {
-  if (screen != NULL)
-    lbt_screen_free ();
-
-  screen = malloc (dims.height * sizeof (bool *));
-  if (NULL == screen)
-    return TIB_EALLOC;
-
-  size_t i, j;
-  for (i = 0; i < dims.height; ++i)
+  lbt_Screen *new = malloc (sizeof (lbt_Screen));
+  if (NULL == new)
     {
-      screen[i] = malloc (dims.width * sizeof (bool));
-      if (NULL == screen[i])
-	goto fail;
-
-      for (j = 0; j < dims.width; ++j)
-	screen[i][j] = false;
+      tib_errno = TIB_EALLOC;
+      return NULL;
     }
 
-  d = dims;
+  new->refs = 1;
+  new->height = height;
+  new->width = width;
 
-  return 0;
+  new->value = malloc (height * sizeof (bool *));
+  if (NULL == new->value)
+    {
+      free (new);
+      tib_errno = TIB_EALLOC;
+      return NULL;
+    }
 
- fail:
-  for (j = 0; j < i; ++j)
-    free (screen[j]);
-  free (screen);
-  screen = NULL;
+  size_t i, j;
+  for (i = 0; i < height; ++i)
+    {
+      new->value[i] = malloc (width * sizeof (bool));
+      if (NULL == new->value[i])
+	{
+	  for (j = 0; j < i; ++j)
+	    free (new->value[j]);
+	  free (new->value);
+	  tib_errno = TIB_EALLOC;
+	  return NULL;
+	}
 
-  return TIB_EALLOC;
+      for (j = 0; j < width; ++j)
+	new->value[i][j] = false;
+    }
+
+  return new;
 }
 
 void
-lbt_screen_free ()
+lbt_Screen_incref (lbt_Screen *self)
 {
-  if (screen)
+  ++self->refs;
+}
+
+void
+lbt_Screen_decref (lbt_Screen *self)
+{
+  if (--self->refs == 0)
     {
       size_t i;
-      for (i = 0; i < d.height; ++i)
-	free (screen[i]);
-      free (screen);
+      for (i = 0; i < self->height; ++i)
+	free (self->value[i]);
+      free (self->value);
 
-      screen = NULL;
+      free (self);
     }
 }
 
 void
-lbt_clear_screen ()
+lbt_Screen_clear (lbt_Screen *self)
 {
   size_t i, j;
-  for (i = 0; i < d.height; ++i)
-    for (j = 0; j < d.width; ++j)
-      screen[i][j] = false;
+  for (i = 0; i < self->height; ++i)
+    for (j = 0; j < self->width; ++j)
+      self->value[i][j] = false;
 }
 
 int
-lbt_set_pixel (size_t x, size_t y, bool state)
+lbt_Screen_set (lbt_Screen *self, size_t x, size_t y, bool state)
 {
-  if (x >= d.width || y >= d.height)
+  if (x >= self->width || y >= self->height)
     return TIB_EINDEX;
 
-  screen[y][x] = state;
+  self->value[y][x] = state;
   return 0;
 }
 
 bool
-lbt_get_pixel (size_t x, size_t y)
+lbt_Screen_get (const lbt_Screen *self, size_t x, size_t y)
 {
-  if (x >= d.width || y >= d.height)
+  if (x >= self->width || y >= self->height)
     return false;
 
-  return screen[y][x];
+  return self->value[y][x];
 }

@@ -21,25 +21,30 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
-struct lbt_screen_dim
+typedef struct
 {
+  size_t refs;
   size_t height;
   size_t width;
-};
+  bool **value;
+} lbt_Screen;
 
-int
-lbt_screen_init (struct lbt_screen_dim dims);
-
-void
-lbt_screen_free (void);
+lbt_Screen *
+lbt_new_Screen (size_t width, size_t height);
 
 void
-lbt_clear_screen (void);
+lbt_Screen_incref (lbt_Screen *self);
+
+void
+lbt_Screen_decref (lbt_Screen *self);
+
+void
+lbt_Screen_clear (lbt_Screen *self);
 
 int
-lbt_set_pixel (size_t x, size_t y, bool state);
+lbt_Screen_set (lbt_Screen *self, size_t x, size_t y, bool state);
 
 bool
-lbt_get_pixel (size_t x, size_t y);
+lbt_Screen_get (const lbt_Screen *self, size_t x, size_t y);
 
 #endif
