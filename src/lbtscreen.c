@@ -17,7 +17,6 @@
 
 #include "lbtscreen.h"
 #include "tiberr.h"
-#include "tibexpr.h"
 
 lbt_Screen *
 lbt_new_Screen (size_t width, size_t height)
