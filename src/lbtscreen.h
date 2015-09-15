@@ -41,6 +41,12 @@ lbt_Screen_decref (lbt_Screen *self);
 void
 lbt_Screen_clear (lbt_Screen *self);
 
+size_t
+lbt_Screen_height (const lbt_Screen *self);
+
+size_t
+lbt_Screen_width (const lbt_Screen *self);
+
 int
 lbt_Screen_set (lbt_Screen *self, size_t x, size_t y, bool state);
 

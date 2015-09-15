@@ -89,6 +89,18 @@ lbt_Screen_clear (lbt_Screen *self)
       self->value[i][j] = false;
 }
 
+size_t
+lbt_Screen_height (const lbt_Screen *self)
+{
+  return self->height;
+}
+
+size_t
+lbt_Screen_width (const lbt_Screen *self)
+{
+  return self->width;
+}
+
 int
 lbt_Screen_set (lbt_Screen *self, size_t x, size_t y, bool state)
 {
