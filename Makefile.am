@@ -10,7 +10,7 @@ libtib_a_SOURCES = src/tibchar.c src/tiberr.c src/tibeval.c src/tibexpr.c \
 libtib_a_CFLAGS = -Wall -Wextra -Wunreachable-code -ftrapv -std=c89 \
                   $(gsl_CFLAGS)
 
-libliberti_a_SOURCES = src/command.c
+libliberti_a_SOURCES = src/lbtscreen.c
 libliberti_a_CFLAGS = -Wall -Wextra -Wunreachable-code -ftrapv -std=c89
 
 liberti_SOURCES = src/liberti.c
