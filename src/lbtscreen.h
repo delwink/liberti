@@ -21,11 +21,32 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
+#include "tibexpr.h"
+
+#define lbt_foreachline(S,L) for (L = S->lines; L != NULL; L = L->next)
+
+enum lbt_screen_mode
+  {
+    LBT_COMMAND_MODE
+  };
+
+struct lbt_screen_line
+{
+  tib_Expression *value;
+  size_t x;
+  size_t y;
+
+  struct lbt_screen_line *next;
+};
+
 typedef struct
 {
   size_t refs;
   size_t height;
   size_t width;
+
+  enum lbt_screen_mode mode;
+  struct lbt_screen_line *lines;
   bool **value;
 } lbt_Screen;
 
@@ -52,5 +73,18 @@ lbt_Screen_set (lbt_Screen *self, size_t x, size_t y, bool state);
 
 bool
 lbt_Screen_get (const lbt_Screen *self, size_t x, size_t y);
+
+int
+lbt_Screen_add_line (lbt_Screen *self, const tib_Expression *text, size_t x,
+		     size_t y);
+
+struct lbt_screen_line *
+lbt_Screen_get_line (const lbt_Screen *self, size_t i);
+
+void
+lbt_Screen_del_line (lbt_Screen *self, size_t i);
+
+void
+lbt_Screen_clear_lines (lbt_Screen *self);
 
 #endif

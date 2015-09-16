@@ -31,6 +31,8 @@ lbt_new_Screen (size_t width, size_t height)
   new->refs = 1;
   new->height = height;
   new->width = width;
+  new->mode = LBT_COMMAND_MODE;
+  new->lines = NULL;
 
   new->value = malloc (height * sizeof (bool *));
   if (NULL == new->value)
@@ -76,6 +78,8 @@ lbt_Screen_decref (lbt_Screen *self)
 	free (self->value[i]);
       free (self->value);
 
+      lbt_Screen_clear_lines (self);
+
       free (self);
     }
 }
@@ -118,4 +122,103 @@ lbt_Screen_get (const lbt_Screen *self, size_t x, size_t y)
     return false;
 
   return self->value[y][x];
+}
+
+static struct lbt_screen_line *
+new_line (const tib_Expression *text, size_t x, size_t y)
+{
+  struct lbt_screen_line *new = malloc (sizeof (struct lbt_screen_line));
+  if (NULL == new)
+    return NULL;
+
+  new->value = tib_copy_Expression (text);
+  if (NULL == new->value)
+    {
+      free (new);
+      return NULL;
+    }
+
+  new->x = x;
+  new->y = y;
+  new->next = NULL;
+
+  return new;
+}
+
+int
+lbt_Screen_add_line (lbt_Screen *self, const tib_Expression *text, size_t x,
+		     size_t y)
+{
+  if (!self->lines)
+    {
+      self->lines = new_line (text, x, y);
+      if (NULL == self->lines)
+	return TIB_EALLOC;
+
+      return 0;
+    }
+
+  struct lbt_screen_line *last;
+  lbt_foreachline (self, last)
+    ; /* set to the last line in the list */
+
+  last->next = new_line (text, x, y);
+  if (NULL == last->next)
+    return TIB_EALLOC;
+
+  return 0;
+}
+
+struct lbt_screen_line *
+lbt_Screen_get_line (const lbt_Screen *self, size_t i)
+{
+  struct lbt_screen_line *line;
+  lbt_foreachline (self, line)
+    {
+      if (0 == i)
+	return line;
+
+      --i;
+    }
+
+  return NULL;
+}
+
+void
+lbt_Screen_del_line (lbt_Screen *self, size_t i)
+{
+  struct lbt_screen_line *temp, *before = lbt_Screen_get_line (self, i-1);
+
+  if (NULL == before)
+    {
+      if (0 == i && self->lines)
+	{
+	  temp = self->lines;
+	  self->lines = temp->next;
+	}
+      else
+	{
+	  return;
+	}
+    }
+  else if (NULL == before->next)
+    {
+      return;
+    }
+  else
+    {
+      temp = before->next;
+      before->next = temp->next;
+    }
+
+  tib_Expression_decref (temp->value);
+  free (temp);
+}
+
+void
+lbt_Screen_clear_lines (lbt_Screen *self)
+{
+  struct lbt_screen_line *line;
+  while ((line = self->lines))
+    lbt_Screen_del_line (self, 0);
 }
