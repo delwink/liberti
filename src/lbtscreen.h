@@ -90,4 +90,12 @@ lbt_Screen_del_line (lbt_Screen *self, size_t i);
 void
 lbt_Screen_clear_lines (lbt_Screen *self);
 
+/* modes */
+
+int
+lbt_Screen_set_mode (lbt_Screen *self, enum lbt_screen_mode mode);
+
+enum lbt_screen_mode
+lbt_Screen_get_mode (const lbt_Screen *self);
+
 #endif

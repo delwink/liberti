@@ -228,3 +228,25 @@ lbt_Screen_clear_lines (lbt_Screen *self)
   while ((line = self->lines))
     lbt_Screen_del_line (self, 0);
 }
+
+int
+lbt_Screen_set_mode (lbt_Screen *self, enum lbt_screen_mode mode)
+{
+  lbt_Screen_clear (self);
+  lbt_Screen_clear_lines (self);
+
+  self->mode = mode;
+
+  switch (mode) /* TODO: initialize mode */
+    {
+
+    default:
+      return 0;
+    }
+}
+
+enum lbt_screen_mode
+lbt_Screen_get_mode (const lbt_Screen *self)
+{
+  return self->mode;
+}
