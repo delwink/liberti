@@ -115,6 +115,12 @@ lbt_Screen_set (lbt_Screen *self, size_t x, size_t y, bool state)
   return 0;
 }
 
+int
+lbt_Screen_toggle (lbt_Screen *self, size_t x, size_t y)
+{
+  return lbt_Screen_set (self, x, y, !lbt_Screen_get (self, x, y));
+}
+
 bool
 lbt_Screen_get (const lbt_Screen *self, size_t x, size_t y)
 {

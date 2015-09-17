@@ -71,6 +71,9 @@ lbt_Screen_width (const lbt_Screen *self);
 int
 lbt_Screen_set (lbt_Screen *self, size_t x, size_t y, bool state);
 
+int
+lbt_Screen_toggle (lbt_Screen *self, size_t x, size_t y);
+
 bool
 lbt_Screen_get (const lbt_Screen *self, size_t x, size_t y);
 
