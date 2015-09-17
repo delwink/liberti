@@ -23,7 +23,7 @@
 #include "tiberr.h"
 
 static int
-need_next (int c, int *err, FILE *program, size_t *parsed)
+need_next (int c, int *err, FILE *program, unsigned long *parsed)
 {
   int next;
 
@@ -99,7 +99,7 @@ need_next (int c, int *err, FILE *program, size_t *parsed)
 }
 
 static int
-trans_from (int c, int *err, FILE *program, size_t *parsed)
+trans_from (int c, int *err, FILE *program, unsigned long *parsed)
 {
   if (c > SCHAR_MAX)
     c -= 256;
