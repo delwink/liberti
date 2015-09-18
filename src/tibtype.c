@@ -681,6 +681,12 @@ inverse (const TIB *t)
     }
 }
 
+static bool
+is_zero (gsl_complex z)
+{
+  return 0 == GSL_REAL (z) && 0 == GSL_IMAG (z);
+}
+
 TIB *
 tib_div (const TIB *t1, const TIB *t2)
 {
@@ -698,6 +704,12 @@ tib_div (const TIB *t1, const TIB *t2)
     case TIB_TYPE_COMPLEX:
       if (TIB_TYPE_COMPLEX == t2->type)
 	{
+	  if (is_zero (t2->value.number))
+	    {
+	      tib_errno = TIB_DBYZERO;
+	      return NULL;
+	    }
+
 	  temp = tib_copy (t1);
 	  if (NULL == temp)
 	    return NULL;
@@ -714,6 +726,13 @@ tib_div (const TIB *t1, const TIB *t2)
 	  for (i = 0; i < temp->value.list->size; ++i)
 	    {
 	      gsl_complex a = gsl_vector_complex_get (t2->value.list, i);
+	      if (is_zero (a))
+		{
+		  tib_decref (temp);
+		  tib_errno = TIB_DBYZERO;
+		  return NULL;
+		}
+
 	      gsl_complex quotient = gsl_complex_div (t1->value.number, a);
 	      gsl_vector_complex_set (temp->value.list, i, quotient);
 	    }
@@ -727,20 +746,38 @@ tib_div (const TIB *t1, const TIB *t2)
 	return NULL;
 
       if (TIB_TYPE_LIST == t2->type)
-	for (i = 0; i < temp->value.list->size; ++i)
-	  {
-	    gsl_complex a = gsl_vector_complex_get (t1->value.list, i);
-	    gsl_complex b = gsl_vector_complex_get (t2->value.list, i);
-	    gsl_complex quotient = gsl_complex_div (a, b);
-	    gsl_vector_complex_set (temp->value.list, i, quotient);
-	  }
+	{
+	  for (i = 0; i < temp->value.list->size; ++i)
+	    {
+	      gsl_complex a = gsl_vector_complex_get (t1->value.list, i);
+	      gsl_complex b = gsl_vector_complex_get (t2->value.list, i);
+	      if (is_zero (b))
+		{
+		  tib_decref (temp);
+		  tib_errno = TIB_DBYZERO;
+		  return NULL;
+		}
+
+	      gsl_complex quotient = gsl_complex_div (a, b);
+	      gsl_vector_complex_set (temp->value.list, i, quotient);
+	    }
+	}
       else /* must be complex */
-	for (i = 0; i < temp->value.list->size; ++i)
+	{
+	  if (is_zero (t2->value.number))
+	    {
+	      tib_decref (temp);
+	      tib_errno = TIB_DBYZERO;
+	      return NULL;
+	    }
+
+	  for (i = 0; i < temp->value.list->size; ++i)
 	    {
 	      gsl_complex a = gsl_vector_complex_get (t1->value.list, i);
 	      gsl_complex quotient = gsl_complex_div (t2->value.number, a);
 	      gsl_vector_complex_set (temp->value.list, i, quotient);
 	    }
+	}
 
       return temp;
 
