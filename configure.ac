@@ -14,6 +14,7 @@ AC_PROG_CC
 PKG_CHECK_MODULES([gsl], [gsl])
 PKG_CHECK_MODULES([pfxtree], [pfxtree])
 PKG_CHECK_MODULES([sdl2], [sdl2])
+PKG_CHECK_MODULES([libconfig], [libconfig])
 
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([

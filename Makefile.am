@@ -10,13 +10,14 @@ libtib_a_SOURCES = src/tibchar.c src/tiberr.c src/tibeval.c src/tibexpr.c \
 libtib_a_CFLAGS = -Wall -Wextra -Wunreachable-code -ftrapv -std=c89 \
                   $(gsl_CFLAGS)
 
-libliberti_a_SOURCES = src/lbtscreen.c
+libliberti_a_SOURCES = src/lbtscreen.c src/lbtstate.c
 libliberti_a_CFLAGS = -Wall -Wextra -Wunreachable-code -ftrapv -std=c89
 
 liberti_SOURCES = src/liberti.c
 liberti_CFLAGS = -Wall -Wextra -Wunreachable-code -ftrapv -std=c89 \
                  $(sdl2_CFLAGS)
-liberti_LDADD = libtib.a libliberti.a $(gsl_LIBS) $(sdl2_LIBS)
+liberti_LDADD = libtib.a libliberti.a $(gsl_LIBS) $(libconfig_LIBS) \
+                $(sdl2_LIBS)
 
 tibencode_SOURCES = src/tibencode.c
 tibencode_CFLAGS = -Wall -Wextra -Wunreachable-code -ftrapv -std=c89
