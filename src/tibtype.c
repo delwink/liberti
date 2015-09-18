@@ -774,7 +774,7 @@ tib_div (const TIB *t1, const TIB *t2)
 	  for (i = 0; i < temp->value.list->size; ++i)
 	    {
 	      gsl_complex a = gsl_vector_complex_get (t1->value.list, i);
-	      gsl_complex quotient = gsl_complex_div (t2->value.number, a);
+	      gsl_complex quotient = gsl_complex_div (a, t2->value.number);
 	      gsl_vector_complex_set (temp->value.list, i, quotient);
 	    }
 	}
