@@ -21,6 +21,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
+#include "lbtstate.h"
 #include "tibexpr.h"
 
 #define lbt_foreachline(S,L) for (L = S->lines; L != NULL; L = L->next)
@@ -47,11 +48,12 @@ typedef struct
 
   enum lbt_screen_mode mode;
   struct lbt_screen_line *lines;
+  lbt_State *state;
   bool **value;
 } lbt_Screen;
 
 lbt_Screen *
-lbt_new_Screen (size_t width, size_t height);
+lbt_new_Screen (size_t width, size_t height, lbt_State *state);
 
 void
 lbt_Screen_incref (lbt_Screen *self);

@@ -19,7 +19,7 @@
 #include "tiberr.h"
 
 lbt_Screen *
-lbt_new_Screen (size_t width, size_t height)
+lbt_new_Screen (size_t width, size_t height, lbt_State *state)
 {
   lbt_Screen *new = malloc (sizeof (lbt_Screen));
   if (NULL == new)
@@ -59,6 +59,9 @@ lbt_new_Screen (size_t width, size_t height)
 	new->value[i][j] = false;
     }
 
+  lbt_State_incref (state);
+  new->state = state;
+
   return new;
 }
 
@@ -79,6 +82,7 @@ lbt_Screen_decref (lbt_Screen *self)
       free (self->value);
 
       lbt_Screen_clear_lines (self);
+      lbt_State_decref (self->state);
 
       free (self);
     }
