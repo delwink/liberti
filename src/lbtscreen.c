@@ -233,6 +233,17 @@ lbt_Screen_clear_lines (lbt_Screen *self)
     lbt_Screen_del_line (self, 0);
 }
 
+void
+lbt_Screen_set_state (lbt_Screen *self, lbt_State *state)
+{
+  /* increase ref count of this one first to prevent freeing if it's the
+     same state */
+  lbt_State_incref (state);
+
+  lbt_State_decref (self->state);
+  self->state = state;
+}
+
 int
 lbt_Screen_set_mode (lbt_Screen *self, enum lbt_screen_mode mode)
 {
