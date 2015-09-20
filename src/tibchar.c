@@ -15,9 +15,15 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <pfxtree.h>
+#include <stdbool.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "tibchar.h"
+#include "tiberr.h"
+
+static PrefixTree *keywords = NULL;
 
 const char *
 tib_special_char_text (int c)
@@ -216,4 +222,221 @@ tib_special_char_text (int c)
     default:
       return NULL;
     }
+}
+
+static int
+load_range (int beg, int end)
+{
+  int rc = 0, i;
+  for (i = beg; i <= end; ++i)
+    {
+      const char *trans = tib_special_char_text (i);
+      if (NULL == trans)
+	continue;
+
+      rc = pt_add (keywords, trans, i);
+      if (rc)
+	return rc;
+    }
+
+  return rc;
+}
+
+static tib_Expression *
+tokenize (char *beg)
+{
+  char temp;
+  char *orig = beg;
+  size_t len = strlen (beg);
+
+  tib_Expression *part = tib_new_Expression ();
+  if (NULL == part)
+    return NULL;
+
+  while (beg < orig + len)
+    {
+      char *end = strchr (beg, '(');
+      if (end)
+	{
+	  ++end;
+	  temp = *end;
+	  *end = '\0';
+	  const PrefixTree *t = pt_search (keywords, beg);
+	  *end = temp;
+	  if (t)
+	    {
+	      tib_errno = tib_Expression_push (part, pt_data (t));
+	      if (tib_errno)
+		break;
+
+	      beg = end;
+	      continue;
+	    }
+	}
+
+      bool found = false;
+      for (end = beg + 1; end <= orig + len; ++end)
+	{
+	  temp = *end;
+	  *end = '\0';
+
+	  const PrefixTree *t = pt_search (keywords, beg);
+	  if (t)
+	    {
+	      tib_errno = tib_Expression_push (part, pt_data (t));
+	      if (tib_errno)
+		break;
+
+	      beg = end;
+	      found = true;
+	    }
+
+	  *end = temp;
+	  if (found)
+	    break;
+	}
+
+      if (tib_errno)
+	break;
+
+      if (found)
+	continue;
+
+      tib_errno = tib_Expression_push (part, *beg);
+      if (tib_errno)
+	break;
+
+      ++beg;
+    }
+
+  if (tib_errno)
+    {
+      tib_Expression_decref (part);
+      part = NULL;
+    }
+
+  return part;
+}
+
+tib_Expression *
+tib_encode_str (const char *s)
+{
+  char *buf, *beg, *end;
+  size_t line_len = strlen (s);
+
+  buf = malloc ((line_len + 1) * sizeof (char));
+  if (NULL == buf)
+    {
+      tib_errno = TIB_EALLOC;
+      return NULL;
+    }
+
+  strcpy (buf, s);
+  beg = buf;
+
+  tib_Expression *translated = tib_new_Expression ();
+  if (NULL == translated)
+    {
+      free (buf);
+      return NULL;
+    }
+
+  while (beg < buf + line_len)
+    {
+      end = strchr (beg, '"');
+      if (end)
+	*end = 0;
+
+      tib_Expression *part = tokenize (beg);
+      if (NULL == part && tib_errno)
+	break;
+
+      tib_errno = tib_Expression_cat (translated, part);
+      tib_Expression_decref (part);
+      if (tib_errno)
+	break;
+
+      if (end)
+	{
+	  beg = end + 1;
+	  end = strchr (beg, '"');
+
+	  if (!end)
+	    end = buf + line_len;
+
+	  tib_errno = tib_Expression_push (translated, '"');
+	  if (tib_errno)
+	    break;
+
+	  for (; beg < end; ++beg)
+	    {
+	      tib_errno = tib_Expression_push (translated, *beg);
+	      if (tib_errno)
+		break;
+	    }
+	  if (tib_errno)
+	    break;
+
+	  if (*end)
+	    {
+	      tib_errno = tib_Expression_push (translated, *end);
+	      if (tib_errno)
+		break;
+	    }
+
+	  beg = end + 1;
+	}
+      else
+	{
+	  break;
+	}
+    }
+
+  free (buf);
+
+  if (tib_errno)
+    {
+      tib_Expression_decref (translated);
+      return NULL;
+    }
+
+  return translated;
+}
+
+int
+tib_keyword_init ()
+{
+  int rc;
+
+  if (keywords)
+    pt_free (keywords);
+
+  keywords = pt_new ();
+  if (NULL == keywords)
+    return TIB_EALLOC;
+
+  rc = load_range (TIB_CHAR_LUSER, TIB_CHAR_GREATEREQUAL);
+  if (rc)
+    goto fail;
+
+  rc = load_range (TIB_CHAR_SIN, TIB_CHAR_PIXEL_TEST);
+  if (rc)
+    goto fail;
+
+  return rc;
+
+ fail:
+  if (keywords)
+    {
+      pt_free (keywords);
+      keywords = NULL;
+    }
+
+  return rc;
+}
+
+void
+tib_keyword_free ()
+{
+  pt_free (keywords);
 }

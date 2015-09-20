@@ -18,6 +18,8 @@
 #ifndef DELWINK_TIB_TIBCHAR_H
 #define DELWINK_TIB_TIBCHAR_H
 
+#include "tibexpr.h"
+
 #define TIB_CHAR_STO          '$'
 #define TIB_CHAR_DIFFERENT    '~'
 #define TIB_CHAR_GREATEREQUAL ((char) -100)
@@ -106,5 +108,14 @@ enum tib_special_char
 
 const char *
 tib_special_char_text (int c);
+
+tib_Expression *
+tib_encode_str (const char *s);
+
+int
+tib_keyword_init (void);
+
+void
+tib_keyword_free (void);
 
 #endif

@@ -83,7 +83,7 @@ tib_Expression_decref (tib_Expression *expr)
 }
 
 int
-tib_Expression_set (tib_Expression *expr, char *s)
+tib_Expression_set (tib_Expression *expr, const char *s)
 {
   int *temp = expr->value;
   size_t len = strlen (s);

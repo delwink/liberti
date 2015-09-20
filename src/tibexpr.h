@@ -43,7 +43,7 @@ void
 tib_Expression_decref (tib_Expression *expr);
 
 int
-tib_Expression_set (tib_Expression *expr, char *s);
+tib_Expression_set (tib_Expression *expr, const char *s);
 
 void
 tib_Expression_clear (tib_Expression *expr);
