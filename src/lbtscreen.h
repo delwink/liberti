@@ -19,6 +19,7 @@
 #define DELWINK_LIBLIBERTI_SCREEN_H
 
 #include <stdbool.h>
+#include <stdint.h>
 #include <stdlib.h>
 
 #include "lbtstate.h"
@@ -34,8 +35,8 @@ enum lbt_screen_mode
 struct lbt_screen_line
 {
   tib_Expression *value;
-  size_t x;
-  size_t y;
+  int64_t x;
+  int64_t y;
 
   struct lbt_screen_line *next;
 };
@@ -80,8 +81,8 @@ bool
 lbt_Screen_get (const lbt_Screen *self, size_t x, size_t y);
 
 int
-lbt_Screen_add_line (lbt_Screen *self, const tib_Expression *text, size_t x,
-		     size_t y);
+lbt_Screen_add_line (lbt_Screen *self, const tib_Expression *text, int64_t x,
+		     int64_t y);
 
 struct lbt_screen_line *
 lbt_Screen_get_line (const lbt_Screen *self, size_t i);

@@ -156,8 +156,8 @@ new_line (const tib_Expression *text, size_t x, size_t y)
 }
 
 int
-lbt_Screen_add_line (lbt_Screen *self, const tib_Expression *text, size_t x,
-		     size_t y)
+lbt_Screen_add_line (lbt_Screen *self, const tib_Expression *text, int64_t x,
+		     int64_t y)
 {
   if (!self->lines)
     {
@@ -252,8 +252,43 @@ lbt_Screen_set_mode (lbt_Screen *self, enum lbt_screen_mode mode)
 
   self->mode = mode;
 
-  switch (mode) /* TODO: initialize mode */
+  char cfgpath[64];
+  switch (mode)
     {
+    case LBT_COMMAND_MODE:
+      sprintf (cfgpath, "mode.[%d].lines", mode);
+      config_setting_t *lines = config_lookup (&self->state->conf, cfgpath);
+
+      size_t i = 0;
+      config_setting_t *line;
+      while ((line = config_setting_get_elem (lines, i)))
+	{
+	  config_setting_t *setting = config_setting_get_member (line, "x");
+	  int64_t x = setting ? config_setting_get_int64 (setting) : 0;
+
+	  setting = config_setting_get_member (line, "y");
+	  int64_t y = setting ? config_setting_get_int64 (setting) : 0;
+
+	  setting = config_setting_get_member (line, "text");
+	  const char *s = setting ? config_setting_get_string (setting) : "";
+
+	  tib_Expression *text = tib_new_Expression ();
+	  if (NULL == text)
+	    return TIB_EALLOC;
+
+	  tib_errno = tib_Expression_set (text, s);
+	  if (tib_errno)
+	    {
+	      tib_Expression_decref (text);
+	      return tib_errno;
+	    }
+
+	  tib_errno = lbt_Screen_add_line (self, text, x, y);
+	  tib_Expression_decref (text);
+	  if (tib_errno)
+	    return tib_errno;
+	}
+      return 0;
 
     default:
       return 0;
