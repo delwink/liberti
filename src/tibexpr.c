@@ -85,24 +85,14 @@ tib_Expression_decref (tib_Expression *expr)
 int
 tib_Expression_set (tib_Expression *expr, const char *s)
 {
-  int *temp = expr->value;
-  size_t len = strlen (s);
+  tib_Expression *new = tib_encode_str (s);
+  if (NULL == new)
+    return tib_errno;
 
-  expr->value = malloc (len * sizeof (int));
-  if (NULL == expr->value)
-    {
-      expr->value = temp;
-      return TIB_EALLOC;
-    }
-
-  size_t i;
-  for (i = 0; i < len; ++i)
-    expr->value[i] = s[i];
-
-  expr->len = len;
-
-  if (NULL == temp)
-    free (temp);
+  free (expr->value);
+  expr->len = new->len;
+  expr->value = new->value;
+  free (new);
 
   return 0;
 }
