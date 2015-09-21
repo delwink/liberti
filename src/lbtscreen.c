@@ -245,6 +245,12 @@ lbt_Screen_set_state (lbt_Screen *self, lbt_State *state)
 }
 
 int
+lbt_Screen_refresh (lbt_Screen *self)
+{
+  return lbt_Screen_set_mode (self, self->mode);
+}
+
+int
 lbt_Screen_set_mode (lbt_Screen *self, enum lbt_screen_mode mode)
 {
   lbt_Screen_clear (self);

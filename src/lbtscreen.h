@@ -96,6 +96,9 @@ lbt_Screen_clear_lines (lbt_Screen *self);
 void
 lbt_Screen_set_state (lbt_Screen *self, lbt_State *state);
 
+int
+lbt_Screen_refresh (lbt_Screen *self);
+
 /* modes */
 
 int
