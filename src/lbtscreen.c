@@ -18,6 +18,16 @@
 #include "lbtscreen.h"
 #include "tiberr.h"
 
+#define foreachscr(R,S) for (S = R; S != NULL; S = S->next)
+
+struct screen_reg
+{
+  lbt_Screen *scr;
+  struct screen_reg *next;
+};
+
+static struct screen_reg *registry = NULL;
+
 lbt_Screen *
 lbt_new_Screen (size_t width, size_t height, lbt_State *state)
 {
@@ -47,13 +57,7 @@ lbt_new_Screen (size_t width, size_t height, lbt_State *state)
     {
       new->value[i] = malloc (width * sizeof (bool));
       if (NULL == new->value[i])
-	{
-	  for (j = 0; j < i; ++j)
-	    free (new->value[j]);
-	  free (new->value);
-	  tib_errno = TIB_EALLOC;
-	  return NULL;
-	}
+	goto fail;
 
       for (j = 0; j < width; ++j)
 	new->value[i][j] = false;
@@ -62,7 +66,39 @@ lbt_new_Screen (size_t width, size_t height, lbt_State *state)
   lbt_State_incref (state);
   new->state = state;
 
+  if (!registry)
+    {
+      registry = malloc (sizeof (struct screen_reg));
+      if (NULL == registry)
+	goto fail;
+
+      registry->scr = new;
+      registry->next = NULL;
+    }
+  else
+    {
+      struct screen_reg *r = registry;
+      while (r->next != NULL)
+	r = r->next;
+
+      r->next = malloc (sizeof (struct screen_reg));
+      r = r->next;
+      if (NULL == r)
+	goto fail;
+
+      r->scr = new;
+      r->next = NULL;
+    }
+
   return new;
+
+ fail:
+  for (j = 0; j < i; ++j)
+    free (new->value[j]);
+  free (new->value);
+  free (new);
+  tib_errno = TIB_EALLOC;
+  return NULL;
 }
 
 void
@@ -85,6 +121,26 @@ lbt_Screen_decref (lbt_Screen *self)
       lbt_State_decref (self->state);
 
       free (self);
+
+      struct screen_reg *r = registry;
+      if (r->scr == self)
+	{
+	  if (r->next)
+	    registry = r->next;
+	  else
+	    registry = NULL;
+
+	  free (r);
+	}
+      else
+	{
+	  while (r->next->scr != self)
+	    r = r->next;
+
+	  struct screen_reg *temp = r->next->next;
+	  free (r->next);
+	  r->next = temp;
+	}
     }
 }
 
