@@ -29,7 +29,8 @@
 
 enum lbt_screen_mode
   {
-    LBT_COMMAND_MODE
+    LBT_COMMAND_MODE,
+    LBT_NUM_MODES /* this will contain the number of mode IDs defined */
   };
 
 struct lbt_screen_line
@@ -41,6 +42,12 @@ struct lbt_screen_line
   struct lbt_screen_line *next;
 };
 
+struct lbt_cursor_pos
+{
+  int64_t x;
+  int64_t y;
+};
+
 typedef struct
 {
   size_t refs;
@@ -49,6 +56,7 @@ typedef struct
 
   enum lbt_screen_mode mode;
   struct lbt_screen_line *lines;
+  struct lbt_cursor_pos cursors[LBT_NUM_MODES];
   lbt_State *state;
   bool **value;
 } lbt_Screen;

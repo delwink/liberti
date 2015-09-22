@@ -349,6 +349,9 @@ lbt_Screen_set_mode (lbt_Screen *self, enum lbt_screen_mode mode)
 	  tib_Expression_decref (text);
 	  if (tib_errno)
 	    return tib_errno;
+
+	  self->cursors[LBT_COMMAND_MODE].x = x;
+	  self->cursors[LBT_COMMAND_MODE].y = y;
 	}
       return 0;
 
