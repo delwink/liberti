@@ -107,6 +107,9 @@ lbt_Screen_set_state (lbt_Screen *self, lbt_State *state);
 int
 lbt_Screen_refresh (lbt_Screen *self);
 
+void
+lbt_Screen_move_cursor (lbt_Screen *self, int64_t x, int64_t y);
+
 /* modes */
 
 int

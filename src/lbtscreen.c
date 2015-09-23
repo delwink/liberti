@@ -306,6 +306,33 @@ lbt_Screen_refresh (lbt_Screen *self)
   return lbt_Screen_set_mode (self, self->mode);
 }
 
+int64_t
+to_min (int64_t x, int64_t min)
+{
+  if (x < min)
+    return min;
+
+  return x;
+}
+
+void
+lbt_Screen_move_cursor (lbt_Screen *self, int64_t x, int64_t y)
+{
+  self->cursors[self->mode].x += x;
+  self->cursors[self->mode].y += y;
+
+  switch (self->mode)
+    {
+    case LBT_COMMAND_MODE:
+      self->cursors[self->mode].x = to_min (self->cursors[self->mode].x, 0);
+      self->cursors[self->mode].y = to_min (self->cursors[self->mode].y, 0);
+      break;
+
+    default:
+      break;
+    }
+}
+
 int
 lbt_Screen_set_mode (lbt_Screen *self, enum lbt_screen_mode mode)
 {
