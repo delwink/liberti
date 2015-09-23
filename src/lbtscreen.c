@@ -333,6 +333,43 @@ lbt_Screen_move_cursor (lbt_Screen *self, int64_t x, int64_t y)
     }
 }
 
+struct lbt_screen_line *
+current_line (lbt_Screen *self)
+{
+  switch (self->mode)
+    {
+    case LBT_COMMAND_MODE:
+      return lbt_Screen_get_line (self, self->cursors[self->mode].y);
+
+    default:
+      return NULL;
+    }
+}
+
+int
+lbt_Screen_write_char (lbt_Screen *self, int c)
+{
+  struct lbt_screen_line *line = current_line (self);
+
+  int64_t x = self->cursors[self->mode].x;
+  if (NULL == line || x < 0 || (size_t) x >= line->value->len)
+    return TIB_EINDEX;
+
+  line->value->value[x] = c;
+  return 0;
+}
+
+int
+lbt_Screen_insert_char (lbt_Screen *self, int c)
+{
+  struct lbt_screen_line *line = current_line (self);
+  if (NULL == line)
+    return TIB_EINDEX;
+
+  return tib_Expression_insert (line->value,
+				(size_t) self->cursors[self->mode].x, c);
+}
+
 int
 lbt_Screen_set_mode (lbt_Screen *self, enum lbt_screen_mode mode)
 {

@@ -110,6 +110,12 @@ lbt_Screen_refresh (lbt_Screen *self);
 void
 lbt_Screen_move_cursor (lbt_Screen *self, int64_t x, int64_t y);
 
+int
+lbt_Screen_write_char (lbt_Screen *self, int c);
+
+int
+lbt_Screen_insert_char (lbt_Screen *self, int c);
+
 /* modes */
 
 int
