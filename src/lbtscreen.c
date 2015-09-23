@@ -369,8 +369,11 @@ lbt_Screen_write_char (lbt_Screen *self, int c)
   struct lbt_screen_line *line = current_line (self);
 
   int64_t x = CURSOR.x;
-  if (NULL == line || x < 0 || (size_t) x >= line->value->len)
+  if (NULL == line || x < 0 || (size_t) x > tib_Expression_len (line->value))
     return TIB_EINDEX;
+
+  if (tib_Expression_len (line->value) == (size_t) x)
+    return tib_Expression_push (line->value, c);
 
   line->value->value[x] = c;
   return 0;
