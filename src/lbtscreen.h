@@ -101,6 +101,9 @@ lbt_Screen_del_line (lbt_Screen *self, size_t i);
 void
 lbt_Screen_clear_lines (lbt_Screen *self);
 
+size_t
+lbt_Screen_num_lines (const lbt_Screen *self);
+
 void
 lbt_Screen_set_state (lbt_Screen *self, lbt_State *state);
 

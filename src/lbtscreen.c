@@ -19,6 +19,7 @@
 #include "tiberr.h"
 
 #define foreachscr(R,S) for (S = R; S != NULL; S = S->next)
+#define CURSOR self->cursors[self->mode]
 
 struct screen_reg
 {
@@ -289,6 +290,17 @@ lbt_Screen_clear_lines (lbt_Screen *self)
     lbt_Screen_del_line (self, 0);
 }
 
+size_t
+lbt_Screen_num_lines (const lbt_Screen *self)
+{
+  struct lbt_screen_line *line;
+  size_t i = 0;
+  lbt_foreachline (self, line)
+    ++i;
+
+  return i;
+}
+
 void
 lbt_Screen_set_state (lbt_Screen *self, lbt_State *state)
 {
@@ -307,42 +319,47 @@ lbt_Screen_refresh (lbt_Screen *self)
 }
 
 int64_t
-to_min (int64_t x, int64_t min)
+to_bounds (int64_t x, int64_t min, int64_t max)
 {
   if (x < min)
-    return min;
+    x = min;
+  else if (x > max)
+    x = max;
 
   return x;
 }
 
-void
-lbt_Screen_move_cursor (lbt_Screen *self, int64_t x, int64_t y)
-{
-  self->cursors[self->mode].x += x;
-  self->cursors[self->mode].y += y;
-
-  switch (self->mode)
-    {
-    case LBT_COMMAND_MODE:
-      self->cursors[self->mode].x = to_min (self->cursors[self->mode].x, 0);
-      self->cursors[self->mode].y = to_min (self->cursors[self->mode].y, 0);
-      break;
-
-    default:
-      break;
-    }
-}
-
-struct lbt_screen_line *
+static struct lbt_screen_line *
 current_line (lbt_Screen *self)
 {
   switch (self->mode)
     {
     case LBT_COMMAND_MODE:
-      return lbt_Screen_get_line (self, self->cursors[self->mode].y);
+      return lbt_Screen_get_line (self, CURSOR.y);
 
     default:
       return NULL;
+    }
+}
+
+void
+lbt_Screen_move_cursor (lbt_Screen *self, int64_t x, int64_t y)
+{
+  CURSOR.x += x;
+  CURSOR.y += y;
+
+  switch (self->mode)
+    {
+    case LBT_COMMAND_MODE:
+      CURSOR.y = to_bounds (CURSOR.y, 0, (int64_t) lbt_Screen_num_lines (self));
+
+      struct lbt_screen_line *line = current_line (self);
+      if (line)
+	CURSOR.x = to_bounds (CURSOR.x, 0, tib_Expression_len (line->value));
+      break;
+
+    default:
+      break;
     }
 }
 
@@ -351,7 +368,7 @@ lbt_Screen_write_char (lbt_Screen *self, int c)
 {
   struct lbt_screen_line *line = current_line (self);
 
-  int64_t x = self->cursors[self->mode].x;
+  int64_t x = CURSOR.x;
   if (NULL == line || x < 0 || (size_t) x >= line->value->len)
     return TIB_EINDEX;
 
@@ -366,8 +383,7 @@ lbt_Screen_insert_char (lbt_Screen *self, int c)
   if (NULL == line)
     return TIB_EINDEX;
 
-  return tib_Expression_insert (line->value,
-				(size_t) self->cursors[self->mode].x, c);
+  return tib_Expression_insert (line->value, (size_t) CURSOR.x, c);
 }
 
 int
