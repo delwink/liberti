@@ -351,7 +351,7 @@ lbt_Screen_set_mode (lbt_Screen *self, enum lbt_screen_mode mode)
 	    return tib_errno;
 
 	  self->cursors[LBT_COMMAND_MODE].x = x;
-	  self->cursors[LBT_COMMAND_MODE].y = y;
+	  self->cursors[LBT_COMMAND_MODE].y = 0;
 	}
       return 0;
 
