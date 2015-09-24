@@ -170,9 +170,9 @@ tib_registry_init ()
 
 #define ADD(K,F) rc = tib_registry_add (K, F); if (rc) goto fail;
 
-  ADD('(', func_paren);
-  ADD(TIB_CHAR_SIN, func_sin);
-  ADD(TIB_CHAR_RANDINT, func_randint);
+  ADD ('(', func_paren);
+  ADD (TIB_CHAR_SIN, func_sin);
+  ADD (TIB_CHAR_RANDINT, func_randint);
 
 #undef ADD
 
