@@ -51,6 +51,9 @@ tib_special_char_text (int c)
     case TIB_CHAR_DELVAR:
       return "DelVar";
 
+    case TIB_CHAR_DIFFERENT:
+      return "~";
+
     case TIB_CHAR_DIM:
       return "Dim(";
 
@@ -88,31 +91,31 @@ tib_special_char_text (int c)
       return "int(";
 
     case TIB_CHAR_L1:
-      return "L&";
+      return "L\\1";
 
     case TIB_CHAR_L2:
-      return "L~";
+      return "L\\2";
 
     case TIB_CHAR_L3:
-      return "L#";
+      return "L\\3";
 
     case TIB_CHAR_L4:
-      return "L\x8c";
+      return "L\\4";
 
     case TIB_CHAR_L5:
-      return "L\x8b";
+      return "L\\5";
 
     case TIB_CHAR_L6:
-      return "L\x8a";
+      return "L\\6";
 
     case TIB_CHAR_L7:
-      return "L\x89";
+      return "L\\7";
 
     case TIB_CHAR_L8:
-      return "L\x88";
+      return "L\\8";
 
     case TIB_CHAR_L9:
-      return "L\x87";
+      return "L\\9";
 
     case TIB_CHAR_LABEL:
       return "Lbl ";
@@ -189,6 +192,9 @@ tib_special_char_text (int c)
     case TIB_CHAR_SIN:
       return "sin(";
 
+    case TIB_CHAR_STO:
+      return "$";
+
     case TIB_CHAR_STOP:
       return "Stop ";
 
@@ -208,16 +214,22 @@ tib_special_char_text (int c)
       return "While ";
 
     case TIB_CHAR_XMIN:
-      return "XMin";
+      return "Xmin";
 
     case TIB_CHAR_XMAX:
-      return "XMax";
+      return "Xmax";
+
+    case TIB_CHAR_XSCL:
+      return "Xscl";
 
     case TIB_CHAR_YMIN:
-      return "YMin";
+      return "Ymin";
 
     case TIB_CHAR_YMAX:
-      return "YMax";
+      return "Ymax";
+
+    case TIB_CHAR_YSCL:
+      return "Yscl";
 
     default:
       return NULL;
@@ -415,11 +427,7 @@ tib_keyword_init ()
   if (NULL == keywords)
     return TIB_EALLOC;
 
-  rc = load_range (TIB_CHAR_LUSER, TIB_CHAR_GREATEREQUAL);
-  if (rc)
-    goto fail;
-
-  rc = load_range (TIB_CHAR_SIN, TIB_CHAR_PIXEL_TEST);
+  rc = load_range (TIB_CHAR_AND, TIB_CHAR_YSCL);
   if (rc)
     goto fail;
 
