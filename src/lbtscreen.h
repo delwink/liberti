@@ -18,29 +18,16 @@
 #ifndef DELWINK_LIBLIBERTI_SCREEN_H
 #define DELWINK_LIBLIBERTI_SCREEN_H
 
-#include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
 
 #include "lbtstate.h"
 #include "tibexpr.h"
 
-#define lbt_foreachline(S,L) for (L = S->lines; L != NULL; L = L->next)
+#define lbt_foreachline(S,L) for (L = S->state->lines[S->mode]; L != NULL; \
+				  L = L->next)
 
-enum lbt_screen_mode
-  {
-    LBT_COMMAND_MODE,
-    LBT_NUM_MODES /* this will contain the number of mode IDs defined */
-  };
-
-struct lbt_screen_line
-{
-  tib_Expression *value;
-  int64_t x;
-  int64_t y;
-
-  struct lbt_screen_line *next;
-};
+typedef int (*lbt_ScreenTrigger) (void *data);
 
 struct lbt_cursor_pos
 {
@@ -48,45 +35,30 @@ struct lbt_cursor_pos
   int64_t y;
 };
 
+typedef struct lbt_screen_trigger_list
+{
+  lbt_ScreenTrigger trigger;
+  struct lbt_screen_trigger_list *next;
+} lbt_ScreenTriggerList;
+
 typedef struct
 {
   size_t refs;
-  size_t height;
-  size_t width;
 
   enum lbt_screen_mode mode;
-  struct lbt_screen_line *lines;
-  struct lbt_cursor_pos cursors[LBT_NUM_MODES];
+  struct lbt_cursor_pos cursor;
+  lbt_ScreenTriggerList *triggers[LBT_NUM_MODES];
   lbt_State *state;
-  bool **value;
 } lbt_Screen;
 
 lbt_Screen *
-lbt_new_Screen (size_t width, size_t height, lbt_State *state);
+lbt_new_Screen (lbt_State *state);
 
 void
 lbt_Screen_incref (lbt_Screen *self);
 
 void
 lbt_Screen_decref (lbt_Screen *self);
-
-void
-lbt_Screen_clear (lbt_Screen *self);
-
-size_t
-lbt_Screen_height (const lbt_Screen *self);
-
-size_t
-lbt_Screen_width (const lbt_Screen *self);
-
-int
-lbt_Screen_set (lbt_Screen *self, size_t x, size_t y, bool state);
-
-int
-lbt_Screen_toggle (lbt_Screen *self, size_t x, size_t y);
-
-bool
-lbt_Screen_get (const lbt_Screen *self, size_t x, size_t y);
 
 int
 lbt_Screen_add_line (lbt_Screen *self, const tib_Expression *text, int64_t x,
@@ -107,7 +79,7 @@ lbt_Screen_num_lines (const lbt_Screen *self);
 void
 lbt_Screen_set_state (lbt_Screen *self, lbt_State *state);
 
-int
+void
 lbt_Screen_refresh (lbt_Screen *self);
 
 void
@@ -121,7 +93,7 @@ lbt_Screen_insert_char (lbt_Screen *self, int c);
 
 /* modes */
 
-int
+void
 lbt_Screen_set_mode (lbt_Screen *self, enum lbt_screen_mode mode);
 
 enum lbt_screen_mode

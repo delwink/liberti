@@ -18,14 +18,32 @@
 #ifndef DELWINK_LIBLIBERTI_STATE_H
 #define DELWINK_LIBLIBERTI_STATE_H
 
-#include <libconfig.h>
+#include <stdint.h>
 #include <stdlib.h>
+
+#include "tibexpr.h"
+
+enum lbt_screen_mode
+  {
+    LBT_COMMAND_MODE,
+    LBT_NUM_MODES /* this will contain the number of mode IDs defined */
+  };
+
+struct lbt_screen_line
+{
+  tib_Expression *value;
+  int64_t x;
+  int64_t y;
+
+  struct lbt_screen_line *next;
+};
 
 typedef struct
 {
   size_t refs;
+
   char *save_path;
-  config_t conf;
+  struct lbt_screen_line *lines[LBT_NUM_MODES];
 } lbt_State;
 
 lbt_State *
@@ -36,5 +54,25 @@ lbt_State_incref (lbt_State *self);
 
 void
 lbt_State_decref (lbt_State *self);
+
+int
+lbt_State_add_line (lbt_State *self, const tib_Expression *text, int64_t x,
+		    int64_t y, enum lbt_screen_mode mode);
+
+struct lbt_screen_line *
+lbt_State_get_line (const lbt_State *self, size_t i,
+		    enum lbt_screen_mode mode);
+
+void
+lbt_State_del_line (lbt_State *self, size_t i, enum lbt_screen_mode mode);
+
+void
+lbt_State_clear_lines (lbt_State *self, enum lbt_screen_mode mode);
+
+void
+lbt_State_clear_all_lines (lbt_State *self);
+
+size_t
+lbt_State_num_lines (lbt_State *self, enum lbt_screen_mode mode);
 
 #endif
