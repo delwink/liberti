@@ -13,7 +13,7 @@ libtib_a_CFLAGS = -Wall -Wextra -Wunreachable-code -ftrapv -std=c89 \
 libliberti_a_SOURCES = src/lbtscreen.c src/lbtstate.c
 libliberti_a_CFLAGS = -Wall -Wextra -Wunreachable-code -ftrapv -std=c89
 
-liberti_SOURCES = src/liberti.c
+liberti_SOURCES = src/liberti.c src/ttf.c
 liberti_CFLAGS = -Wall -Wextra -Wunreachable-code -ftrapv -std=c89 \
                  $(sdl2_CFLAGS)
 liberti_LDADD = libtib.a libliberti.a $(gsl_LIBS) $(libconfig_LIBS) \
