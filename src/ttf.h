@@ -18,16 +18,16 @@
 #ifndef DELWINK_LIBERTI_TTF_H
 #define DELWINK_LIBERTI_TTF_H
 
-#include <SDL_rwops.h>
+#include <SDL_ttf.h>
 
 struct fontset
 {
-  SDL_RWops *reg;
-  SDL_RWops *small;
+  TTF_Font *reg;
+  TTF_Font *small;
 };
 
 struct fontset *
-get_font_set (void);
+get_font_set (int scale);
 
 void
 free_font_set (struct fontset *fs);

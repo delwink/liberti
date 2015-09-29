@@ -15,51 +15,96 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <SDL_rwops.h>
+
 #include "ttf.h"
 
-extern const unsigned char REG_FONT[];
+extern unsigned char REG_FONT[];
 #define REG_FONT_LEN 15504
 
-extern const unsigned char SMALL_FONT[];
+extern unsigned char SMALL_FONT[];
 #define SMALL_FONT_LEN 7724
 
-struct fontset *
-get_font_set (void)
+static size_t fontrefs = 0;
+
+static int
+increfs ()
 {
-  SDL_RWops *reg = SDL_RWFromConstMem (REG_FONT, REG_FONT_LEN);
-  if (NULL == reg)
+  if (0 == fontrefs++)
+    return TTF_Init ();
+
+  return 0;
+}
+
+static void
+decrefs ()
+{
+  if (0 == fontrefs)
+    return;
+
+  if (0 == --fontrefs)
+    TTF_Quit ();
+}
+
+struct fontset *
+get_font_set (int scale)
+{
+  SDL_RWops *regops = NULL, *smallops = NULL;
+  TTF_Font *reg = NULL, *small = NULL;
+
+  if (increfs ())
     return NULL;
 
-  SDL_RWops *sm = SDL_RWFromConstMem (SMALL_FONT, SMALL_FONT_LEN);
-  if (NULL == sm)
-    {
-      SDL_RWclose (reg);
-      return NULL;
-    }
+  regops = SDL_RWFromMem (REG_FONT, REG_FONT_LEN);
+  if (NULL == regops)
+    goto fail;
+
+  smallops = SDL_RWFromMem (SMALL_FONT, SMALL_FONT_LEN);
+  if (NULL == smallops)
+    goto fail;
+
+  reg = TTF_OpenFontRW (regops, 1, scale);
+  if (NULL == reg)
+    goto fail;
+
+  small = TTF_OpenFontRW (smallops, 1, scale);
+  if (NULL == small)
+    goto fail;
 
   struct fontset *fs = malloc (sizeof (struct fontset));
   if (NULL == fs)
-    {
-      SDL_RWclose (reg);
-      SDL_RWclose (sm);
-      return NULL;
-    }
+    goto fail;
 
   fs->reg = reg;
-  fs->small = sm;
+  fs->small = small;
 
   return fs;
+
+ fail:
+  if (reg)
+    TTF_CloseFont (reg);
+  if (small)
+    TTF_CloseFont (small);
+  if (regops)
+    SDL_RWclose (regops);
+  if (smallops)
+    SDL_RWclose (smallops);
+
+  decrefs ();
+
+  return NULL;
 }
 
 void
 free_font_set (struct fontset *fs)
 {
-  SDL_RWclose (fs->reg);
-  SDL_RWclose (fs->small);
+  TTF_CloseFont (fs->reg);
+  TTF_CloseFont (fs->small);
+  decrefs ();
   free (fs);
 }
 
-const unsigned char REG_FONT[] = 
+unsigned char REG_FONT[] = 
   {
     0x00, 0x01, 0x00, 0x00, 0x00, 0x0d, 0x00, 0x80, 0x00, 0x03, 0x00, 0x50,
     0x46, 0x46, 0x54, 0x4d, 0x66, 0xad, 0x84, 0x79, 0x00, 0x00, 0x3c, 0x74,
@@ -1355,7 +1400,7 @@ const unsigned char REG_FONT[] =
     0xc8, 0x40, 0xd3, 0xbd, 0x00, 0x00, 0x00, 0x00, 0xd2, 0x2f, 0x0d, 0xec
   };
 
-const unsigned char SMALL_FONT[] =
+unsigned char SMALL_FONT[] =
   {
     0x00, 0x01, 0x00, 0x00, 0x00, 0x0d, 0x00, 0x80, 0x00, 0x03, 0x00, 0x50,
     0x46, 0x46, 0x54, 0x4d, 0x66, 0x95, 0x8b, 0x2b, 0x00, 0x00, 0x1e, 0x10,
