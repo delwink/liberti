@@ -84,6 +84,7 @@ tib_var_set (int key, const TIB *value)
 	      return tib_errno;
 	    }
 
+	  tib_decref (old);
 	  return 0;
 	}
     }
