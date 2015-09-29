@@ -64,10 +64,12 @@ get_font_set (int scale)
     goto fail;
 
   reg = TTF_OpenFontRW (regops, 1, scale);
+  regops = NULL;
   if (NULL == reg)
     goto fail;
 
   small = TTF_OpenFontRW (smallops, 1, scale);
+  smallops = NULL;
   if (NULL == small)
     goto fail;
 
