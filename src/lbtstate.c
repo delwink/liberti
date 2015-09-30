@@ -95,6 +95,10 @@ lbt_new_State (const char *save_path)
 	}
     }
 
+  enum lbt_screen_mode m;
+  for (m = LBT_COMMAND_MODE; m < LBT_NUM_MODES; ++m)
+    new->lines[m] = NULL;
+
   config_destroy (&conf);
 
   return new;
