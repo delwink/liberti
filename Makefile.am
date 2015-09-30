@@ -16,7 +16,7 @@ libliberti_a_CFLAGS = -Wall -Wextra -Wunreachable-code -ftrapv -std=c89
 liberti_SOURCES = src/liberti.c src/ttf.c
 liberti_CFLAGS = -Wall -Wextra -Wunreachable-code -ftrapv -std=c89 \
                  $(sdl2_CFLAGS)
-liberti_LDADD = libtib.a libliberti.a $(gsl_LIBS) $(libconfig_LIBS) \
+liberti_LDADD = libliberti.a libtib.a $(gsl_LIBS) $(libconfig_LIBS) \
                 $(pfxtree_LIBS) $(sdl2_LIBS) -lSDL2_ttf
 
 tibencode_SOURCES = src/tibencode.c
