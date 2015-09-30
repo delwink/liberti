@@ -63,14 +63,14 @@ main (int argc, char *argv[])
   tib_errno = tib_keyword_init ();
   if (tib_errno)
     {
-      fputs ("tibencode: Error allocating space for keyword tree.", stderr);
+      fputs ("tibencode: Error allocating space for keyword tree.\n", stderr);
       return tib_errno;
     }
 
   tib_Expression *translated = tib_new_Expression ();
   if (NULL == translated)
     {
-      fputs ("tibencode: Error creating expression buffer.", stderr);
+      fputs ("tibencode: Error creating expression buffer.\n", stderr);
       return TIB_EALLOC;
     }
 
@@ -79,7 +79,7 @@ main (int argc, char *argv[])
   if (NULL == buf)
     {
       tib_Expression_decref (translated);
-      fputs ("tibencode: Error allocating line buffer.", stderr);
+      fputs ("tibencode: Error allocating line buffer.\n", stderr);
       return TIB_EALLOC;
     }
 
