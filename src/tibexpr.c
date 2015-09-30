@@ -73,6 +73,9 @@ tib_Expression_incref (tib_Expression *expr)
 void
 tib_Expression_decref (tib_Expression *expr)
 {
+  if (0 == expr->refs)
+    return;
+
   if (0 == --expr->refs)
     {
       if (NULL != expr->value)

@@ -120,6 +120,9 @@ lbt_State_incref (lbt_State *self)
 void
 lbt_State_decref (lbt_State *self)
 {
+  if (0 == self->refs)
+    return;
+
   if (--self->refs == 0)
     {
       config_t conf;

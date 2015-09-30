@@ -48,6 +48,9 @@ lbt_Screen_incref (lbt_Screen *self)
 void
 lbt_Screen_decref (lbt_Screen *self)
 {
+  if (0 == self->refs)
+    return;
+
   if (--self->refs == 0)
     {
       lbt_State_decref (self->state);

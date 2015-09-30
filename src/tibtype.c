@@ -109,6 +109,9 @@ tib_incref (TIB *t)
 void
 tib_decref (TIB *t)
 {
+  if (0 == t->refs)
+    return;
+
   if (--t->refs == 0)
     {
       switch (t->type)
