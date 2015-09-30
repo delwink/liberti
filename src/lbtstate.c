@@ -279,7 +279,7 @@ lbt_State_clear_all_lines (lbt_State *self)
 }
 
 size_t
-lbt_Screen_num_lines (const lbt_State *self, enum lbt_screen_mode mode)
+lbt_State_num_lines (const lbt_State *self, enum lbt_screen_mode mode)
 {
   struct lbt_screen_line *line;
   size_t i = 0;
