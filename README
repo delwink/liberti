@@ -37,6 +37,34 @@ If you wish to install LiberTI to the system, you can run the following:
 
     # make install
 
+Fonts
+-----
+
+The font files used in LiberTI are compiled statically into the program in
+`ttf.c`. This was done to reduce the need for file IO at runtime (just one more
+way the program can fail). However, some users might want to change the fonts
+for one reason or another.
+
+The two TTF files at the root of this repository are the source fonts. If you
+wish to modify them, you can take the following steps to include them in the
+finished program:
+
+Use your favorite hex dumping program to dump the changed file. With `xxd`:
+
+    $ xxd -i TI-83-Plus.ttf ti83.c
+
+This will create a C file with the dumped bytes. For `TI-83-Plus.ttf`, rename
+the array to `REG_FONT`, and for `TI-83-Plus-Graph.ttf`, rename the array to
+`SMALL_FONT`. For both, change the length variables to a `#define` as done in
+`ttf.c`, then paste the new arrays into place. Make sure to change the length
+constants at the top of `ttf.c` to be the new lengths, or you will get errors
+when running `liberti`.
+
+The reason this was not added as part of the build script is because these
+fonts are not supposed to change for the official release of LiberTI, and it
+would be an extra dependency to add `xxd` which is part of `vim-common` just
+for these hex dumps.
+
 Disclaimer
 ----------
 
