@@ -302,7 +302,11 @@ tib_Expression_cat (tib_Expression *dest, const tib_Expression *src)
 int
 tib_Expression_ref (const tib_Expression *expr, size_t i)
 {
-  return expr->value[i];
+  if (i < tib_Expression_len (expr))
+    return expr->value[i];
+
+  tib_errno = TIB_EINDEX;
+  return '\0';
 }
 
 size_t

@@ -168,6 +168,39 @@ tib_eval (const tib_Expression *in)
   if (0 == len)
     return tib_empty ();
 
+  /* check for store operator */
+  tib_foreachexpr (in, i)
+    {
+      if (tib_Expression_ref (in, i) != TIB_CHAR_STO)
+	continue;
+
+      int c = tib_Expression_ref (in, ++i);
+      if ((i != tib_Expression_len (in) - 1)
+	  || ((c < 'A' || c > 'Z') && c != TIB_CHAR_THETA))
+	{
+	  tib_errno = TIB_ESYNTAX;
+	  return NULL;
+	}
+
+      size_t end = tib_Expression_len (in) - 3;
+      tib_Expression *e = tib_Expression_substring (in, 0, end);
+      if (NULL == e)
+	return NULL;
+
+      TIB *stoval = tib_eval (e);
+      if (NULL == stoval)
+	return NULL;
+
+      tib_errno = tib_var_set (c, stoval);
+      if (tib_errno)
+	{
+	  tib_decref (stoval);
+	  return NULL;
+	}
+
+      return stoval;
+    }
+
   tib_Expression *expr = tib_copy_Expression (in);
   if (NULL == expr)
     return NULL;
