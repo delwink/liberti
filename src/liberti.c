@@ -21,6 +21,12 @@
 
 #include "log.h"
 
+#define USAGE_INFO "USAGE: liberti [options]\n\n\
+OPTIONS:\n\
+\t-d, --debug\tPrints extra activity while running\n\
+\t-h, --help\tPrints this help message and exits\n\
+\t-v, --version\tPrints version info and exits\n"
+
 #define VERSION_INFO "LiberTI 0.0.0\n\
 Copyright (C) 2015 Delwink, LLC\n\
 License AGPLv3: GNU AGPL version 3 only <http://gnu.org/licenses/agpl.html>.\n\
@@ -37,6 +43,7 @@ main (int argc, char *argv[])
   struct option longopts[] = 
     {
       {"debug", no_argument, 0, 'd'},
+      {"help", no_argument, 0, 'h'},
       {"version", no_argument, 0, 'v'},
       {0, 0, 0, 0}
     };
@@ -45,13 +52,17 @@ main (int argc, char *argv[])
     {
       int c;
       int longindex;
-      while ((c = getopt_long (argc, argv, "dv", longopts, &longindex)) != -1)
+      while ((c = getopt_long (argc, argv, "dhv", longopts, &longindex)) != -1)
 	{
 	  switch (c)
 	    {
 	    case 'd':
 	      debug_mode = true;
 	      break;
+
+	    case 'h':
+	      puts (USAGE_INFO);
+	      return 0;
 
 	    case 'v':
 	      puts (VERSION_INFO);
