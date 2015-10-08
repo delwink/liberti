@@ -24,6 +24,12 @@
 #include "tibtranscode.h"
 #include "tiberr.h"
 
+#define USAGE_INFO "USAGE: tibencode [options]\n\n\
+tibencode reads a TI-BASIC program from stdin and prints to stdout.\n\n\
+OPTIONS:\n\
+\t-h, --help\tPrints this help message and exits\n\
+\t-v, --version\tPrints version info and exits\n"
+
 #define VERSION_INFO "tibencode (Delwink LiberTI) 1.0.0\n\
 Copyright (C) 2015 Delwink, LLC\n\
 License AGPLv3: GNU AGPL version 3 only <http://gnu.org/licenses/agpl.html>.\n\
@@ -38,6 +44,7 @@ main (int argc, char *argv[])
 
   struct option longopts[] =
     {
+      {"help",    no_argument, 0, 'h'},
       {"version", no_argument, 0, 'v'},
       {0, 0, 0, 0}
     };
@@ -46,10 +53,14 @@ main (int argc, char *argv[])
     {
       int c;
       int longindex;
-      while ((c = getopt_long (argc, argv, "v", longopts, &longindex)) != -1)
+      while ((c = getopt_long (argc, argv, "hv", longopts, &longindex)) != -1)
 	{
 	  switch (c)
 	    {
+	    case 'h':
+	      puts (USAGE_INFO);
+	      return 0;
+
 	    case 'v':
 	      puts (VERSION_INFO);
 	      return 0;
