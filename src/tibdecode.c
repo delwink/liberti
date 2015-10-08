@@ -24,8 +24,6 @@
 #include "tiberr.h"
 #include "tibtranscode.h"
 
-
-
 #define USAGE_INFO "USAGE: tibdecode [options]\n\n\
 tibdecode reads a TI-82 or TI-83 program from stdin and prints to stdout.\n\n\
 OPTIONS:\n\
