@@ -16,7 +16,6 @@
  */
 
 #include <ctype.h>
-#include <string.h>
 #include <stdint.h>
 
 #include "tibchar.h"
