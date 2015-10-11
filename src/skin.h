@@ -18,8 +18,10 @@
 #ifndef DELWINK_LIBERTI_SKIN_H
 #define DELWINK_LIBERTI_SKIN_H
 
+#include <SDL.h>
 #include <stdlib.h>
 
+#include "lbtscreen.h"
 #include "menu.h"
 #include "point.h"
 
@@ -55,25 +57,57 @@ union button_action
   Menu menu_open;
 };
 
-typedef struct
+struct skin_button
 {
   union button_action actions[NUM_ACTION_STATES];
   struct point2d size;
-} SkinButton;
+};
 
 struct skin_button_list
 {
-  SkinButton *button;
   struct point2d pos;
+  struct skin_button *button;
   struct skin_button_list *next;
+};
+
+struct skin_render_cache
+{
+  SDL_Surface *surface;
+  struct skin_render_cache *next;
+};
+
+struct skin_screen_render_cache
+{
+  struct skin_render_cache *renders;
+  struct skin_screen_render_cache *next;
+};
+
+struct skin_screen_list
+{
+  lbt_Screen *screen;
+  struct point2d pos;
+  struct skin_screen_list *next;
 };
 
 typedef struct
 {
-  lbt_Screen *screens;
-  size_t num_screens;
-  struct point2d *screen_pos;
+  size_t active_screen;
   struct skin_button_list *buttons;
+  struct skin_render_cache *full_renders;
+  struct skin_screen_render_cache *partial_renders;
+  struct skin_screen_list *screens;
 } Skin;
+
+Skin *
+open_skin (const char *data);
+
+void
+free_skin (Skin *self);
+
+int
+Skin_click (Skin *self, struct point2d pos);
+
+SDL_Surface *
+Skin_get_frame (const Skin *self);
 
 #endif
