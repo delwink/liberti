@@ -42,8 +42,8 @@ main (int argc, char *argv[])
 
   struct option longopts[] = 
     {
-      {"debug", no_argument, 0, 'd'},
-      {"help", no_argument, 0, 'h'},
+      {"debug",   no_argument, 0, 'd'},
+      {"help",    no_argument, 0, 'h'},
       {"version", no_argument, 0, 'v'},
       {0, 0, 0, 0}
     };
