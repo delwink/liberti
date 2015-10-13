@@ -22,9 +22,70 @@
 
 #define DEFAULT_SKIN ""
 
-Skin *
-open_skin (const char *data)
+static int
+mode_from_string (const char *s)
 {
+  if (NULL == s)
+    return -1;
+
+  if (0 == strcmp (s, "command"))
+    return LBT_COMMAND_MODE;
+
+  return -1;
+}
+
+static int
+add_screen (Skin *self, lbt_State *state, struct point2d pos,
+	    enum lbt_screen_mode mode)
+{
+  struct skin_screen_list *node = self->screens, *prev = NULL;
+
+  if (NULL == node)
+    {
+      self->screens = malloc (sizeof (struct skin_screen_list));
+      if (NULL == self->screens)
+	return TIB_EALLOC;
+
+      node = self->screens;
+    }
+  else
+    {
+      while (node->next)
+	node = node->next;
+
+      node->next = malloc (sizeof (struct skin_screen_list));
+      if (NULL == node->next)
+	return TIB_EALLOC;
+
+      prev = node;
+      node = node->next;
+    }
+
+  node->screen = lbt_new_Screen (state);
+  if (NULL == node->screen)
+    goto fail;
+
+  node->pos = pos;
+  lbt_Screen_set_mode (node->screen, mode);
+
+  return 0;
+
+ fail:
+  if (prev)
+    prev->next = NULL;
+  lbt_Screen_decref (node->screen);
+  return tib_errno;
+}
+
+Skin *
+open_skin (const char *data, lbt_State *state)
+{
+  if (NULL == state)
+    {
+      tib_errno = TIB_ENULLPTR;
+      return NULL;
+    }
+
   Skin *new = malloc (sizeof (Skin));
   if (NULL == new)
     {
@@ -51,10 +112,89 @@ open_skin (const char *data)
       goto fail;
     }
 
+  tib_errno = 0;
+
+  config_setting_t *setting = config_lookup (&conf, "screens");
+  if (setting)
+    {
+      if (!config_setting_is_array (setting))
+	{
+	  tib_errno = TIB_EBADFILE;
+	  goto fail;
+	}
+
+      const config_setting_t *screens = setting;
+      unsigned int i = 0;
+      while ((setting = config_setting_get_elem (screens, i++)))
+	{
+	  if (!config_setting_is_group (setting))
+	    {
+	      tib_errno = TIB_EBADFILE;
+	      goto fail;
+	    }
+
+	  const config_setting_t *screen = setting;
+
+	  setting = config_setting_get_member (screen, "mode");
+	  if (!setting || config_setting_type (setting) != CONFIG_TYPE_STRING)
+	    {
+	      tib_errno = TIB_EBADFILE;
+	      goto fail;
+	    }
+
+	  int mode = mode_from_string (config_setting_get_string (setting));
+	  if (-1 == mode)
+	    {
+	      tib_errno = TIB_EBADFILE;
+	      goto fail;
+	    }
+
+	  setting = config_setting_get_member (screen, "x");
+	  if (!setting
+	      || (config_setting_type (setting) != CONFIG_TYPE_INT64
+		  && config_setting_type (setting) != CONFIG_TYPE_INT))
+	    {
+	      tib_errno = TIB_EBADFILE;
+	      goto fail;
+	    }
+
+	  struct point2d pos;
+	  pos.x = config_setting_get_int64 (setting);
+
+	  setting = config_setting_get_member (screen, "y");
+	  if (!setting
+	      || (config_setting_type (setting) != CONFIG_TYPE_INT64
+		  && config_setting_type (setting) != CONFIG_TYPE_INT))
+	    {
+	      tib_errno = TIB_EBADFILE;
+	      goto fail;
+	    }
+
+	  pos.y = config_setting_get_int64 (setting);
+
+	  tib_errno = add_screen (new, state, pos, mode);
+	  if (tib_errno)
+	    goto fail;
+	}
+    }
+
   return new;
 
  fail:
   config_destroy (&conf);
+
+  if (new->screens)
+    {
+      struct skin_screen_list *s = new->screens;
+      while (s->next)
+	{
+	  lbt_Screen_decref (s->screen);
+	  s = s->next;
+	  free (new->screens);
+	  new->screens = s;
+	}
+    }
+
   free (new);
   return NULL;
 }

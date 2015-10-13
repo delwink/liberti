@@ -99,7 +99,7 @@ typedef struct
 } Skin;
 
 Skin *
-open_skin (const char *data);
+open_skin (const char *data, lbt_State *state);
 
 void
 free_skin (Skin *self);
