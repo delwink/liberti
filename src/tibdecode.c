@@ -111,7 +111,7 @@ main (int argc, char *argv[])
   for (i = 0; i < len; ++i)
     {
       if (debug && !isascii (s[i]))
-	printf ("{%d}", s[i]);
+	printf ("`%d`", s[i]);
       else
 	putchar (s[i]);
     }
