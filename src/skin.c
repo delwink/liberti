@@ -20,7 +20,13 @@
 #include "skin.h"
 #include "tiberr.h"
 
-#define DEFAULT_SKIN ""
+#define DEFAULT_SKIN				\
+  "screens=[{"					\
+  "mode=\"command\";"				\
+  "x=0L;"					\
+  "y=0L;"					\
+  "}];"
+  
 
 static int
 mode_from_string (const char *s)
