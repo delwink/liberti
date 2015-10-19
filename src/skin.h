@@ -25,6 +25,8 @@
 #include "menu.h"
 #include "point.h"
 
+#define DEFAULT_MODE LBT_NUM_MODES
+
 enum button_action_type
   {
     CHAR_INSERT,
@@ -59,7 +61,7 @@ union button_action
 
 struct skin_button
 {
-  union button_action actions[NUM_ACTION_STATES];
+  union button_action actions[LBT_NUM_MODES+1][NUM_ACTION_STATES];
   struct point2d size;
 };
 
