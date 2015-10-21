@@ -31,9 +31,6 @@
 static int
 mode_from_string (const char *s)
 {
-  if (NULL == s)
-    return -1;
-
   if (0 == strcmp (s, "command"))
     return LBT_COMMAND_MODE;
 
