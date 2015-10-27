@@ -5,9 +5,11 @@ Skins are an important feature of LiberTI, allowing users to easily change the
 appearance of the application requiring no additional programming. Skins are
 loaded using libconfig which has its own syntax for defining types.
 
-Skins are loaded from *specification files*, which have a standard extension of
-`.lbtskin`. While this extension is preferred for standardization reasons, any
-extension (or no extension) will still work with the LiberTI software.
+Skins are searched for in `/usr/share/liberti/skins/` and
+`~/.liberti/skins/`. Each subdirectory of these locations is considered to be a
+skin. Within that folder is the *specification*, which should be exactly named
+`spec.conf`. All relative paths mentioned in this configuration file will be in
+relation to the skin's root path.
 
 A skin is composed of two major parts: screens and buttons.
 
