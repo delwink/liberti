@@ -16,6 +16,7 @@
  */
 
 #include <SDL.h>
+#include <SDL_image.h>
 #include <unistd.h>
 #include <getopt.h>
 
@@ -81,6 +82,14 @@ main (int argc, char *argv[])
       goto end;
     }
 
+  rc = IMG_Init (IMG_INIT_PNG);
+  if (rc != IMG_INIT_PNG)
+    {
+      critical ("Could not initialize PNG image library: %s", IMG_GetError ());
+      rc = 1;
+      goto end;
+    }
+
   rc = SDL_GetCurrentDisplayMode (0, &display_mode);
   if (rc)
     {
@@ -92,5 +101,6 @@ main (int argc, char *argv[])
 
  end:
   SDL_VideoQuit ();
+  IMG_Quit ();
   return rc;
 }

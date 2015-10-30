@@ -11,6 +11,10 @@ skin. Within that folder is the *specification*, which should be exactly named
 `spec.conf`. All relative paths mentioned in this configuration file will be in
 relation to the skin's root path.
 
+The background image of the skin is defined in the term `background`, and it
+must point to a PNG image. If the `background` term is omitted, a the skin will
+be plain white.
+
 A skin is composed of two major parts: screens and buttons.
 
 Screens

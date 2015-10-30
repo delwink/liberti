@@ -16,6 +16,8 @@
  */
 
 #include <libconfig.h>
+#include <SDL_image.h>
+#include <string.h>
 
 #include "skin.h"
 #include "tiberr.h"
@@ -80,8 +82,20 @@ add_screen (Skin *self, lbt_State *state, struct point2d pos,
   return tib_errno;
 }
 
+static char *
+skin_file_path (const char *root, const char *file)
+{
+  size_t len = strlen (root) + strlen (file) + 2;
+  char *full_path = malloc (len * sizeof (char));
+  if (NULL == full_path)
+    return NULL;
+
+  sprintf (full_path, "%s/%s", root, file);
+  return full_path;
+}
+
 Skin *
-open_skin (const char *data, lbt_State *state)
+open_skin (const char *path, lbt_State *state)
 {
   if (NULL == state)
     {
@@ -96,19 +110,33 @@ open_skin (const char *data, lbt_State *state)
       return NULL;
     }
 
+  new->background = NULL;
   new->active_screen = 0;
   new->buttons = NULL;
   new->full_renders = NULL;
   new->partial_renders = NULL;
   new->screens = NULL;
 
-  if (!data)
-    data = DEFAULT_SKIN;
-
   config_t conf;
   config_init (&conf);
 
-  tib_errno = config_read_string (&conf, data);
+  if (path)
+    {
+      char *spec_path = skin_file_path (path, "spec.conf");
+      if (NULL == spec_path)
+	{
+	  tib_errno = TIB_EALLOC;
+	  goto fail;
+	}
+
+      tib_errno = config_read_file (&conf, spec_path);
+      free (spec_path);
+    }
+  else
+    {
+      tib_errno = config_read_string (&conf, DEFAULT_SKIN);
+    }
+
   if (CONFIG_FALSE == tib_errno)
     {
       tib_errno = TIB_EBADFILE;
@@ -117,7 +145,33 @@ open_skin (const char *data, lbt_State *state)
 
   tib_errno = 0;
 
-  config_setting_t *setting = config_lookup (&conf, "screens");
+  config_setting_t *setting = config_lookup (&conf, "background");
+  if (setting)
+    {
+      if (CONFIG_TYPE_STRING != config_setting_type (setting))
+	{
+	  tib_errno = TIB_EBADFILE;
+	  goto fail;
+	}
+
+      char *bgpath = skin_file_path (path,
+				     config_setting_get_string (setting));
+      if (NULL == bgpath)
+	{
+	  tib_errno = TIB_EALLOC;
+	  goto fail;
+	}
+
+      new->background = IMG_Load (bgpath);
+      free (bgpath);
+      if (NULL == new->background)
+	{
+	  tib_errno = TIB_EBADFILE;
+	  goto fail;
+	}
+    }
+
+  setting = config_lookup (&conf, "screens");
   if (setting)
     {
       if (!config_setting_is_array (setting))
@@ -186,10 +240,13 @@ open_skin (const char *data, lbt_State *state)
  fail:
   config_destroy (&conf);
 
+  if (new->background)
+    SDL_FreeSurface (new->background);
+
   if (new->screens)
     {
       struct skin_screen_list *s = new->screens;
-      while (s->next)
+      while (s)
 	{
 	  lbt_Screen_decref (s->screen);
 	  s = s->next;
@@ -218,6 +275,9 @@ free_render_cache (struct skin_render_cache *c)
 void
 free_skin (Skin *self)
 {
+  if (self->background)
+    SDL_FreeSurface (self->background);
+
   struct skin_screen_list *s = self->screens;
   while (s)
     {

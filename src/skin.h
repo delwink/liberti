@@ -93,6 +93,7 @@ struct skin_screen_list
 
 typedef struct
 {
+  SDL_Surface *background;
   size_t active_screen;
   struct skin_button_list *buttons;
   struct skin_render_cache *full_renders;
@@ -101,7 +102,7 @@ typedef struct
 } Skin;
 
 Skin *
-open_skin (const char *data, lbt_State *state);
+open_skin (const char *path, lbt_State *state);
 
 void
 free_skin (Skin *self);
