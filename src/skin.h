@@ -22,16 +22,15 @@
 #include <stdlib.h>
 
 #include "lbtscreen.h"
-#include "menu.h"
 #include "point.h"
 
 #define DEFAULT_MODE LBT_NUM_MODES
 
 enum button_action_type
   {
+    CHANGE_MODES,
     CHAR_INSERT,
     CURSOR_MOVE,
-    MENU_OPEN,
     TOGGLE_2ND,
     TOGGLE_ALPHA
   };
@@ -56,7 +55,7 @@ union button_action
 {
   int char_insert;
   enum cursor_direction cursor_move;
-  Menu menu_open;
+  enum lbt_screen_mode menu_open;
 };
 
 struct skin_button
