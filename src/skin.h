@@ -61,12 +61,12 @@ union button_action
 struct skin_button
 {
   union button_action actions[LBT_NUM_MODES+1][NUM_ACTION_STATES];
+  struct point2d pos;
   struct point2d size;
 };
 
 struct skin_button_list
 {
-  struct point2d pos;
   struct skin_button *button;
   struct skin_button_list *next;
 };
