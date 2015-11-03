@@ -33,8 +33,8 @@ The default skin is just a single screen, and it is defined as:
 
 ```
 screens = [ { mode = "command";
-	      x = 0L;
-	      y = 0L; } ];
+	          x = 0L;
+			  y = 0L; } ];
 ```
 
 Each screen is a `group` element of the `screens` array at the root of the
@@ -61,7 +61,52 @@ Buttons
 Buttons are slightly more complex than screens, because their entire behavior
 must be defined in the skin specification file.
 
-Each button has a position and a set of actions based on the state of the
-LiberTI calculator.
+Each button has a position, a size, and a set of actions based on the state of
+the LiberTI calculator. Each is defined as part of an array of buttons, as
+such:
 
-More details coming soon...
+```
+buttons = [ { x = 10;
+              y = 10;
+	          w = 20;
+			  h = 20;
+			  actions = { default = { normal = { type = "shift"; };
+			                          shift = { type = "shift"; };
+			                          alpha = { type = "shift"; }; } } } ];
+```
+
+This creates a button at position (10, 10) with a width and height of 20
+pixels. This button only defines a single action, which is to toggle the
+`shift` action state of the calculator regardless of the current action
+state. The possible command modes are the ones listed above for defining the
+default mode of a screen, as well as `default` to fill in the gaps for
+undefined mode actions (which is useful for an example like above which does
+the same thing in multiple/all modes).
+
+### Action States
+
+The calculator is usually in the `normal` action state. This should be the
+button action written on the button itself (as on the real physical
+calculator), and it is the primary purpose of that button.
+
+When `2nd` mode is active, it is in the `shift` action state. This should be
+the secondary action used by the button. For instance, a button which normally
+does the sine function might use the inverse sine function as its secondary
+action.
+
+The `alpha` action state is used for writing text. A typical button should
+insert some character in alpha mode.
+
+### Possible Actions
+
+Each action must have a `type` which defines the kind of action, and some must
+have a `which`, defining a more specific action of that type. All `type` and
+`which` properties must be strings.
+
+- `mode` - Changes the active screen to `which` mode is selected from the mode
+list above.
+- `char` - Inserts `which` character to the active screen.
+- `move` - Moves the cursor in `which` direction, one of up, down, left, or
+right.
+- `shift` - Toggles the `shift` action state.
+- `alpha` - Toggles the `alpha` action state.
