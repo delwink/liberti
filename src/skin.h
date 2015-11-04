@@ -58,9 +58,15 @@ union button_action
   enum lbt_screen_mode menu_open;
 };
 
+struct button_action_set
+{
+  enum button_action_type type;
+  union button_action which;
+};
+
 struct skin_button
 {
-  union button_action actions[LBT_NUM_MODES+1][NUM_ACTION_STATES];
+  struct button_action_set actions[LBT_NUM_MODES][NUM_ACTION_STATES];
   struct point2d pos;
   struct point2d size;
 };
