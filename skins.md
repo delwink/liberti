@@ -70,9 +70,9 @@ buttons = [ { x = 10;
               y = 10;
               w = 20;
               h = 20;
-              actions = { default = { normal = { type = "shift"; };
-                                      shift = { type = "shift"; };
-                                      alpha = { type = "shift"; }; } } } ];
+              actions = { default = { normal = { type = "shift"; }
+                                      shift = { type = "shift"; }
+                                      alpha = { type = "shift"; } } } } ];
 ```
 
 This creates a button at position (10, 10) with a width and height of 20
