@@ -33,8 +33,8 @@ The default skin is just a single screen, and it is defined as:
 
 ```
 screens = [ { mode = "command";
-	          x = 0L;
-			  y = 0L; } ];
+              x = 0L;
+              y = 0L; } ];
 ```
 
 Each screen is a `group` element of the `screens` array at the root of the
@@ -68,11 +68,11 @@ such:
 ```
 buttons = [ { x = 10;
               y = 10;
-	          w = 20;
-			  h = 20;
-			  actions = { default = { normal = { type = "shift"; };
-			                          shift = { type = "shift"; };
-			                          alpha = { type = "shift"; }; } } } ];
+              w = 20;
+              h = 20;
+              actions = { default = { normal = { type = "shift"; };
+                                      shift = { type = "shift"; };
+                                      alpha = { type = "shift"; }; } } } ];
 ```
 
 This creates a button at position (10, 10) with a width and height of 20
