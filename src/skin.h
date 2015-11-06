@@ -55,7 +55,7 @@ union button_action
 {
   int char_insert;
   enum cursor_direction cursor_move;
-  enum lbt_screen_mode menu_open;
+  enum lbt_screen_mode mode_open;
 };
 
 struct button_action_set
