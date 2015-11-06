@@ -397,9 +397,7 @@ open_skin (const char *path, lbt_State *state)
 	    }
 
 	  setting = config_setting_get_member (screen, "x");
-	  if (!setting
-	      || (config_setting_type (setting) != CONFIG_TYPE_INT64
-		  && config_setting_type (setting) != CONFIG_TYPE_INT))
+	  if (!setting || !config_setting_is_number (setting))
 	    {
 	      tib_errno = TIB_EBADFILE;
 	      goto fail;
@@ -409,9 +407,7 @@ open_skin (const char *path, lbt_State *state)
 	  pos.x = config_setting_get_int64 (setting);
 
 	  setting = config_setting_get_member (screen, "y");
-	  if (!setting
-	      || (config_setting_type (setting) != CONFIG_TYPE_INT64
-		  && config_setting_type (setting) != CONFIG_TYPE_INT))
+	  if (!setting || !config_setting_is_number (setting))
 	    {
 	      tib_errno = TIB_EBADFILE;
 	      goto fail;
@@ -526,6 +522,7 @@ open_skin (const char *path, lbt_State *state)
 	}
     }
 
+  config_destroy (&conf);
   return new;
 
  fail:
