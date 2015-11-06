@@ -66,10 +66,10 @@ the LiberTI calculator. Each is defined as part of an array of buttons, as
 such:
 
 ```
-buttons = [ { x = 10;
-              y = 10;
-              w = 20;
-              h = 20;
+buttons = [ { x = 10L;
+              y = 10L;
+              w = 20L;
+              h = 20L;
               actions = { default = { normal = { type = "shift"; }
                                       shift = { type = "shift"; }
                                       alpha = { type = "shift"; } } } } ];
