@@ -517,8 +517,8 @@ open_skin (const char *path, lbt_State *state)
 
 	  ADD_DIM ("x", next->button->pos.x);
 	  ADD_DIM ("y", next->button->pos.y);
-	  ADD_DIM ("l", next->button->size.x);
-	  ADD_DIM ("w", next->button->size.y);
+	  ADD_DIM ("w", next->button->size.x);
+	  ADD_DIM ("h", next->button->size.y);
 	}
     }
 
@@ -614,4 +614,9 @@ free_skin (Skin *self)
 	  free (temp);
 	}
     }
+}
+
+int
+Skin_click (Skin *self, struct point2d pos)
+{
 }
