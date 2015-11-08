@@ -33,6 +33,8 @@
   "y=0L;"					\
   "}];"
 
+#define foreachskin(L,E) for (E = L; E != NULL; E = E->next)
+
 static PrefixTree *action_keywords = NULL;
 
 static int
@@ -46,7 +48,7 @@ mode_from_string (const char *s)
 
 static int
 add_screen (Skin *self, lbt_State *state, struct point2d pos,
-	    enum lbt_screen_mode mode)
+	    enum lbt_screen_mode mode, double scale)
 {
   struct skin_screen_list *node = self->screens, *prev = NULL;
 
@@ -76,6 +78,7 @@ add_screen (Skin *self, lbt_State *state, struct point2d pos,
     goto fail;
 
   node->pos = pos;
+  node->scale = scale;
   lbt_Screen_set_mode (node->screen, mode);
 
   return 0;
@@ -415,7 +418,20 @@ open_skin (const char *path, lbt_State *state)
 
 	  pos.y = config_setting_get_int64 (setting);
 
-	  tib_errno = add_screen (new, state, pos, mode);
+	  double scale = 1.0;
+	  setting = config_setting_get_member (screen, "scale");
+	  if (setting)
+	    {
+	      if (!config_setting_is_number (setting))
+		{
+		  tib_errno = TIB_EBADFILE;
+		  goto fail;
+		}
+
+	      scale = config_setting_get_float (setting);
+	    }
+
+	  tib_errno = add_screen (new, state, pos, mode, scale);
 	  if (tib_errno)
 	    goto fail;
 	}
@@ -614,9 +630,4 @@ free_skin (Skin *self)
 	  free (temp);
 	}
     }
-}
-
-int
-Skin_click (Skin *self, struct point2d pos)
-{
 }

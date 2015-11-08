@@ -93,6 +93,7 @@ struct skin_screen_list
 {
   lbt_Screen *screen;
   struct point2d pos;
+  double scale;
   struct skin_screen_list *next;
 };
 

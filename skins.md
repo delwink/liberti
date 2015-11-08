@@ -34,11 +34,12 @@ The default skin is just a single screen, and it is defined as:
 ```
 screens = [ { mode = "command";
               x = 0L;
-              y = 0L; } ];
+              y = 0L;
+              scale = 1.0; } ];
 ```
 
 Each screen is a `group` element of the `screens` array at the root of the
-file. Each group must have the three members `mode`, `x`, and `y`.
+file. Each group must have the four members `mode`, `x`, `y`, and `scale`.
 
 The `mode` string specifies the default mode of the screen, but the mode can be
 changed through button input (described below). The currently-supported mode
@@ -54,6 +55,11 @@ is optional with version 1.5 or greater of libconfig, but they are left in this
 document for backwards compatibility (Ubuntu 14.04 uses libconfig 1.4.9). As a
 skin creator, it is advisable to use the compatible form with the trailing `L`
 if you plan on distributing your skin to other users.
+
+The `scale` member of each screen represents the scale factor by which the
+screen will be resized from its default size of 96 by 64 pixels. It can be
+omitted for a scaling factor of 1.0. The number must have a decimal point for
+compatibility.
 
 Buttons
 -------
