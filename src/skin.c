@@ -55,6 +55,9 @@ add_screen (Skin *self, lbt_State *state, struct point2d pos,
 {
   struct skin_screen_list *node = self->screens, *prev = NULL;
 
+  if (scale <= 0)
+    return TIB_EBADFILE;
+
   if (NULL == node)
     {
       self->screens = malloc (sizeof (struct skin_screen_list));
