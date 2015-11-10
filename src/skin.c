@@ -33,6 +33,9 @@
   "y=0L;"					\
   "}];"
 
+#define DEFAULT_SCREEN_WIDTH (96)
+#define DEFAULT_SCREEN_HEIGHT (64)
+
 #define foreachskin(L,E) for (E = L; E != NULL; E = E->next)
 
 static PrefixTree *action_keywords = NULL;
@@ -77,8 +80,16 @@ add_screen (Skin *self, lbt_State *state, struct point2d pos,
   if (NULL == node->screen)
     goto fail;
 
+  struct
+  {
+    double w, h;
+  } fsize;
+  fsize.w = DEFAULT_SCREEN_WIDTH * scale;
+  fsize.h = DEFAULT_SCREEN_HEIGHT * scale;
+
   node->pos = pos;
-  node->scale = scale;
+  node->size.x = (int64_t) fsize.w;
+  node->size.y = (int64_t) fsize.h;
   lbt_Screen_set_mode (node->screen, mode);
 
   return 0;
