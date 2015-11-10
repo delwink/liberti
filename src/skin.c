@@ -81,8 +81,8 @@ add_screen (Skin *self, lbt_State *state, struct point2d pos,
     goto fail;
 
   node->pos = pos;
-  node->size.x = (int64_t) DEFAULT_SCREEN_WIDTH * scale;
-  node->size.y = (int64_t) DEFAULT_SCREEN_HEIGHT * scale;
+  node->size.x = DEFAULT_SCREEN_WIDTH * scale;
+  node->size.y = DEFAULT_SCREEN_HEIGHT * scale;
   lbt_Screen_set_mode (node->screen, mode);
 
   return 0;
