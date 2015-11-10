@@ -65,6 +65,7 @@ add_screen (Skin *self, lbt_State *state, struct point2d pos,
 	return TIB_EALLOC;
 
       node = self->screens;
+      self->active_screen = node;
     }
   else
     {
@@ -94,6 +95,7 @@ add_screen (Skin *self, lbt_State *state, struct point2d pos,
   if (prev)
     prev->next = NULL;
   lbt_Screen_decref (node->screen);
+  self->active_screen = NULL;
   return tib_errno;
 }
 
@@ -311,7 +313,7 @@ open_skin (const char *path, lbt_State *state)
     }
 
   new->background = NULL;
-  new->active_screen = 0;
+  new->active_screen = NULL;
   new->buttons = NULL;
   new->full_renders = NULL;
   new->partial_renders = NULL;
@@ -637,4 +639,37 @@ free_skin (Skin *self)
 	  free (temp);
 	}
     }
+}
+
+static bool
+on_skin (const Skin *self, struct point2d pos)
+{
+  int64_t w = self->background->w, h = self->background->h;
+  return pos.x >= 0 && pos.x <= w && pos.y >= 0 && pos.y <= h;
+}
+
+static bool
+on_screen (const struct skin_screen_list *screen, struct point2d pos)
+{
+  return pos.x >= screen->pos.x && pos.x <= (screen->pos.x + screen->size.x)
+    && pos.y >= screen->pos.y && pos.y <= (screen->pos.y + screen->size.y);
+}
+
+int
+Skin_click (Skin *self, struct point2d pos)
+{
+  if (!on_skin (self, pos))
+    return TIB_EDIM;
+
+  struct skin_screen_list *screen;
+  foreachskin (self->screens, screen)
+    {
+      if (on_screen (screen, pos))
+	{
+	  self->active_screen = screen;
+	  return 0;
+	}
+    }
+
+  return 0;
 }

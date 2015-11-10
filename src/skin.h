@@ -100,10 +100,10 @@ struct skin_screen_list
 typedef struct
 {
   SDL_Surface *background;
-  size_t active_screen;
   struct skin_button_list *buttons;
   struct skin_render_cache *full_renders;
   struct skin_screen_render_cache *partial_renders;
+  struct skin_screen_list *active_screen;
   struct skin_screen_list *screens;
 } Skin;
 
