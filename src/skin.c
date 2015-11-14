@@ -19,7 +19,6 @@
 #include <libconfig.h>
 #include <pfxtree.h>
 #include <SDL_image.h>
-#include <stdbool.h>
 #include <string.h>
 
 #include "skin.h"
@@ -173,6 +172,8 @@ action_type_from_string (const char *s)
     return TOGGLE_2ND;
   else if (0 == strcmp (s, "alpha"))
     return TOGGLE_ALPHA;
+  else if (0 == strcmp (s, "insert"))
+    return TOGGLE_INSERT;
 
   return -1;
 }
@@ -312,6 +313,8 @@ open_skin (const char *path, lbt_State *state)
       return NULL;
     }
 
+  new->insert_mode = false;
+  new->action_state = STATE_NORMAL;
   new->background = NULL;
   new->active_screen = NULL;
   new->buttons = NULL;
@@ -642,17 +645,102 @@ free_skin (Skin *self)
 }
 
 static bool
+in_bounds (struct point2d start, struct point2d size, struct point2d pos)
+{
+  return pos.x >= start.x && pos.x <= (start.x + size.x)
+    && pos.y >= start.y && pos.y <= (start.y + size.y);
+}
+
+static bool
 on_skin (const Skin *self, struct point2d pos)
 {
   int64_t w = self->background->w, h = self->background->h;
-  return pos.x >= 0 && pos.x <= w && pos.y >= 0 && pos.y <= h;
+  return in_bounds ((struct point2d) {0, 0}, (struct point2d) {w, h}, pos);
 }
 
 static bool
 on_screen (const struct skin_screen_list *screen, struct point2d pos)
 {
-  return pos.x >= screen->pos.x && pos.x <= (screen->pos.x + screen->size.x)
-    && pos.y >= screen->pos.y && pos.y <= (screen->pos.y + screen->size.y);
+  return in_bounds (screen->pos, screen->size, pos);
+}
+
+static bool
+on_button (const struct skin_button *button, struct point2d pos)
+{
+  return in_bounds (button->pos, button->size, pos);
+}
+
+static void
+change_state (Skin *self, enum button_action_state state)
+{
+  if (self->action_state != state)
+    self->action_state = state;
+  else
+    self->action_state = STATE_NORMAL;
+}
+
+static int
+do_button_action (Skin *self, struct skin_button *button)
+{
+  enum lbt_screen_mode mode = self->active_screen->screen->mode;
+  int64_t x = 0, y = 0;
+  lbt_Screen *screen = self->active_screen->screen;
+  struct button_action_set action = button->actions[mode][self->action_state];
+  union button_action which = action.which;
+
+  switch (action.type)
+    {
+    case CHANGE_MODES:
+      lbt_Screen_set_mode (screen, which.mode_open);
+      break;
+
+    case CHAR_INSERT:
+      if (self->insert_mode)
+	return lbt_Screen_insert_char (screen, which.char_insert);
+      else
+	return lbt_Screen_write_char (screen, which.char_insert);
+
+    case CURSOR_MOVE:
+      switch (which.cursor_move)
+	{
+	case UP:
+	  x = 0;
+	  y = 1;
+	  break;
+
+	case DOWN:
+	  x = 0;
+	  y = -1;
+	  break;
+
+	case LEFT:
+	  x = -1;
+	  y = 0;
+	  break;
+
+	case RIGHT:
+	  x = 1;
+	  y = 0;
+	  break;
+	}
+
+      lbt_Screen_move_cursor (screen, x, y);
+      break;
+
+    case TOGGLE_2ND:
+      change_state (self, STATE_2ND);
+      break;
+
+    case TOGGLE_ALPHA:
+      change_state (self, STATE_ALPHA);
+      break;
+
+    case TOGGLE_INSERT:
+      self->insert_mode = !self->insert_mode;
+      break;
+    }
+
+  return 0;
 }
 
 int
@@ -666,9 +754,21 @@ Skin_click (Skin *self, struct point2d pos)
     {
       if (on_screen (screen, pos))
 	{
-	  self->active_screen = screen;
+	  if (screen != self->active_screen)
+	    {
+	      self->active_screen = screen;
+	      self->action_state = STATE_NORMAL;
+	    }
+
 	  return 0;
 	}
+    }
+
+  struct skin_button_list *bnode;
+  foreachskin (self->buttons, bnode)
+    {
+      if (on_button (bnode->button, pos))
+	return do_button_action (self, bnode->button);
     }
 
   return 0;

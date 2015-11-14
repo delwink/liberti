@@ -19,6 +19,7 @@
 #define DELWINK_LIBERTI_SKIN_H
 
 #include <SDL.h>
+#include <stdbool.h>
 #include <stdlib.h>
 
 #include "lbtscreen.h"
@@ -32,7 +33,8 @@ enum button_action_type
     CHAR_INSERT,
     CURSOR_MOVE,
     TOGGLE_2ND,
-    TOGGLE_ALPHA
+    TOGGLE_ALPHA,
+    TOGGLE_INSERT
   };
 
 enum button_action_state
@@ -99,6 +101,8 @@ struct skin_screen_list
 
 typedef struct
 {
+  bool insert_mode;
+  enum button_action_state action_state;
   SDL_Surface *background;
   struct skin_button_list *buttons;
   struct skin_render_cache *full_renders;
