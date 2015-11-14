@@ -26,6 +26,7 @@
 typedef struct
 {
   size_t len;
+  size_t bufsize;
   int *value;
   size_t refs;
 } tib_Expression;

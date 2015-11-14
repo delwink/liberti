@@ -23,6 +23,8 @@
 #include "tibchar.h"
 #include "tibeval.h"
 
+#define BUFFER_BLOCK_SIZE 16
+
 tib_Expression *
 tib_new_Expression ()
 {
@@ -33,9 +35,17 @@ tib_new_Expression ()
       return NULL;
     }
 
+  out->bufsize = BUFFER_BLOCK_SIZE;
   out->len = 0;
   out->refs = 1;
-  out->value = NULL;
+
+  out->value = malloc (out->bufsize * sizeof (int));
+  if (NULL == out->value)
+    {
+      free (out);
+      tib_errno = TIB_EALLOC;
+      return NULL;
+    }
 
   return out;
 }
@@ -78,9 +88,7 @@ tib_Expression_decref (tib_Expression *expr)
 
   if (0 == --expr->refs)
     {
-      if (NULL != expr->value)
-	free (expr->value);
-
+      free (expr->value);
       free (expr);
     }
 }
@@ -226,14 +234,18 @@ tib_Expression_insert (tib_Expression *expr, size_t i, int c)
       return TIB_EINDEX;
     }
 
-  int *old = expr->value;
-
-  expr->value = realloc (expr->value, expr->len * sizeof (int));
-  if (NULL == expr->value)
+  if (expr->len > expr->bufsize)
     {
-      expr->value = old;
-      --expr->len;
-      return TIB_EALLOC;
+      int *old = expr->value;
+      expr->bufsize += BUFFER_BLOCK_SIZE;
+
+      expr->value = realloc (expr->value, expr->bufsize * sizeof (int));
+      if (NULL == expr->value)
+	{
+	  expr->value = old;
+	  --expr->len;
+	  return TIB_EALLOC;
+	}
     }
 
   size_t j;
