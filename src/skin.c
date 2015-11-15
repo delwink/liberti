@@ -21,6 +21,7 @@
 #include <SDL_image.h>
 #include <string.h>
 
+#include "log.h"
 #include "skin.h"
 #include "tibchar.h"
 #include "tiberr.h"
@@ -298,7 +299,7 @@ get_all_actions (const config_setting_t *mode,
 }
 
 Skin *
-open_skin (const char *path, lbt_State *state)
+open_skin (const char *path, lbt_State *state, struct point2d size)
 {
   if (NULL == state)
     {
@@ -374,6 +375,13 @@ open_skin (const char *path, lbt_State *state)
 	  tib_errno = TIB_EBADFILE;
 	  goto fail;
 	}
+
+      new->size.x = new->background->w;
+      new->size.y = new->background->h;
+    }
+  else
+    {
+      new->size = size;
     }
 
   setting = config_lookup (&conf, "screens");
@@ -772,4 +780,31 @@ Skin_click (Skin *self, struct point2d pos)
     }
 
   return 0;
+}
+
+SDL_Surface *
+Skin_get_frame (Skin *self)
+{
+  int rc;
+  SDL_Surface *final;
+
+  final = SDL_CreateRGBSurface (0, self->size.x, self->size.y, 32, 0, 0, 0, 0);
+  if (!final)
+    {
+      error ("Failed to initialize skin frame: %s", SDL_GetError ());
+      return NULL;
+    }
+
+  if (self->background)
+    {
+      rc = SDL_BlitSurface (self->background, NULL, final, NULL);
+      if (rc < 0)
+	{
+	  error ("Failed to blit background: %d", rc);
+	  SDL_FreeSurface (final);
+	  return NULL;
+	}
+    }
+
+  return final;
 }

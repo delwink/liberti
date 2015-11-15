@@ -104,6 +104,7 @@ typedef struct
   bool insert_mode;
   enum button_action_state action_state;
   SDL_Surface *background;
+  struct point2d size;
   struct skin_button_list *buttons;
   struct skin_render_cache *full_renders;
   struct skin_screen_render_cache *partial_renders;
@@ -112,7 +113,7 @@ typedef struct
 } Skin;
 
 Skin *
-open_skin (const char *path, lbt_State *state);
+open_skin (const char *path, lbt_State *state, struct point2d size);
 
 void
 free_skin (Skin *self);
@@ -121,6 +122,6 @@ int
 Skin_click (Skin *self, struct point2d pos);
 
 SDL_Surface *
-Skin_get_frame (const Skin *self);
+Skin_get_frame (Skin *self);
 
 #endif
