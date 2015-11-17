@@ -799,11 +799,7 @@ Skin_get_frame (Skin *self)
     {
       rc = SDL_BlitSurface (self->background, NULL, final, NULL);
       if (rc < 0)
-	{
-	  error ("Failed to blit background: %d", rc);
-	  SDL_FreeSurface (final);
-	  return NULL;
-	}
+	error ("Failed to blit background: %d", rc);
     }
 
   return final;
