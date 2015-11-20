@@ -33,8 +33,8 @@ The default skin is just a single screen, and it is defined as:
 
 ```
 screens = [ { mode = "command";
-              x = 0L;
-              y = 0L;
+              x = 0;
+              y = 0;
               scale = 1.0; } ];
 ```
 
@@ -49,12 +49,7 @@ strings are as follows:
 outputs the evaluation of the expression.
 
 The `x` and `y` members of each screen represent coordinates at which the
-screen will be placed in the main LiberTI window when this skin is loaded. For
-the best future-proofing, these numbers are 64-bit integers. The trailing `L`
-is optional with version 1.5 or greater of libconfig, but they are left in this
-document for backwards compatibility (Ubuntu 14.04 uses libconfig 1.4.9). As a
-skin creator, it is advisable to use the compatible form with the trailing `L`
-if you plan on distributing your skin to other users.
+screen will be placed in the main LiberTI window when this skin is loaded.
 
 The `scale` member of each screen represents the scale factor by which the
 screen will be resized from its default size of 96 by 64 pixels. It can be
@@ -72,10 +67,10 @@ the LiberTI calculator. Each is defined as part of an array of buttons, as
 such:
 
 ```
-buttons = [ { x = 10L;
-              y = 10L;
-              w = 20L;
-              h = 20L;
+buttons = [ { x = 10;
+              y = 10;
+              w = 20;
+              h = 20;
               actions = { default = { normal = { type = "shift"; }
                                       shift = { type = "shift"; }
                                       alpha = { type = "shift"; } } } } ];

@@ -441,7 +441,7 @@ open_skin (const char *path, lbt_State *state, struct point2d size)
 	    }
 
 	  struct point2d pos;
-	  pos.x = config_setting_get_int64 (setting);
+	  pos.x = config_setting_get_int (setting);
 
 	  setting = config_setting_get_member (screen, "y");
 	  if (!setting || !config_setting_is_number (setting))
@@ -450,7 +450,7 @@ open_skin (const char *path, lbt_State *state, struct point2d size)
 	      goto fail;
 	    }
 
-	  pos.y = config_setting_get_int64 (setting);
+	  pos.y = config_setting_get_int (setting);
 
 	  double scale = 1.0;
 	  setting = config_setting_get_member (screen, "scale");
@@ -613,7 +613,7 @@ open_skin (const char *path, lbt_State *state, struct point2d size)
 	      tib_errno = TIB_EBADFILE;					\
 	      goto fail;						\
 	    }								\
-	  V = config_setting_get_int64 (setting);
+	  V = config_setting_get_int (setting);
 
 	  ADD_DIM ("x", next->button->pos.x);
 	  ADD_DIM ("y", next->button->pos.y);
@@ -723,7 +723,7 @@ in_bounds (struct point2d start, struct point2d size, struct point2d pos)
 static bool
 on_skin (const Skin *self, struct point2d pos)
 {
-  int64_t w = self->background->w, h = self->background->h;
+  int w = self->background->w, h = self->background->h;
   return in_bounds ((struct point2d) {0, 0}, (struct point2d) {w, h}, pos);
 }
 
@@ -752,7 +752,7 @@ static int
 do_button_action (Skin *self, struct skin_button *button)
 {
   enum lbt_screen_mode mode = self->active_screen->screen->mode;
-  int64_t x = 0, y = 0;
+  int x = 0, y = 0;
   lbt_Screen *screen = self->active_screen->screen;
   struct button_action_set action = button->actions[mode][self->action_state];
   union button_action which = action.which;

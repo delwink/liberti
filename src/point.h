@@ -18,12 +18,10 @@
 #ifndef DELWINK_LIBERTI_POINT_H
 #define DELWINK_LIBERTI_POINT_H
 
-#include <stdint.h>
-
 struct point2d
 {
-  int64_t x;
-  int64_t y;
+  int x;
+  int y;
 };
 
 #endif
