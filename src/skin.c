@@ -298,6 +298,20 @@ get_all_actions (const config_setting_t *mode,
   return tib_errno;
 }
 
+static void
+free_render_cache (struct skin_render_cache *c)
+{
+  while (c)
+    {
+      struct skin_render_cache *temp = c;
+      if (temp->surface)
+	SDL_FreeSurface (temp->surface);
+
+      c = c->next;
+      free (temp);
+    }
+}
+
 Skin *
 open_skin (const char *path, lbt_State *state, struct point2d size)
 {
@@ -455,6 +469,56 @@ open_skin (const char *path, lbt_State *state, struct point2d size)
 	  if (tib_errno)
 	    goto fail;
 	}
+
+      if (--i)
+	{
+	  new->full_renders = malloc (sizeof (struct skin_render_cache));
+	  if (!new->full_renders)
+	    {
+	      tib_errno = TIB_EALLOC;
+	      goto fail;
+	    }
+	  new->full_renders->surface = NULL;
+
+	  new->partial_renders = malloc (sizeof
+					 (struct skin_screen_render_cache));
+	  if (!new->partial_renders)
+	    {
+	      tib_errno = TIB_EALLOC;
+	      goto fail;
+	    }
+	  new->partial_renders->renders = NULL;
+
+	  --i;
+	}
+
+      struct skin_render_cache *full = new->full_renders;
+      struct skin_screen_render_cache *part = new->partial_renders;
+      for (; i > 0; --i, full = full->next, part = part->next)
+	{
+	  struct skin_render_cache *newfull;
+	  struct skin_screen_render_cache *newpart;
+
+	  newfull = malloc (sizeof (struct skin_render_cache));
+	  if (!newfull)
+	    {
+	      tib_errno = TIB_EALLOC;
+	      goto fail;
+	    }
+	  newfull->surface = NULL;
+
+	  newpart = malloc (sizeof (struct skin_screen_render_cache));
+	  if (!newpart)
+	    {
+	      free (newfull);
+	      tib_errno = TIB_EALLOC;
+	      goto fail;
+	    }
+	  newpart->renders = NULL;
+
+	  full->next = newfull;
+	  part->next = newpart;
+	}
     }
 
   setting = config_lookup (&conf, "buttons");
@@ -579,6 +643,16 @@ open_skin (const char *path, lbt_State *state, struct point2d size)
 	}
     }
 
+  free_render_cache (new->full_renders);
+
+  struct skin_screen_render_cache *part = new->partial_renders;
+  while (part)
+    {
+      part = part->next;
+      free (new->partial_renders);
+      new->partial_renders = part;
+    }
+
   if (new->buttons)
     {
       struct skin_button_list *s = new->buttons;
@@ -594,19 +668,6 @@ open_skin (const char *path, lbt_State *state, struct point2d size)
 
   free (new);
   return NULL;
-}
-
-static void
-free_render_cache (struct skin_render_cache *c)
-{
-  while (c)
-    {
-      struct skin_render_cache *temp = c;
-      SDL_FreeSurface (temp->surface);
-
-      c = c->next;
-      free (temp);
-    }
 }
 
 void
@@ -782,6 +843,20 @@ Skin_click (Skin *self, struct point2d pos)
   return 0;
 }
 
+static SDL_Rect
+get_rect (struct point2d pos, struct point2d size)
+{
+  SDL_Rect r =
+    {
+      .x = pos.x,
+      .y = pos.y,
+      .w = size.x,
+      .h = size.y
+    };
+
+  return r;
+}
+
 SDL_Surface *
 Skin_get_frame (Skin *self)
 {
@@ -800,6 +875,27 @@ Skin_get_frame (Skin *self)
       rc = SDL_BlitSurface (self->background, NULL, final, NULL);
       if (rc < 0)
 	error ("Failed to blit background: %s", SDL_GetError ());
+    }
+
+  struct skin_render_cache *full = self->full_renders;
+  struct skin_screen_render_cache *part = self->partial_renders;
+  struct skin_screen_list *screen = self->screens;
+  unsigned int i = 0;
+  for (; screen != NULL; full = full->next, part = part->next,
+	 screen = screen->next, ++i)
+    {
+      SDL_Rect r = get_rect (screen->pos, screen->size);
+
+      if (screen == self->active_screen)
+	{
+	}
+
+      if (full->surface)
+	{
+	  rc = SDL_BlitScaled (full->surface, NULL, final, &r);
+	  if (rc < 0)
+	    error ("Failed to blit screen %u: %s", i, SDL_GetError ());
+	}
     }
 
   return final;
