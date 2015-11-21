@@ -857,9 +857,32 @@ get_rect (struct point2d pos, struct point2d size)
   return r;
 }
 
-static void
+static SDL_Surface *
 render_screen (lbt_Screen *screen, struct skin_render_cache *renders)
 {
+  int rc;
+  SDL_Surface *final;
+
+  final = SDL_CreateRGBSurface (0, 96, 64, 32, 0, 0, 0, 0);
+  if (!final)
+    {
+      error ("Failed to initialize screen frame: %s", SDL_GetError ());
+      return NULL;
+    }
+
+  rc = SDL_FillRect (final, NULL, SDL_MapRGB (final->format, 255, 255, 255));
+  if (rc < 0)
+    error ("Failed to fill screen frame with white background: %s",
+	   SDL_GetError ());
+
+  switch (screen->mode)
+    {
+
+    default:
+      break;
+    }
+
+  return final;
 }
 
 SDL_Surface *
@@ -892,7 +915,16 @@ Skin_get_frame (Skin *self)
       SDL_Rect r = get_rect (screen->pos, screen->size);
 
       if (screen == self->active_screen)
-	render_screen (screen->screen, part->renders);
+	{
+	  SDL_Surface *render = render_screen (screen->screen, part->renders);
+	  if (render)
+	    {
+	      if (full->surface)
+		SDL_FreeSurface (full->surface);
+
+	      full->surface = render;
+	    }
+	}
 
       if (full->surface)
 	{
