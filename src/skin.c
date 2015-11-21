@@ -857,6 +857,11 @@ get_rect (struct point2d pos, struct point2d size)
   return r;
 }
 
+static void
+render_screen (lbt_Screen *screen, struct skin_render_cache *renders)
+{
+}
+
 SDL_Surface *
 Skin_get_frame (Skin *self)
 {
@@ -887,8 +892,7 @@ Skin_get_frame (Skin *self)
       SDL_Rect r = get_rect (screen->pos, screen->size);
 
       if (screen == self->active_screen)
-	{
-	}
+	render_screen (screen->screen, part->renders);
 
       if (full->surface)
 	{
