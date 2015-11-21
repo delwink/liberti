@@ -162,11 +162,14 @@ lbt_Screen_write_char (lbt_Screen *self, int c)
   if (NULL == line || x < 0 || (size_t) x > tib_Expression_len (line->value))
     return TIB_EINDEX;
 
+  int rc = 0;
   if (tib_Expression_len (line->value) == (size_t) x)
-    return tib_Expression_push (line->value, c);
+    rc = tib_Expression_push (line->value, c);
+  else
+    line->value->value[x] = c;
 
-  line->value->value[x] = c;
-  return 0;
+  ++self->cursor.x;
+  return rc;
 }
 
 int
@@ -176,7 +179,11 @@ lbt_Screen_insert_char (lbt_Screen *self, int c)
   if (NULL == line)
     return TIB_EINDEX;
 
-  return tib_Expression_insert (line->value, (size_t) self->cursor.x, c);
+  int rc = tib_Expression_insert (line->value, (size_t) self->cursor.x, c);
+  if (!rc)
+    ++self->cursor.x;
+
+  return rc;
 }
 
 void
