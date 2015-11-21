@@ -168,7 +168,8 @@ lbt_Screen_write_char (lbt_Screen *self, int c)
   else
     line->value->value[x] = c;
 
-  ++self->cursor.x;
+  if (!rc)
+    ++self->cursor.x;
   return rc;
 }
 
