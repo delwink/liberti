@@ -27,11 +27,11 @@
 #include "tiberr.h"
 
 #define DEFAULT_SKIN				\
-  "screens=[{"					\
+  "screens=({"					\
   "mode=\"command\";"				\
   "x=0;"					\
   "y=0;"					\
-  "}];"
+  "});"
 
 #define DEFAULT_SCREEN_WIDTH (96)
 #define DEFAULT_SCREEN_HEIGHT (64)
@@ -85,6 +85,7 @@ add_screen (Skin *self, lbt_State *state, struct point2d pos,
   if (NULL == node->screen)
     goto fail;
 
+  node->next = NULL;
   node->pos = pos;
   node->size.x = DEFAULT_SCREEN_WIDTH * scale;
   node->size.y = DEFAULT_SCREEN_HEIGHT * scale;
@@ -401,7 +402,7 @@ open_skin (const char *path, lbt_State *state, struct point2d size)
   setting = config_lookup (&conf, "screens");
   if (setting)
     {
-      if (!config_setting_is_array (setting))
+      if (!config_setting_is_list (setting))
 	{
 	  tib_errno = TIB_EBADFILE;
 	  goto fail;
@@ -503,7 +504,7 @@ open_skin (const char *path, lbt_State *state, struct point2d size)
   setting = config_lookup (&conf, "buttons");
   if (setting)
     {
-      if (!config_setting_is_array (setting))
+      if (!config_setting_is_list (setting))
 	{
 	  tib_errno = TIB_EBADFILE;
 	  goto fail;

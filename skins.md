@@ -32,13 +32,13 @@ user can do something such as type a graph and watch it draw at the same time
 The default skin is just a single screen, and it is defined as:
 
 ```
-screens = [ { mode = "command";
+screens = ( { mode = "command";
               x = 0;
               y = 0;
-              scale = 1.0; } ];
+              scale = 1.0; } );
 ```
 
-Each screen is a `group` element of the `screens` array at the root of the
+Each screen is a `group` element of the `screens` list at the root of the
 file. Each group must have the four members `mode`, `x`, `y`, and `scale`.
 
 The `mode` string specifies the default mode of the screen, but the mode can be
@@ -63,17 +63,16 @@ Buttons are slightly more complex than screens, because their entire behavior
 must be defined in the skin specification file.
 
 Each button has a position, a size, and a set of actions based on the state of
-the LiberTI calculator. Each is defined as part of an array of buttons, as
-such:
+the LiberTI calculator. Each is defined as part of a list of buttons, as such:
 
 ```
-buttons = [ { x = 10;
+buttons = ( { x = 10;
               y = 10;
               w = 20;
               h = 20;
               actions = { default = { normal = { type = "shift"; }
                                       shift = { type = "shift"; }
-                                      alpha = { type = "shift"; } } } } ];
+                                      alpha = { type = "shift"; } } } } );
 ```
 
 This creates a button at position (10, 10) with a width and height of 20
