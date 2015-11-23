@@ -20,7 +20,10 @@
 #include <unistd.h>
 #include <getopt.h>
 
+#include "lbtstate.h"
 #include "log.h"
+#include "skin.h"
+#include "ttf.h"
 
 #define USAGE_INFO "USAGE: liberti [options]\n\n\
 OPTIONS:\n\
@@ -40,6 +43,7 @@ main (int argc, char *argv[])
 {
   int rc = 0;
   SDL_DisplayMode display_mode;
+  struct fontset *fonts = NULL;
 
   struct option longopts[] = 
     {
@@ -90,6 +94,14 @@ main (int argc, char *argv[])
       goto end;
     }
 
+  fonts = get_font_set (7);
+  if (!fonts)
+    {
+      critical ("Could not load fonts: %s", TTF_GetError ());
+      rc = 1;
+      goto end;
+    }
+
   rc = SDL_GetCurrentDisplayMode (0, &display_mode);
   if (rc)
     {
@@ -102,5 +114,9 @@ main (int argc, char *argv[])
  end:
   SDL_VideoQuit ();
   IMG_Quit ();
+
+  if (fonts)
+    free_font_set (fonts);
+
   return rc;
 }
