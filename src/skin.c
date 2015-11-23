@@ -480,6 +480,7 @@ open_skin (const char *path, lbt_State *state, struct point2d size)
 	      goto fail;
 	    }
 	  new->renders->surface = NULL;
+	  new->renders->next = NULL;
 
 	  --i;
 	}
@@ -496,6 +497,7 @@ open_skin (const char *path, lbt_State *state, struct point2d size)
 	      goto fail;
 	    }
 	  newfull->surface = NULL;
+	  newfull->next = NULL;
 
 	  full->next = newfull;
 	}
@@ -667,6 +669,8 @@ free_skin (Skin *self)
     }
 
   free_render_cache (self->renders);
+
+  free (self);
 }
 
 static bool
