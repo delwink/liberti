@@ -24,6 +24,7 @@
 
 #include "lbtscreen.h"
 #include "point.h"
+#include "ttf.h"
 
 #define DEFAULT_MODE LBT_NUM_MODES
 
@@ -85,12 +86,6 @@ struct skin_render_cache
   struct skin_render_cache *next;
 };
 
-struct skin_screen_render_cache
-{
-  struct skin_render_cache *renders;
-  struct skin_screen_render_cache *next;
-};
-
 struct skin_screen_list
 {
   lbt_Screen *screen;
@@ -106,8 +101,7 @@ typedef struct
   SDL_Surface *background;
   struct point2d size;
   struct skin_button_list *buttons;
-  struct skin_render_cache *full_renders;
-  struct skin_screen_render_cache *partial_renders;
+  struct skin_render_cache *renders;
   struct skin_screen_list *active_screen;
   struct skin_screen_list *screens;
 } Skin;
@@ -122,6 +116,6 @@ int
 Skin_click (Skin *self, struct point2d pos);
 
 SDL_Surface *
-Skin_get_frame (Skin *self);
+Skin_get_frame (Skin *self, const struct fontset *fonts);
 
 #endif

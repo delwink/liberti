@@ -117,8 +117,8 @@ to_bounds (int64_t x, int64_t min, int64_t max)
   return x;
 }
 
-static struct lbt_screen_line *
-current_line (lbt_Screen *self)
+struct lbt_screen_line *
+lbt_Screen_current_line (const lbt_Screen *self)
 {
   switch (self->mode)
     {
@@ -142,7 +142,7 @@ lbt_Screen_move_cursor (lbt_Screen *self, int64_t x, int64_t y)
       self->cursor.y = to_bounds (self->cursor.y, 0,
 				  (int64_t) lbt_Screen_num_lines (self));
 
-      struct lbt_screen_line *line = current_line (self);
+      struct lbt_screen_line *line = lbt_Screen_current_line (self);
       if (line)
 	self->cursor.x = to_bounds (self->cursor.x, 0,
 				    tib_Expression_len (line->value));
@@ -156,7 +156,7 @@ lbt_Screen_move_cursor (lbt_Screen *self, int64_t x, int64_t y)
 int
 lbt_Screen_write_char (lbt_Screen *self, int c)
 {
-  struct lbt_screen_line *line = current_line (self);
+  struct lbt_screen_line *line = lbt_Screen_current_line (self);
 
   int64_t x = self->cursor.x;
   if (NULL == line || x < 0 || (size_t) x > tib_Expression_len (line->value))
@@ -176,7 +176,7 @@ lbt_Screen_write_char (lbt_Screen *self, int c)
 int
 lbt_Screen_insert_char (lbt_Screen *self, int c)
 {
-  struct lbt_screen_line *line = current_line (self);
+  struct lbt_screen_line *line = lbt_Screen_current_line (self);
   if (NULL == line)
     return TIB_EINDEX;
 

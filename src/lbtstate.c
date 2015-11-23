@@ -195,6 +195,7 @@ new_line (const tib_Expression *text, size_t x, size_t y)
   new->x = x;
   new->y = y;
   new->next = NULL;
+  new->prev = NULL;
 
   return new;
 }
@@ -219,6 +220,8 @@ lbt_State_add_line (lbt_State *self, const tib_Expression *text, int64_t x,
   last->next = new_line (text, x, y);
   if (NULL == last->next)
     return TIB_EALLOC;
+  last->next->prev = last;
+  self->last_lines[mode] = last->next;
 
   return 0;
 }
@@ -249,6 +252,7 @@ lbt_State_del_line (lbt_State *self, size_t i, enum lbt_screen_mode mode)
 	{
 	  temp = self->lines[mode];
 	  self->lines[mode] = temp->next;
+	  self->lines[mode]->prev = NULL;
 	}
       else
 	{
@@ -263,7 +267,11 @@ lbt_State_del_line (lbt_State *self, size_t i, enum lbt_screen_mode mode)
     {
       temp = before->next;
       before->next = temp->next;
+      before->next->prev = before;
     }
+
+  if (temp == self->last_lines[mode])
+    self->last_lines[mode] = temp->prev;
 
   tib_Expression_decref (temp->value);
   free (temp);

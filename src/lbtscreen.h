@@ -27,6 +27,9 @@
 #define lbt_foreachline(S,L) for (L = S->state->lines[S->mode]; L != NULL; \
 				  L = L->next)
 
+#define lbt_foreachline_rev(S,L) for (L = S->state->last_lines[S->mode]; \
+				      L != NULL; L = L->prev)
+
 typedef int (*lbt_ScreenTrigger) (void *data);
 
 struct lbt_cursor_pos
@@ -81,6 +84,9 @@ lbt_Screen_set_state (lbt_Screen *self, lbt_State *state);
 
 void
 lbt_Screen_refresh (lbt_Screen *self);
+
+struct lbt_screen_line *
+lbt_Screen_current_line (const lbt_Screen *self);
 
 void
 lbt_Screen_move_cursor (lbt_Screen *self, int64_t x, int64_t y);

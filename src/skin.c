@@ -39,6 +39,7 @@
 #define foreachskin(L,E) for (E = L; E != NULL; E = E->next)
 
 static PrefixTree *action_keywords = NULL;
+static const SDL_Color BLACK = {0, 0, 0, 255};
 
 static int
 mode_from_string (const char *s)
@@ -333,8 +334,7 @@ open_skin (const char *path, lbt_State *state, struct point2d size)
   new->background = NULL;
   new->active_screen = NULL;
   new->buttons = NULL;
-  new->full_renders = NULL;
-  new->partial_renders = NULL;
+  new->renders = NULL;
   new->screens = NULL;
 
   config_t conf;
@@ -472,32 +472,21 @@ open_skin (const char *path, lbt_State *state, struct point2d size)
 
       if (--i)
 	{
-	  new->full_renders = malloc (sizeof (struct skin_render_cache));
-	  if (!new->full_renders)
+	  new->renders = malloc (sizeof (struct skin_render_cache));
+	  if (!new->renders)
 	    {
 	      tib_errno = TIB_EALLOC;
 	      goto fail;
 	    }
-	  new->full_renders->surface = NULL;
-
-	  new->partial_renders = malloc (sizeof
-					 (struct skin_screen_render_cache));
-	  if (!new->partial_renders)
-	    {
-	      tib_errno = TIB_EALLOC;
-	      goto fail;
-	    }
-	  new->partial_renders->renders = NULL;
+	  new->renders->surface = NULL;
 
 	  --i;
 	}
 
-      struct skin_render_cache *full = new->full_renders;
-      struct skin_screen_render_cache *part = new->partial_renders;
-      for (; i > 0; --i, full = full->next, part = part->next)
+      struct skin_render_cache *full = new->renders;
+      for (; i > 0; --i, full = full->next)
 	{
 	  struct skin_render_cache *newfull;
-	  struct skin_screen_render_cache *newpart;
 
 	  newfull = malloc (sizeof (struct skin_render_cache));
 	  if (!newfull)
@@ -507,17 +496,7 @@ open_skin (const char *path, lbt_State *state, struct point2d size)
 	    }
 	  newfull->surface = NULL;
 
-	  newpart = malloc (sizeof (struct skin_screen_render_cache));
-	  if (!newpart)
-	    {
-	      free (newfull);
-	      tib_errno = TIB_EALLOC;
-	      goto fail;
-	    }
-	  newpart->renders = NULL;
-
 	  full->next = newfull;
-	  part->next = newpart;
 	}
     }
 
@@ -643,15 +622,7 @@ open_skin (const char *path, lbt_State *state, struct point2d size)
 	}
     }
 
-  free_render_cache (new->full_renders);
-
-  struct skin_screen_render_cache *part = new->partial_renders;
-  while (part)
-    {
-      part = part->next;
-      free (new->partial_renders);
-      new->partial_renders = part;
-    }
+  free_render_cache (new->renders);
 
   if (new->buttons)
     {
@@ -685,8 +656,6 @@ free_skin (Skin *self)
       self->screens = s;
     }
 
-  self->active_screen = 0;
-
   struct skin_button_list *b = self->buttons;
   while (b)
     {
@@ -696,21 +665,7 @@ free_skin (Skin *self)
       self->buttons = b;
     }
 
-  free_render_cache (self->full_renders);
-  self->full_renders = NULL;
-
-  if (self->partial_renders)
-    {
-      struct skin_screen_render_cache *c = self->partial_renders;
-      while (c)
-	{
-	  struct skin_screen_render_cache *temp = c;
-	  free_render_cache (c->renders);
-
-	  c = c->next;
-	  free (temp);
-	}
-    }
+  free_render_cache (self->renders);
 }
 
 static bool
@@ -858,7 +813,107 @@ get_rect (struct point2d pos, struct point2d size)
 }
 
 static SDL_Surface *
-render_screen (lbt_Screen *screen, struct skin_render_cache *renders)
+render_line (const struct lbt_screen_line *line, TTF_Font *font)
+{
+  int rc, w, h, font_height;
+  SDL_Surface **parts = malloc (tib_Expression_len (line->value)
+				* sizeof (SDL_Surface *));
+  if (!parts)
+    {
+      error ("Failed to initialize expression portions array");
+      return NULL;
+    }
+
+  font_height = TTF_FontHeight (font);
+  w = 0;
+  h = font_height;
+
+  size_t i;
+  tib_foreachexpr (line->value, i)
+    {
+      int c = tib_Expression_ref (line->value, i);
+      const char *s = tib_special_char_text (c);
+      SDL_Surface *part = NULL;
+
+      if (s)
+	{
+	  part = TTF_RenderUTF8_Solid (font, s, BLACK);
+	}
+      else
+	{
+	  char single[2];
+	  single[0] = c;
+	  single[1] = '\0';
+
+	  part = TTF_RenderUTF8_Solid (font, single, BLACK);
+	}
+
+      if (!part)
+	{
+	  error ("Failed to render expression portion: %s", TTF_GetError ());
+	  parts[i] = NULL;
+	  continue;
+	}
+
+      w += part->w;
+      if (w >= 96)
+	{
+	  h += font_height;
+	  w -= part->w;
+	}
+
+      parts[i] = part;
+    }
+
+  SDL_Surface *final = SDL_CreateRGBSurface (0, w, h, 32, 0, 0, 0, 0);
+  if (!final)
+    {
+      error ("Failed to initialize expression render surface: %s",
+	     SDL_GetError ());
+      goto fail;
+    }
+
+  rc = SDL_FillRect (final, NULL, SDL_MapRGBA (final->format, 0, 0, 0, 0));
+  if (rc < 0)
+    error ("Failed to set background of expression render surface: %s",
+	   SDL_GetError ());
+
+  w = 0;
+  h = 0;
+  for (i = 0; i < tib_Expression_len (line->value); ++i)
+    {
+      if (w + parts[i]->w >= 96)
+	{
+	  w = 0;
+	  h += font_height;
+	}
+
+      SDL_Rect pos;
+      pos.x = w;
+      pos.y = h;
+
+      rc = SDL_BlitSurface (parts[i], NULL, final, &pos);
+      if (rc < 0)
+	{
+	  error ("Failed to blit expression portion: %s", SDL_GetError ());
+	  continue;
+	}
+
+      w += parts[i]->w;
+    }
+
+ fail:
+  for (i = 0; i < tib_Expression_len (line->value); ++i)
+    if (parts[i])
+      SDL_FreeSurface (parts[i]);
+
+  free (parts);
+
+  return final;
+}
+
+static SDL_Surface *
+render_screen (lbt_Screen *screen, const struct fontset *fonts)
 {
   int rc;
   SDL_Surface *final;
@@ -875,8 +930,33 @@ render_screen (lbt_Screen *screen, struct skin_render_cache *renders)
     error ("Failed to fill screen frame with white background: %s",
 	   SDL_GetError ());
 
+  uint8_t height = 0;
+  struct lbt_screen_line *line;
   switch (screen->mode)
     {
+    case LBT_COMMAND_MODE:
+      lbt_foreachline_rev (screen, line)
+	{
+	  SDL_Surface *line_render = render_line (line, fonts->reg);
+	  if (line_render)
+	    {
+	      SDL_Rect pos;
+	      pos.x = 0;
+	      pos.y = 64 - height;
+
+	      rc = SDL_BlitSurface (line_render, NULL, final, &pos);
+	      if (rc < 0)
+		error ("Failed to put line on screen frame: %s",
+		       SDL_GetError ());
+
+	      height += line_render->h;
+
+	      SDL_FreeSurface (line_render);
+	      if (height >= 64)
+		break;
+	    }
+	}
+      break;
 
     default:
       break;
@@ -886,7 +966,7 @@ render_screen (lbt_Screen *screen, struct skin_render_cache *renders)
 }
 
 SDL_Surface *
-Skin_get_frame (Skin *self)
+Skin_get_frame (Skin *self, const struct fontset *fonts)
 {
   int rc;
   SDL_Surface *final;
@@ -905,18 +985,16 @@ Skin_get_frame (Skin *self)
 	error ("Failed to blit background: %s", SDL_GetError ());
     }
 
-  struct skin_render_cache *full = self->full_renders;
-  struct skin_screen_render_cache *part = self->partial_renders;
+  struct skin_render_cache *full = self->renders;
   struct skin_screen_list *screen = self->screens;
   unsigned int i = 0;
-  for (; screen != NULL; full = full->next, part = part->next,
-	 screen = screen->next, ++i)
+  for (; screen != NULL; full = full->next, screen = screen->next, ++i)
     {
       SDL_Rect r = get_rect (screen->pos, screen->size);
 
       if (screen == self->active_screen)
 	{
-	  SDL_Surface *render = render_screen (screen->screen, part->renders);
+	  SDL_Surface *render = render_screen (screen->screen, fonts);
 	  if (render)
 	    {
 	      if (full->surface)

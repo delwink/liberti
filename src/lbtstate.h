@@ -36,6 +36,7 @@ struct lbt_screen_line
   int64_t y;
 
   struct lbt_screen_line *next;
+  struct lbt_screen_line *prev;
 };
 
 typedef struct
@@ -44,6 +45,7 @@ typedef struct
 
   char *save_path;
   struct lbt_screen_line *lines[LBT_NUM_MODES];
+  struct lbt_screen_line *last_lines[LBT_NUM_MODES];
 } lbt_State;
 
 lbt_State *
