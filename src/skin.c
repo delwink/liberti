@@ -29,8 +29,8 @@
 #define DEFAULT_SKIN				\
   "screens=[{"					\
   "mode=\"command\";"				\
-  "x=0L;"					\
-  "y=0L;"					\
+  "x=0;"					\
+  "y=0;"					\
   "}];"
 
 #define DEFAULT_SCREEN_WIDTH (96)
