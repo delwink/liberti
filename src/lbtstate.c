@@ -62,6 +62,13 @@ lbt_new_State (const char *save_path)
 	}
     }
 
+  enum lbt_screen_mode m;
+  for (m = LBT_COMMAND_MODE; m < LBT_NUM_MODES; ++m)
+    {
+      new->lines[m] = NULL;
+      new->last_lines[m] = NULL;
+    }
+
   config_setting_t *setting = config_lookup (&conf, "mode.command.lines");
   if (setting)
     {
@@ -94,10 +101,6 @@ lbt_new_State (const char *save_path)
 	    goto fail;
 	}
     }
-
-  enum lbt_screen_mode m;
-  for (m = LBT_COMMAND_MODE; m < LBT_NUM_MODES; ++m)
-    new->lines[m] = NULL;
 
   config_destroy (&conf);
 
