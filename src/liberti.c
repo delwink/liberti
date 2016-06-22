@@ -1,6 +1,6 @@
 /*
  *  LiberTI - Libre TI calculator emulator designed for LibreCalc
- *  Copyright (C) 2015 Delwink, LLC
+ *  Copyright (C) 2015-2016 Delwink, LLC
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as published by
@@ -25,14 +25,23 @@
 #include "skin.h"
 #include "ttf.h"
 
-#define USAGE_INFO "USAGE: liberti [options]\n\n\
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+# define VERSION_STRING PACKAGE_VERSION
+# define PROG PACKAGE
+#else
+# define VERSION_STRING "custom build"
+# define PROG "liberti"
+#endif
+
+#define USAGE_INFO "USAGE: " PROG " [options]\n\n\
 OPTIONS:\n\
 \t-d, --debug\tPrints extra activity while running\n\
 \t-h, --help\tPrints this help message and exits\n\
 \t-v, --version\tPrints version info and exits\n"
 
-#define VERSION_INFO "LiberTI 0.0.0\n\
-Copyright (C) 2015 Delwink, LLC\n\
+#define VERSION_INFO "LiberTI " VERSION_STRING "\n\
+Copyright (C) 2015-2016 Delwink, LLC\n\
 License AGPLv3: GNU AGPL version 3 only <http://gnu.org/licenses/agpl.html>.\n\
 This is libre software: you are free to change and redistribute it.\n\
 There is NO WARRANTY, to the extent permitted by law.\n\n\
