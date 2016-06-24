@@ -331,7 +331,7 @@ tokenize (struct tib_expr *expr, char *beg)
 int
 tib_encode_str (struct tib_expr *expr, const char *s)
 {
-  int rc;
+  int rc = 0;
   char *buf, *beg;
   size_t line_len = strlen (s);
 
