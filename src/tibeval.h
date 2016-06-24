@@ -1,6 +1,6 @@
 /*
  *  libtib - Read, write, and evaluate TI BASIC programs
- *  Copyright (C) 2015 Delwink, LLC
+ *  Copyright (C) 2015-2016 Delwink, LLC
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as published by
@@ -26,35 +26,31 @@
 bool
 sign_operator (int c);
 
-size_t
-sign_count (const tib_Expression *expr);
+unsigned int
+sign_count (const struct tib_expr *expr);
 
 bool
-contains_i (const tib_Expression *expr);
+contains_i (const struct tib_expr *expr);
 
 TIB *
-tib_eval (const tib_Expression *expr);
+tib_eval (const struct tib_expr *expr);
 
 int
-tib_eval_surrounded (const tib_Expression *expr);
+tib_eval_surrounded (const struct tib_expr *expr);
 
 bool
-tib_eval_isnum (const tib_Expression *expr);
+tib_eval_isnum (const struct tib_expr *expr);
 
 bool
-tib_eval_isstr (const tib_Expression *expr);
+tib_eval_isstr (const struct tib_expr *expr);
 
 bool
-tib_eval_islist (const tib_Expression *expr);
+tib_eval_islist (const struct tib_expr *expr);
 
 bool
-tib_eval_ismatrix (const tib_Expression *expr);
+tib_eval_ismatrix (const struct tib_expr *expr);
 
 int
-tib_eval_close_parens (tib_Expression *expr);
-
-int
-tib_eval_parse_commas (const tib_Expression *expr, tib_Expression ***out,
-		       size_t *out_len);
+tib_eval_close_parens (struct tib_expr *expr);
 
 #endif

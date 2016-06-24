@@ -1,6 +1,6 @@
 /*
  *  libliberti - Backend functionality for LiberTI
- *  Copyright (C) 2015 Delwink, LLC
+ *  Copyright (C) 2015-2016 Delwink, LLC
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as published by
@@ -24,18 +24,20 @@
 #include "lbtstate.h"
 #include "tibexpr.h"
 
-#define lbt_foreachline(S,L) for (L = S->state->lines[S->mode]; L != NULL; \
-				  L = L->next)
+#define lbt_foreachline(S,L) for ((L) = (S)->state->lines[(S)->mode];	\
+				  (L) != NULL;				\
+				  (L) = (L)->next)
 
-#define lbt_foreachline_rev(S,L) for (L = S->state->last_lines[S->mode]; \
-				      L != NULL; L = L->prev)
+#define lbt_foreachline_rev(S,L) for ((L) =				\
+					(S)->state->last_lines[(S)->mode]; \
+				      (L) != NULL; (L) = (L)->prev)
 
 typedef int (*lbt_ScreenTrigger) (void *data);
 
 struct lbt_cursor_pos
 {
-  int64_t x;
-  int64_t y;
+  int x;
+  int y;
 };
 
 typedef struct lbt_screen_trigger_list
@@ -64,19 +66,19 @@ void
 lbt_Screen_decref (lbt_Screen *self);
 
 int
-lbt_Screen_add_line (lbt_Screen *self, const tib_Expression *text, int64_t x,
-		     int64_t y);
+lbt_Screen_add_line (lbt_Screen *self, const struct tib_expr *text, int x,
+		     int y);
 
 struct lbt_screen_line *
-lbt_Screen_get_line (const lbt_Screen *self, size_t i);
+lbt_Screen_get_line (const lbt_Screen *self, unsigned int i);
 
 void
-lbt_Screen_del_line (lbt_Screen *self, size_t i);
+lbt_Screen_del_line (lbt_Screen *self, unsigned int i);
 
 void
 lbt_Screen_clear_lines (lbt_Screen *self);
 
-size_t
+unsigned int
 lbt_Screen_num_lines (const lbt_Screen *self);
 
 void
@@ -89,7 +91,7 @@ struct lbt_screen_line *
 lbt_Screen_current_line (const lbt_Screen *self);
 
 void
-lbt_Screen_move_cursor (lbt_Screen *self, int64_t x, int64_t y);
+lbt_Screen_move_cursor (lbt_Screen *self, int x, int y);
 
 int
 lbt_Screen_write_char (lbt_Screen *self, int c);

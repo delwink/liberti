@@ -1,6 +1,6 @@
 /*
  *  tibencode - Compile a TI BASIC program
- *  Copyright (C) 2015 Delwink, LLC
+ *  Copyright (C) 2015-2016 Delwink, LLC
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as published by
@@ -16,6 +16,7 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <getopt.h>
@@ -31,7 +32,7 @@ OPTIONS:\n\
 \t-v, --version\tPrints version info and exits\n"
 
 #define VERSION_INFO "tibencode (Delwink LiberTI) 1.0.0\n\
-Copyright (C) 2015 Delwink, LLC\n\
+Copyright (C) 2015-2016 Delwink, LLC\n\
 License AGPLv3: GNU AGPL version 3 only <http://gnu.org/licenses/agpl.html>.\n\
 This is libre software: you are free to change and redistribute it.\n\
 There is NO WARRANTY, to the extent permitted by law.\n\n\
@@ -75,27 +76,28 @@ main (int argc, char *argv[])
   if (tib_errno)
     {
       fputs ("tibencode: Error allocating space for keyword tree.\n", stderr);
-      return tib_errno;
+      return 1;
     }
 
-  tib_Expression *translated = tib_new_Expression ();
-  if (NULL == translated)
+  struct tib_expr translated;
+  tib_errno = tib_expr_init (&translated);
+  if (tib_errno)
     {
       fputs ("tibencode: Error creating expression buffer.\n", stderr);
-      return TIB_EALLOC;
+      return 1;
     }
 
-  size_t max_line_len = 128;
+  unsigned int max_line_len = 128;
   char *buf = malloc (max_line_len * sizeof (char));
   if (NULL == buf)
     {
-      tib_Expression_decref (translated);
+      tib_expr_free_data (&translated);
       fputs ("tibencode: Error allocating line buffer.\n", stderr);
-      return TIB_EALLOC;
+      return 1;
     }
 
   int c = '\0';
-  size_t line_len = 0;
+  unsigned int line_len = 0;
   while (c != EOF)
     {
       for (; line_len < max_line_len - 1; ++line_len)
@@ -109,51 +111,62 @@ main (int argc, char *argv[])
 
       if (max_line_len - 1 == line_len)
 	{
+	  char *old = buf;
+
 	  max_line_len *= 2;
 	  buf = realloc (buf, max_line_len * sizeof (char));
+	  if (!buf)
+	    {
+	      free (old);
+	      tib_errno = TIB_EALLOC;
+	      goto end;
+	    }
+
 	  continue;
 	}
 
       buf[line_len] = '\0';
 
-      tib_Expression *line = tib_encode_str (buf);
-      if (NULL == line)
-	break;
-
-      tib_errno = tib_Expression_cat (translated, line);
-      tib_Expression_decref (line);
+      struct tib_expr line;
+      tib_errno = tib_encode_str (&line, buf);
       if (tib_errno)
-	break;
+	goto end;
+
+      tib_errno = tib_exprcat (&translated, &line);
+      tib_expr_free_data (&line);
+      if (tib_errno)
+	goto end;
 
       if (c != EOF)
 	{
-	  tib_errno = tib_Expression_push (translated, '\n');
+	  tib_errno = tib_expr_push (&translated, '\n');
 	  if (tib_errno)
-	    break;
+	    goto end;
 	}
 
       line_len = 0;
     }
 
+ end:
   free (buf);
   tib_keyword_free ();
 
   if (tib_errno)
     {
-      tib_Expression_decref (translated);
+      tib_expr_free_data (&translated);
       fprintf (stderr, "tibencode: Error %d occurred while assembling.\n",
 	       tib_errno);
-      return tib_errno;
+      return 1;
     }
 
-  tib_errno = tib_fwrite (stdout, translated, &written);
-  tib_Expression_decref (translated);
+  tib_errno = tib_fwrite (stdout, &translated, &written);
+  tib_expr_free_data (&translated);
   if (tib_errno)
     {
       fprintf (stderr, "tibencode: Error %d occurred while processing. "
 	       "Wrote %lu characters.\n",
 	       tib_errno, written);
-      return tib_errno;
+      return 1;
     }
 
   return 0;

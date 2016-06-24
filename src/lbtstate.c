@@ -1,6 +1,6 @@
 /*
  *  libliberti - Backend functionality for LiberTI
- *  Copyright (C) 2015 Delwink, LLC
+ *  Copyright (C) 2015-2016 Delwink, LLC
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as published by
@@ -62,8 +62,7 @@ lbt_new_State (const char *save_path)
 	}
     }
 
-  enum lbt_screen_mode m;
-  for (m = LBT_COMMAND_MODE; m < LBT_NUM_MODES; ++m)
+  for (enum lbt_screen_mode m = LBT_COMMAND_MODE; m < LBT_NUM_MODES; ++m)
     {
       new->lines[m] = NULL;
       new->last_lines[m] = NULL;
@@ -72,31 +71,32 @@ lbt_new_State (const char *save_path)
   config_setting_t *setting = config_lookup (&conf, "mode.command.lines");
   if (setting)
     {
-      size_t i = 0;
+      unsigned int i = 0;
       config_setting_t *line;
       while ((line = config_setting_get_elem (setting, i++)))
 	{
 	  config_setting_t *e = config_setting_get_member (line, "x");
 	  if (NULL == e)
 	    continue;
-	  int64_t x = config_setting_get_int64 (e);
+	  int x = config_setting_get_int (e);
 
 	  e = config_setting_get_member (line, "y");
 	  if (NULL == e)
 	    continue;
-	  int64_t y = config_setting_get_int64 (e);
+	  int y = config_setting_get_int (e);
 
 	  e = config_setting_get_member (line, "text");
 	  if (NULL == e)
 	    continue;
 	  const char *s = config_setting_get_string (line);
 
-	  tib_Expression *text = tib_encode_str (s);
-	  if (NULL == text)
+	  struct tib_expr text;
+	  tib_errno = tib_encode_str (&text, s);
+	  if (tib_errno)
 	    goto fail;
 
-	  tib_errno = lbt_State_add_line (new, text, x, y, LBT_COMMAND_MODE);
-	  tib_Expression_decref (text);
+	  tib_errno = lbt_State_add_line (new, &text, x, y, LBT_COMMAND_MODE);
+	  tib_expr_free_data (&text);
 	  if (tib_errno)
 	    goto fail;
 	}
@@ -147,16 +147,16 @@ lbt_State_decref (lbt_State *self)
 	  if (NULL == info)
 	    goto clean;
 
-	  ADD (info, "x", CONFIG_TYPE_INT64);
-	  config_setting_set_int64 (info, line->x);
+	  ADD (info, "x", CONFIG_TYPE_INT);
+	  config_setting_set_int (info, line->x);
 
 	  info = config_setting_parent (info);
-	  ADD (info, "y", CONFIG_TYPE_INT64);
-	  config_setting_set_int64 (info, line->y);
+	  ADD (info, "y", CONFIG_TYPE_INT);
+	  config_setting_set_int (info, line->y);
 
 	  info = config_setting_parent (info);
 	  ADD (info, "text", CONFIG_TYPE_STRING);
-	  char *text = tib_Expression_as_str (line->value);
+	  char *text = tib_expr_tostr (&line->value);
 	  if (NULL == text)
 	    goto clean;
 
@@ -182,14 +182,14 @@ lbt_State_decref (lbt_State *self)
 }
 
 static struct lbt_screen_line *
-new_line (const tib_Expression *text, size_t x, size_t y)
+new_line (const struct tib_expr *text, int x, int y)
 {
   struct lbt_screen_line *new = malloc (sizeof (struct lbt_screen_line));
   if (NULL == new)
     return NULL;
 
-  new->value = tib_copy_Expression (text);
-  if (NULL == new->value)
+  tib_errno = tib_exprcpy (&new->value, text);
+  if (tib_errno)
     {
       free (new);
       return NULL;
@@ -204,8 +204,8 @@ new_line (const tib_Expression *text, size_t x, size_t y)
 }
 
 int
-lbt_State_add_line (lbt_State *self, const tib_Expression *text, int64_t x,
-		    int64_t y, enum lbt_screen_mode mode)
+lbt_State_add_line (lbt_State *self, const struct tib_expr *text, int x, int y,
+		    enum lbt_screen_mode mode)
 {
   if (!self->lines[mode])
     {
@@ -230,7 +230,8 @@ lbt_State_add_line (lbt_State *self, const tib_Expression *text, int64_t x,
 }
 
 struct lbt_screen_line *
-lbt_State_get_line (const lbt_State *self, size_t i, enum lbt_screen_mode mode)
+lbt_State_get_line (const lbt_State *self, unsigned int i,
+		    enum lbt_screen_mode mode)
 {
   struct lbt_screen_line *line;
   for (line = self->lines[mode]; line != NULL; line = line->next)
@@ -245,9 +246,10 @@ lbt_State_get_line (const lbt_State *self, size_t i, enum lbt_screen_mode mode)
 }
 
 void
-lbt_State_del_line (lbt_State *self, size_t i, enum lbt_screen_mode mode)
+lbt_State_del_line (lbt_State *self, unsigned int i, enum lbt_screen_mode mode)
 {
-  struct lbt_screen_line *temp, *before = lbt_State_get_line (self, i-1, mode);
+  struct lbt_screen_line *temp;
+  struct lbt_screen_line *before = lbt_State_get_line (self, i - 1, mode);
 
   if (NULL == before)
     {
@@ -276,7 +278,7 @@ lbt_State_del_line (lbt_State *self, size_t i, enum lbt_screen_mode mode)
   if (temp == self->last_lines[mode])
     self->last_lines[mode] = temp->prev;
 
-  tib_Expression_decref (temp->value);
+  tib_expr_free_data (&temp->value);
   free (temp);
 }
 
@@ -291,18 +293,24 @@ lbt_State_clear_lines (lbt_State *self, enum lbt_screen_mode mode)
 void
 lbt_State_clear_all_lines (lbt_State *self)
 {
-  enum lbt_screen_mode mode;
-  for (mode = LBT_COMMAND_MODE; mode < LBT_NUM_MODES; ++mode)
-    lbt_State_clear_lines (self, mode);
+  for (enum lbt_screen_mode mode = LBT_COMMAND_MODE;
+       mode < LBT_NUM_MODES;
+       ++mode)
+    {
+      lbt_State_clear_lines (self, mode);
+    }
 }
 
-size_t
+unsigned int
 lbt_State_num_lines (const lbt_State *self, enum lbt_screen_mode mode)
 {
-  struct lbt_screen_line *line;
-  size_t i = 0;
-  for (line = self->lines[mode]; line != NULL; line = line->next)
-    ++i;
+  unsigned int i = 0;
+  for (struct lbt_screen_line *line = self->lines[mode];
+       line != NULL;
+       line = line->next)
+    {
+      ++i;
+    }
 
   return i;
 }

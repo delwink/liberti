@@ -1,6 +1,6 @@
 /*
  *  libtib - Read, write, and evaluate TI BASIC programs
- *  Copyright (C) 2015 Delwink, LLC
+ *  Copyright (C) 2015-2016 Delwink, LLC
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as published by
@@ -18,62 +18,46 @@
 #ifndef DELWINK_TIB_TIBEXPR_H
 #define DELWINK_TIB_TIBEXPR_H
 
-#include <stdlib.h>
 #include <gsl/gsl_complex.h>
 
-#define tib_foreachexpr(E,I) for (I = 0; I < tib_Expression_len (E); ++I)
+#define tib_expr_foreach(E,I) for ((I) = 0; (I) < (E)->len; ++(I))
 
-typedef struct
+struct tib_expr
 {
-  size_t len;
-  size_t bufsize;
-  int *value;
-  size_t refs;
-} tib_Expression;
-
-tib_Expression *
-tib_new_Expression (void);
-
-tib_Expression *
-tib_copy_Expression (const tib_Expression *expr);
-
-void
-tib_Expression_incref (tib_Expression *expr);
-
-void
-tib_Expression_decref (tib_Expression *expr);
+  int *data;
+  unsigned int len;
+  unsigned int bufsize;
+};
 
 int
-tib_Expression_set (tib_Expression *expr, const char *s);
+tib_expr_init (struct tib_expr *self);
 
 void
-tib_Expression_clear (tib_Expression *expr);
+tib_expr_free_data (struct tib_expr *self);
+
+int
+tib_exprcpy (struct tib_expr *dest, const struct tib_expr *src);
+
+int
+tib_exprcat (struct tib_expr *dest, const struct tib_expr *src);
 
 char *
-tib_Expression_as_str (const tib_Expression *expr);
+tib_expr_tostr (const struct tib_expr *self);
 
 int
-tib_Expression_as_num (const tib_Expression *expr, gsl_complex *out);
+tib_expr_parse_complex (const struct tib_expr *self, gsl_complex *out);
 
 int
-tib_Expression_remove (tib_Expression *expr, size_t i);
+tib_expr_delete (struct tib_expr *self, unsigned int i);
 
 int
-tib_Expression_insert (tib_Expression *expr, size_t i, int c);
+tib_expr_insert (struct tib_expr *self, unsigned int i, int c);
 
 int
-tib_Expression_push (tib_Expression *expr, int c);
-
-tib_Expression *
-tib_Expression_substring (const tib_Expression *in, size_t beg, size_t end);
+tib_expr_push (struct tib_expr *self, int c);
 
 int
-tib_Expression_cat (tib_Expression *dest, const tib_Expression *src);
-
-int
-tib_Expression_ref (const tib_Expression *expr, size_t i);
-
-size_t
-tib_Expression_len (const tib_Expression *expr);
+tib_subexpr (struct tib_expr *dest, const struct tib_expr *src,
+	     unsigned int beg, unsigned int end);
 
 #endif

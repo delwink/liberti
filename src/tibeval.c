@@ -1,6 +1,6 @@
 /*
  *  libtib - Read, write, and evaluate TI BASIC programs
- *  Copyright (C) 2015 Delwink, LLC
+ *  Copyright (C) 2015-2016 Delwink, LLC
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as published by
@@ -61,67 +61,59 @@ is_math_operator (int c)
   return sign_operator (c) || '*' == c || '/' == c || '^' == c;
 }
 
-size_t
-sign_count (const tib_Expression *expr)
+unsigned int
+sign_count (const struct tib_expr *expr)
 {
-  size_t i, out = 0;
+  unsigned int i, out = 0;
 
-  tib_foreachexpr (expr, i)
-    if (sign_operator (tib_Expression_ref (expr, i)))
+  tib_expr_foreach (expr, i)
+    if (sign_operator (expr->data[i]))
       ++out;
 
   return out;
 }
 
 bool
-contains_i (const tib_Expression *expr)
+contains_i (const struct tib_expr *expr)
 {
-  size_t i;
+  unsigned int i;
 
-  tib_foreachexpr (expr, i)
-    if ('i' == tib_Expression_ref (expr, i))
+  tib_expr_foreach (expr, i)
+    if ('i' == expr->data[i])
       return true;
 
   return false;
 }
 
 static TIB *
-single_eval (const tib_Expression *expr)
+single_eval (const struct tib_expr *expr)
 {
-  if (NULL == expr)
-    return NULL;
-
-  size_t len = tib_Expression_len (expr);
+  unsigned int len = expr->len;
 
   if (0 == len)
     return tib_empty ();
 
-  if (1 == len && tib_is_var (tib_Expression_ref (expr, 0)))
-    return tib_var_get (tib_Expression_ref (expr, 0));
+  if (1 == len && tib_is_var (expr->data[0]))
+    return tib_var_get (expr->data[0]);
 
   int func = tib_eval_surrounded (expr);
   if (func)
     {
-      tib_Expression *temp = tib_Expression_substring (expr, 1, len-1);
-      if (NULL == temp)
-	return NULL;
-
-      TIB *out = tib_call (func, temp);
-      tib_Expression_decref (temp);
-      return out;
+      struct tib_expr temp;
+      tib_subexpr (&temp, expr, 1, len - 1);
+      return tib_call (func, &temp);
     }
 
   if (tib_eval_isnum (expr))
     {
       gsl_complex z;
-      tib_errno = tib_Expression_as_num (expr, &z);
-
+      tib_errno = tib_expr_parse_complex (expr, &z);
       return tib_errno ? NULL : tib_new_complex (GSL_REAL (z), GSL_IMAG (z));
     }
 
   if (tib_eval_isstr (expr))
     {
-      char *s = tib_Expression_as_str (expr);
+      char *s = tib_expr_tostr (expr);
       if (NULL == s)
 	return NULL;
 
@@ -143,9 +135,9 @@ do_arith (struct tib_lst *resolved, size_t i, int operator, char arith1,
   TIB *temp;
 
   if (arith1 == operator)
-    temp = func1 (tib_lst_ref (resolved, i), tib_lst_ref (resolved, i+1));
+    temp = func1 (tib_lst_ref (resolved, i), tib_lst_ref (resolved, i + 1));
   else if (arith2 == operator)
-    temp = func2 (tib_lst_ref (resolved, i), tib_lst_ref (resolved, i+1));
+    temp = func2 (tib_lst_ref (resolved, i), tib_lst_ref (resolved, i + 1));
   else
     return;
 
@@ -160,33 +152,31 @@ do_arith (struct tib_lst *resolved, size_t i, int operator, char arith1,
 }
 
 TIB *
-tib_eval (const tib_Expression *in)
+tib_eval (const struct tib_expr *in)
 {
-  size_t i, len = tib_Expression_len (in);
+  unsigned int i, len = in->len;
 
   if (0 == len)
     return tib_empty ();
 
   /* check for store operator */
-  tib_foreachexpr (in, i)
+  tib_expr_foreach (in, i)
     {
-      if (tib_Expression_ref (in, i) != TIB_CHAR_STO)
+      if (in->data[i] != TIB_CHAR_STO)
 	continue;
 
-      int c = tib_Expression_ref (in, ++i);
-      if ((i != tib_Expression_len (in) - 1)
-	  || ((c < 'A' || c > 'Z') && c != TIB_CHAR_THETA))
+      int c = in->data[++i];
+      if ((i != len - 1) || ((c < 'A' || c > 'Z') && c != TIB_CHAR_THETA))
 	{
 	  tib_errno = TIB_ESYNTAX;
 	  return NULL;
 	}
 
-      size_t end = tib_Expression_len (in) - 3;
-      tib_Expression *e = tib_Expression_substring (in, 0, end);
-      if (NULL == e)
-	return NULL;
+      unsigned int end = len - 3;
+      struct tib_expr e;
+      tib_subexpr (&e, in, 0, end);
 
-      TIB *stoval = tib_eval (e);
+      TIB *stoval = tib_eval (&e);
       if (NULL == stoval)
 	return NULL;
 
@@ -200,37 +190,31 @@ tib_eval (const tib_Expression *in)
       return stoval;
     }
 
-  tib_Expression *expr = tib_copy_Expression (in);
-  if (NULL == expr)
+  struct tib_expr expr = { .bufsize = 0 };
+  tib_errno = tib_exprcpy (&expr, in);
+  if (tib_errno)
     return NULL;
 
   /* check for implicit closing parentheses and close them */
-  tib_errno = tib_eval_close_parens (expr);
+  tib_errno = tib_eval_close_parens (&expr);
   if (tib_errno)
-    {
-      tib_Expression_decref (expr);
-      return NULL;
-    }
+    return NULL;
 
   /* add multiplication operators between implicit multiplications */
-  bool add = tib_Expression_ref (expr, 0) != '"';
+  bool add = expr.data[0] != '"';
   for (i = 1; i < len-1; ++i)
     {
-      int c = tib_Expression_ref (expr, i);
+      int c = expr.data[i];
 
       if ('"' == c)
 	add = !add; /* don't change anything inside a string */
 
       if (add)
 	{
-	  if (is_left_paren (c) && i
-	      && needs_mult_left (tib_Expression_ref (expr, i)))
-	    tib_errno = tib_Expression_insert (expr, i, '*');
-	  else if (')' == c
-		   && needs_mult_right (tib_Expression_ref (expr, i+1)))
-	    tib_errno = tib_Expression_insert (expr, ++i, '*');
-	  else
-	    tib_errno = 0;
+	  if (is_left_paren (c) && i && needs_mult_left (c))
+	    tib_errno = tib_expr_insert (&expr, i, '*');
+	  else if (')' == c && needs_mult_right (expr.data[i + 1]))
+	    tib_errno = tib_expr_insert (&expr, ++i, '*');
 
 	  if (tib_errno)
 	    return NULL;
@@ -239,47 +223,55 @@ tib_eval (const tib_Expression *in)
 
   /* this is temp storage for internally-resolved portions */
   struct tib_lst *resolved = tib_new_lst ();
-  if (NULL == resolved)
+  if (!resolved)
     {
-      tib_Expression_decref (expr);
+      tib_expr_free_data (&expr);
       tib_errno = TIB_EALLOC;
       return NULL;
     }
 
   /* this is to remember the operations to be executed */
-  tib_Expression *calc = tib_new_Expression ();
-  if (NULL == calc)
+  struct tib_expr calc;
+  tib_errno = tib_expr_init (&calc);
+  if (tib_errno)
     {
-      tib_Expression_decref (expr);
+      tib_expr_free_data (&expr);
       tib_free_lst (resolved);
-      tib_errno = TIB_EALLOC;
       return NULL;
     }
 
   /* resolve operand expressions, and store the values for later */
-  size_t beg = 0;
-  int64_t numpar = 0;
+  unsigned int beg = 0, numpar = 0;
   for (i = 0; i < len; ++i)
     {
-      int c = tib_Expression_ref (expr, i);
+      int c = expr.data[i];
 
       if (is_left_paren (c))
-	++numpar;
-
-      if (')' == c && --numpar < 0)
 	{
-	  tib_errno = TIB_ESYNTAX;
-	  break;
+	  ++numpar;
+	}
+      else if (')' == c)
+	{
+	  if (0 == numpar)
+	    {
+	      tib_errno = TIB_ESYNTAX;
+	      break;
+	    }
+
+	  --numpar;
 	}
 
-      if (!numpar && is_math_operator (c))
+      if (0 == numpar && is_math_operator (c))
 	{
-	  tib_errno = tib_Expression_push (calc, c);
+	  tib_errno = tib_expr_push (&calc, c);
 	  if (tib_errno)
 	    break;
 
-	  TIB *temp = single_eval (tib_Expression_substring (expr, beg, i-1));
-	  if (NULL == temp)
+	  struct tib_expr sub;
+	  tib_subexpr (&sub, &expr, beg, i - 1);
+
+	  TIB *temp = single_eval (&sub);
+	  if (!temp)
 	    break;
 
 	  tib_errno = tib_lst_push (resolved, temp);
@@ -287,94 +279,70 @@ tib_eval (const tib_Expression *in)
 	  if (tib_errno)
 	    break;
 
-	  beg = i+1;
+	  beg = i + 1;
 	}
     }
 
-  if (!tib_errno && tib_lst_len (resolved) == 0)
+  if (!tib_errno)
     {
-      TIB *temp = single_eval (expr);
-      tib_errno = tib_lst_push (resolved, temp);
-      tib_decref (temp);
+      if (tib_lst_len (resolved) == 0)
+	{
+	  TIB *temp = single_eval (&expr);
+	  tib_errno = tib_lst_push (resolved, temp);
+	  tib_decref (temp);
+	}
+
+      if (tib_lst_len (resolved) != calc.len + 1)
+	tib_errno = TIB_ESYNTAX;
     }
 
-  tib_Expression_decref (expr);
-
-  if (!tib_errno && tib_lst_len (resolved) != tib_Expression_len (calc) + 1)
-    tib_errno = TIB_ESYNTAX;
+  tib_expr_free_data (&expr);
 
   if (tib_errno)
-    {
-      tib_free_lst (resolved);
-      tib_Expression_decref (calc);
-      return NULL;
-    }
+    goto end;
 
-  tib_foreachexpr (calc, i)
+  tib_expr_foreach (&calc, i)
     {
-      int operator = tib_Expression_ref (calc, i);
-      TIB *temp;
-
-      if ('^' == operator)
+      if ('^' == calc.data[i])
 	{
-	  TIB *power = tib_lst_ref (resolved, i+1);
+	  TIB *power = tib_lst_ref (resolved, i + 1);
 	  if (TIB_TYPE_COMPLEX != tib_type (power))
 	    {
 	      tib_errno = TIB_ETYPE;
-	      break;
+	      goto end;
 	    }
 
-	  temp = tib_pow (tib_lst_ref (resolved, i),
-			  tib_complex_value (power));
+	  TIB *temp = tib_pow (tib_lst_ref (resolved, i),
+			       tib_complex_value (power));
+	  if (!temp)
+	    goto end;
+
+	  tib_lst_remove (resolved, i);
+	  tib_lst_remove (resolved, i+1);
+
+	  tib_errno = tib_lst_insert (resolved, temp, i);
+	  tib_decref (temp);
+	  if (tib_errno)
+	    goto end;
 	}
-      else
-	{
-	  continue;
-	}
+    }
 
-      if (NULL == temp)
-	break;
-
-      tib_lst_remove (resolved, i);
-      tib_lst_remove (resolved, i+1);
-
-      tib_errno = tib_lst_insert (resolved, temp, i);
-      tib_decref (temp);
+  tib_expr_foreach (&calc, i)
+    {
+      do_arith (resolved, i, calc.data[i], '*', tib_mul, '/', tib_div);
       if (tib_errno)
-	break;
+	goto end;
     }
 
-  if (tib_errno)
+  tib_expr_foreach (&calc, i)
     {
-      tib_free_lst (resolved);
-      tib_Expression_decref (calc);
-      return NULL;
-    }
-
-  tib_foreachexpr (calc, i)
-    {
-      do_arith (resolved, i, tib_Expression_ref (calc, i), '*', tib_mul, '/',
-		tib_div);
+      do_arith (resolved, i, calc.data[i], '+', tib_add, '-', tib_sub);
       if (tib_errno)
-	break;
+	goto end;
     }
 
-  if (tib_errno)
-    {
-      tib_free_lst (resolved);
-      tib_Expression_decref (calc);
-      return NULL;
-    }
-
-  tib_foreachexpr (calc, i)
-    {
-      do_arith (resolved, i, tib_Expression_ref (calc, i), '+', tib_add, '-',
-		tib_sub);
-      if (tib_errno)
-	break;
-    }
-
-  tib_Expression_decref (calc);
+ end:
+  tib_expr_free_data (&calc);
 
   TIB *out = NULL;
   if (!tib_errno)
@@ -386,55 +354,51 @@ tib_eval (const tib_Expression *in)
 }
 
 int
-tib_eval_surrounded (const tib_Expression *expr)
+tib_eval_surrounded (const struct tib_expr *expr)
 {
-  int count = 0;
-  size_t i, len = tib_Expression_len (expr);
+  int count = 0, opening = expr->data[0];
+  unsigned int len = expr->len;
 
-  if (len > 2 && is_left_paren (tib_Expression_ref (expr, 0))
-      && ')' == tib_Expression_ref (expr, len-1))
+  if (len > 2 && is_left_paren (opening) && ')' == expr->data[len - 1])
     {
       count = 1;
 
-      for (i = 1; i < len-1; ++i)
+      for (unsigned int i = 1; i < len-1; ++i)
 	{
-	  if (is_left_paren (tib_Expression_ref (expr, i)))
+	  int c = expr->data[i];
+
+	  if (is_left_paren (c))
 	    ++count;
-
-	  if (')' == tib_Expression_ref (expr, i))
-	    --count;
-
-	  if (0 == count)
-	    break;
+	  else if (')' == c && --count == 0)
+	    return 0;
 	}
 
-      if (count > 0)
-	return tib_Expression_ref (expr, 0);
+      return opening;
     }
 
   return 0;
 }
 
-static size_t
-char_count (const tib_Expression *expr, int c)
+static unsigned int
+char_count (const struct tib_expr *expr, int c)
 {
-  size_t i, count = 0;
+  unsigned int i, count = 0;
 
-  tib_foreachexpr (expr, i)
-    if (c == tib_Expression_ref (expr, i))
+  tib_expr_foreach (expr, i)
+    if (c == expr->data[i])
       ++count;
 
   return count;
 }
 
-size_t
-i_count (const tib_Expression *expr)
+unsigned int
+i_count (const struct tib_expr *expr)
 {
   return char_count (expr, 'i');
 }
 
-static size_t
-dot_count (const tib_Expression *expr)
+static unsigned int
+dot_count (const struct tib_expr *expr)
 {
   return char_count (expr, '.');
 }
@@ -445,14 +409,14 @@ is_number_char (int c)
   return (isdigit (c) || '.' == c || 'i' == c || sign_operator (c));
 }
 
-size_t
-get_char_pos (const tib_Expression *expr, int c, size_t which)
+unsigned int
+get_char_pos (const struct tib_expr *expr, int c, unsigned int which)
 {
-  size_t i, found = 0;
+  unsigned int i, found = 0;
 
-  tib_foreachexpr (expr, i)
+  tib_expr_foreach (expr, i)
     {
-      if (c == tib_Expression_ref (expr, i))
+      if (c == expr->data[i])
 	++found;
 
       if (found == which)
@@ -462,14 +426,14 @@ get_char_pos (const tib_Expression *expr, int c, size_t which)
   return i;
 }
 
-static size_t
-get_sign_pos (const tib_Expression *expr, size_t which)
+static unsigned int
+get_sign_pos (const struct tib_expr *expr, unsigned int which)
 {
-  size_t i, found = 0;
+  unsigned int i, found = 0;
 
-  tib_foreachexpr (expr, i)
+  tib_expr_foreach (expr, i)
     {
-      if (sign_operator (tib_Expression_ref (expr, i)))
+      if (sign_operator (expr->data[i]))
 	++found;
 
       if (found == which)
@@ -480,7 +444,8 @@ get_sign_pos (const tib_Expression *expr, size_t which)
 }
 
 static bool
-good_sign_pos (const tib_Expression *expr, size_t numsign, size_t numi)
+good_sign_pos (const struct tib_expr *expr, unsigned int numsign,
+	       unsigned int numi)
 {
   switch (numsign)
     {
@@ -506,47 +471,41 @@ good_sign_pos (const tib_Expression *expr, size_t numsign, size_t numi)
 }
 
 bool
-tib_eval_isnum (const tib_Expression *expr)
+tib_eval_isnum (const struct tib_expr *expr)
 {
-  size_t i;
-  size_t nums[3] = {
-    sign_count (expr),
-    dot_count (expr),
-    i_count (expr)
-  };
+  unsigned int signs = sign_count (expr);
+  unsigned int dots = dot_count (expr);
+  unsigned int is = i_count (expr);
 
-  for (i = 0; i < 2; ++i)
-    if (nums[i] > 2)
-      return false;
-
-  if (nums[2] > 1)
+  if (signs > 2 || dots > 2 || is > 1)
     return false;
 
-  if (!good_sign_pos (expr, nums[0], nums[2]))
+  if (!good_sign_pos (expr, signs, is))
     return false;
 
-  if (nums[2] && get_char_pos (expr, 'i', 1) < tib_Expression_len (expr) - 1)
+  if (is && get_char_pos (expr, 'i', 1) < expr->len - 1)
     return false;
 
-  tib_foreachexpr (expr, i)
-    if (!is_number_char (tib_Expression_ref (expr, i)))
+  unsigned int i;
+  tib_expr_foreach (expr, i)
+    if (!is_number_char (expr->data[i]))
       return false;
 
   return true;
 }
 
 bool
-tib_eval_isstr (const tib_Expression *expr)
+tib_eval_isstr (const struct tib_expr *expr)
 {
-  size_t i, len = tib_Expression_len (expr);
+  unsigned int len = expr->len;
 
-  if (len > 1 && '"' == tib_Expression_ref (expr, 0))
+  if (len > 1 && '"' == expr->data[0])
     {
-      for (i = 1; i < len-1; ++i)
+      for (unsigned int i = 1; i < len-1; ++i)
 	{
-	  int c = tib_Expression_ref (expr, i);
+	  int c = expr->data[i];
 
-	  if (c > 256 || '"' == c)
+	  if (c > 127 || '"' == c)
 	    return false;
 	}
 
@@ -557,16 +516,15 @@ tib_eval_isstr (const tib_Expression *expr)
 }
 
 bool
-tib_eval_islist (const tib_Expression *expr)
+tib_eval_islist (const struct tib_expr *expr)
 {
-  size_t i, len = tib_Expression_len (expr);
+  unsigned int len = expr->len;
 
-  if (len > 2 && '{' == tib_Expression_ref (expr, 0)
-      && '}' == tib_Expression_ref (expr, len-1))
+  if (len > 2 && '{' == expr->data[0] && '}' == expr->data[len - 1])
     {
-      for (i = 1; i < len-1; ++i)
+      for (unsigned int i = 1; i < len-1; ++i)
 	{
-	  int c = tib_Expression_ref (expr, i);
+	  int c = expr->data[i];
 
 	  if ('{' == c || '}' == c)
 	    return false;
@@ -579,44 +537,40 @@ tib_eval_islist (const tib_Expression *expr)
 }
 
 static bool
-sub_isnum (const tib_Expression *expr, size_t beg, size_t end)
+sub_isnum (const struct tib_expr *expr, unsigned int beg, unsigned int end)
 {
-  tib_Expression *temp;
-  bool out;
-
-  if (end > beg)
+  if (end <= beg)
     return false;
 
-  temp = tib_Expression_substring (expr, beg, end);
-  if (NULL == temp)
+  struct tib_expr temp;
+  int rc = tib_subexpr (&temp, expr, beg, end);
+  if (rc)
     return false;
 
-  out = tib_eval_isnum (temp);
-  tib_Expression_decref (temp);
-  return out;
+  return tib_eval_isnum (&temp);
 }
 
 bool
-tib_eval_ismatrix (const tib_Expression *expr)
+tib_eval_ismatrix (const struct tib_expr *expr)
 {
-  size_t i, len = tib_Expression_len (expr);
+  unsigned int len = expr->len;
 
-  if (len > 4 && '[' == tib_Expression_ref (expr, 0)
-      && '[' == tib_Expression_ref (expr, 1)
-      && ']' == tib_Expression_ref (expr, len-1))
+  if (len > 4 && '[' == expr->data[0] && '[' == expr->data[1]
+      && ']' == expr->data[len - 1])
     {
-      size_t open_brackets = 1, fdim = 1, dim = 1, beg = 1, end = 1;
+      unsigned int i = 2;
+      unsigned int open_brackets = i, fdim = 1, dim = 1, beg = i, end = i;
       bool first = true;
 
-      for (i = 1; i < len; ++i)
+      for (; i < len; ++i)
 	{
-	  int c = tib_Expression_ref (expr, i);
+	  int c = expr->data[i];
 
 	  switch (c)
 	    {
 	    case '[':
 	      ++open_brackets;
-	      beg = i+1;
+	      beg = i + 1;
 	      break;
 
 	    case ']':
@@ -627,7 +581,7 @@ tib_eval_ismatrix (const tib_Expression *expr)
 
 	      first = false;
 	      dim = 1;
-	      end = i-1;
+	      end = i - 1;
 
 	      if (!sub_isnum (expr, beg, end))
 		return false;
@@ -639,10 +593,10 @@ tib_eval_ismatrix (const tib_Expression *expr)
 	      else
 		++dim;
 
-	      end = i-1;
+	      end = i - 1;
 	      if (!sub_isnum (expr, beg, end))
 		return false;
-	      beg = i+1;
+	      beg = i + 1;
 	      break;
 	    }
 
@@ -657,14 +611,14 @@ tib_eval_ismatrix (const tib_Expression *expr)
 }
 
 int
-tib_eval_close_parens (tib_Expression *expr)
+tib_eval_close_parens (struct tib_expr *expr)
 {
-  size_t i, count = 0, len = tib_Expression_len (expr);
+  unsigned int count = 0, len = expr->len;
   bool str = false;
 
-  for (i = 0; i < len; ++i)
+  for (unsigned int i = 0; i < len; ++i)
     {
-      int c = tib_Expression_ref (expr, i);
+      int c = expr->data[i];
 
       if ('"' == c)
 	str = !str;
@@ -679,65 +633,12 @@ tib_eval_close_parens (tib_Expression *expr)
 	}
     }
 
-  if (1 == count)
-    return tib_Expression_push (expr, ')');
-
-  if (count > 1)
-    return TIB_ESYNTAX;
+  while (count--)
+    {
+      int rc = tib_expr_push (expr, ')');
+      if (rc)
+	return rc;
+    }
 
   return 0;
-}
-
-int
-tib_eval_parse_commas (const tib_Expression *expr, tib_Expression ***out,
-		       size_t *out_len)
-{
-  size_t i, j, last = 0, elements = 1, len = tib_Expression_len (expr);
-
-  if (0 == len)
-    {
-      *out = NULL;
-      *out_len = 0;
-      return 0;
-    }
-
-  for (i = 0; i < len; ++i)
-    if (',' == tib_Expression_ref (expr, i))
-      ++elements;
-  *out_len = elements;
-
-  *out = malloc (elements * sizeof (tib_Expression *));
-  if (NULL == *out)
-    {
-      *out_len = 0;
-      return TIB_EALLOC;
-    }
-
-  for (i = 0; i <= elements; ++i)
-    {
-      tib_errno = 0;
-
-      for (j = last; j < len; ++j)
-	if (',' == tib_Expression_ref (expr, j) || j == len-1)
-	  {
-	    *out[i] = tib_Expression_substring (expr, last, j-1);
-	    last = j + 1;
-	    break;
-	  }
-
-      if (NULL == *out[i])
-	break;
-    }
-
-  if (tib_errno)
-    {
-      for (j = 0; j < i; ++j)
-	tib_Expression_decref (*out[j]);
-      free (*out);
-
-      *out_len = 0;
-      *out = NULL;
-    }
-
-  return tib_errno;
 }

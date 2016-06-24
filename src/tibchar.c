@@ -1,6 +1,6 @@
 /*
  *  libtib - Read, write, and evaluate TI BASIC programs
- *  Copyright (C) 2015 Delwink, LLC
+ *  Copyright (C) 2015-2016 Delwink, LLC
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as published by
@@ -254,32 +254,35 @@ load_range (int beg, int end)
   return rc;
 }
 
-static tib_Expression *
-tokenize (char *beg)
+static int
+tokenize (struct tib_expr *expr, char *beg)
 {
-  char temp;
+  int rc;
   char *orig = beg;
   size_t len = strlen (beg);
 
-  tib_Expression *part = tib_new_Expression ();
-  if (NULL == part)
-    return NULL;
+  rc = tib_expr_init (expr);
+  if (rc)
+    return rc;
 
   while (beg < orig + len)
     {
+      char temp;
       char *end = strchr (beg, '(');
+
       if (end)
 	{
-	  ++end;
-	  temp = *end;
+	  temp = *(++end);
 	  *end = '\0';
+
 	  const PrefixTree *t = pt_search (keywords, beg);
 	  *end = temp;
+
 	  if (t)
 	    {
-	      tib_errno = tib_Expression_push (part, pt_data (t));
-	      if (tib_errno)
-		break;
+	      rc = tib_expr_push (expr, pt_data (t));
+	      if (rc)
+		goto fail;
 
 	      beg = end;
 	      continue;
@@ -295,9 +298,9 @@ tokenize (char *beg)
 	  const PrefixTree *t = pt_search (keywords, beg);
 	  if (t)
 	    {
-	      tib_errno = tib_Expression_push (part, pt_data (t));
-	      if (tib_errno)
-		break;
+	      rc = tib_expr_push (expr, pt_data (t));
+	      if (rc)
+		goto fail;
 
 	      beg = end;
 	      found = true;
@@ -308,111 +311,90 @@ tokenize (char *beg)
 	    break;
 	}
 
-      if (tib_errno)
-	break;
+      if (!found)
+	{
+	  rc = tib_expr_push (expr, *beg);
+	  if (rc)
+	    goto fail;
 
-      if (found)
-	continue;
-
-      tib_errno = tib_Expression_push (part, *beg);
-      if (tib_errno)
-	break;
-
-      ++beg;
+	  ++beg;
+	}
     }
 
-  if (tib_errno)
-    {
-      tib_Expression_decref (part);
-      part = NULL;
-    }
+  return rc;
 
-  return part;
+ fail:
+  tib_expr_free_data (expr);
+  return rc;
 }
 
-tib_Expression *
-tib_encode_str (const char *s)
+int
+tib_encode_str (struct tib_expr *expr, const char *s)
 {
-  char *buf, *beg, *end;
+  int rc;
+  char *buf, *beg;
   size_t line_len = strlen (s);
 
   buf = malloc ((line_len + 1) * sizeof (char));
-  if (NULL == buf)
-    {
-      tib_errno = TIB_EALLOC;
-      return NULL;
-    }
+  if (!buf)
+    return TIB_EALLOC;
 
   strcpy (buf, s);
   beg = buf;
-
-  tib_Expression *translated = tib_new_Expression ();
-  if (NULL == translated)
-    {
-      free (buf);
-      return NULL;
-    }
+  expr->len = 0;
 
   while (beg < buf + line_len)
     {
+      char *end = strchr (beg, '"');
+      if (end)
+	*end = '\0';
+
+      struct tib_expr part;
+      rc = tokenize (&part, beg);
+      if (rc)
+	break;
+
+      rc = tib_exprcat (expr, &part);
+      tib_expr_free_data (&part);
+      if (rc)
+	break;
+
+      if (!end)
+	break;
+
+      beg = end + 1;
       end = strchr (beg, '"');
-      if (end)
-	*end = 0;
 
-      tib_Expression *part = tokenize (beg);
-      if (NULL == part && tib_errno)
+      if (!end)
+	end = buf + line_len;
+
+      rc = tib_expr_push (expr, '"');
+      if (rc)
 	break;
 
-      tib_errno = tib_Expression_cat (translated, part);
-      tib_Expression_decref (part);
-      if (tib_errno)
-	break;
-
-      if (end)
+      for (; beg < end; ++beg)
 	{
-	  beg = end + 1;
-	  end = strchr (beg, '"');
-
-	  if (!end)
-	    end = buf + line_len;
-
-	  tib_errno = tib_Expression_push (translated, '"');
-	  if (tib_errno)
-	    break;
-
-	  for (; beg < end; ++beg)
-	    {
-	      tib_errno = tib_Expression_push (translated, *beg);
-	      if (tib_errno)
-		break;
-	    }
-	  if (tib_errno)
-	    break;
-
-	  if (*end)
-	    {
-	      tib_errno = tib_Expression_push (translated, *end);
-	      if (tib_errno)
-		break;
-	    }
-
-	  beg = end + 1;
+	  rc = tib_expr_push (expr, *beg);
+	  if (rc)
+	    goto end;
 	}
-      else
+
+      if (*end)
 	{
-	  break;
+	  rc = tib_expr_push (expr, *end);
+	  if (rc)
+	    break;
 	}
+
+      beg = end + 1;
     }
+
+ end:
+  if (rc)
+    tib_expr_free_data (expr);
 
   free (buf);
-
-  if (tib_errno)
-    {
-      tib_Expression_decref (translated);
-      return NULL;
-    }
-
-  return translated;
+  return rc;
 }
 
 int
@@ -429,16 +411,7 @@ tib_keyword_init ()
 
   rc = load_range (TIB_CHAR_AND, TIB_CHAR_YSCL);
   if (rc)
-    goto fail;
-
-  return rc;
-
- fail:
-  if (keywords)
-    {
-      pt_free (keywords);
-      keywords = NULL;
-    }
+    tib_keyword_free ();
 
   return rc;
 }
@@ -446,5 +419,9 @@ tib_keyword_init ()
 void
 tib_keyword_free ()
 {
-  pt_free (keywords);
+  if (keywords)
+    {
+      pt_free (keywords);
+      keywords = NULL;
+    }
 }

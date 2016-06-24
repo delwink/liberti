@@ -1,6 +1,6 @@
 /*
  *  libtib - Read, write, and evaluate TI BASIC programs
- *  Copyright (C) 2015 Delwink, LLC
+ *  Copyright (C) 2015-2016 Delwink, LLC
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as published by
@@ -357,15 +357,14 @@ trans_from (int c, int *err, FILE *program, unsigned long *parsed)
     }
 }
 
-tib_Expression *
-tib_fread (FILE *program, unsigned long *parsed)
+int
+tib_fread (struct tib_expr *out, FILE *program, unsigned long *parsed)
 {
-  tib_Expression *out;
-  int c;
+  int rc, c;
 
-  out = tib_new_Expression ();
-  if (NULL == out)
-    return NULL;
+  rc = tib_expr_init (out);
+  if (rc)
+    return rc;
 
   *parsed = 0;
   while ((c = fgetc (program)) != EOF && *parsed < 71)
@@ -373,55 +372,49 @@ tib_fread (FILE *program, unsigned long *parsed)
 
   if (*parsed != 71)
     {
-      tib_Expression_decref (out);
-      tib_errno = TIB_EBADFILE;
-      return NULL;
+      rc = TIB_EBADFILE;
+      goto end;
     }
 
   while ((c = fgetc (program)) != EOF)
     {
       ++(*parsed);
 
-      int trans = trans_from ((char) c, &tib_errno, program, parsed);
+      int trans = trans_from ((char) c, &rc, program, parsed);
       if (EOF == trans)
 	break;
 
       if (trans)
 	{
-	  tib_errno = tib_Expression_push (out, trans);
-	  if (tib_errno)
+	  rc = tib_expr_push (out, trans);
+	  if (rc)
 	    break;
 	}
     }
 
-  if (tib_errno)
-    {
-      tib_Expression_decref (out);
-      return NULL;
-    }
+ end:
+  if (rc)
+    tib_expr_free_data (out);
 
-  return out;
+  return rc;
 }
 
 int
-tib_fwrite (FILE *out, const tib_Expression *program, unsigned long *written)
+tib_fwrite (FILE *out, const struct tib_expr *program, unsigned long *written)
 {
   int rc;
-  size_t i;
+  unsigned int i;
 
   for (*written = 0; *written <= 71; ++(*written))
     {
       rc = fputc (0, out);
       if (rc)
-	break;
+	return TIB_EWRITE;
     }
 
-  if (rc)
-    return TIB_EWRITE;
-
-  tib_foreachexpr (program, i)
+  tib_expr_foreach (program, i)
     {
-      int c = tib_Expression_ref (program, i);
+      int c = program->data[i];
       /* The original conversion table had a "TODO transpose" comment. May be
 	 an incomplete table. */
       switch (c)
@@ -898,10 +891,10 @@ tib_fwrite (FILE *out, const tib_Expression *program, unsigned long *written)
 	}
 
       if (EOF == rc)
-	break;
+	return TIB_EWRITE;
 
       ++(*written);
     }
 
-  return EOF == rc ? TIB_EWRITE : 0;
+  return 0;
 }

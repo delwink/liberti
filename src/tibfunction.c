@@ -1,6 +1,6 @@
 /*
  *  libtib - Read, write, and evaluate TI BASIC programs
- *  Copyright (C) 2015 Delwink, LLC
+ *  Copyright (C) 2015-2016 Delwink, LLC
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as published by
@@ -49,17 +49,17 @@ static struct registry registry =
   };
 
 static TIB *
-func_paren (const tib_Expression *expr)
+func_paren (const struct tib_expr *expr)
 {
   return tib_eval (expr);
 }
 
 static TIB *
-func_sin (const tib_Expression *expr)
+func_sin (const struct tib_expr *expr)
 {
   gsl_complex num;
 
-  tib_errno = tib_Expression_as_num (expr, &num);
+  tib_errno = tib_expr_parse_complex (expr, &num);
   if (tib_errno)
     return NULL;
 
@@ -69,30 +69,27 @@ func_sin (const tib_Expression *expr)
 }
 
 static int
-split_number_args (const tib_Expression *expr, ...)
+split_number_args (const struct tib_expr *expr, ...)
 {
   const int *beg, *end;
+  int rc = 0;
   va_list ap;
 
-  tib_errno = 0;
-
   va_start (ap, expr);
-  for (beg = expr->value, end = beg; end < expr->value + expr->len; ++end)
+  for (beg = expr->data, end = beg; end < expr->data + expr->len; ++end)
     {
-      if (',' == *end || end + 1 == expr->value + expr->len)
+      if (',' == *end || end + 1 == expr->data + expr->len)
 	{
-	  size_t start = beg - expr->value, stop = end - expr->value - 1;
-	  if (end + 1 == expr->value + expr->len)
+	  unsigned int start = beg - expr->data, stop = end - expr->data - 1;
+	  if (end + 1 == expr->data + expr->len)
 	    ++stop;
 
-	  tib_Expression *arg = tib_Expression_substring (expr, start, stop);
-	  if (NULL == arg)
-	    break;
+	  struct tib_expr arg;
+	  tib_subexpr (&arg, expr, start, stop);
 
 	  gsl_complex *out = va_arg (ap, gsl_complex *);
-	  tib_errno = tib_Expression_as_num (arg, out);
-	  tib_Expression_decref (arg);
-	  if (tib_errno)
+	  rc = tib_expr_parse_complex (&arg, out);
+	  if (rc)
 	    break;
 
 	  beg = end + 1;
@@ -100,7 +97,7 @@ split_number_args (const tib_Expression *expr, ...)
     }
   va_end (ap);
 
-  return tib_errno;
+  return rc;
 }
 
 static int
@@ -110,12 +107,13 @@ is_int (gsl_complex z)
 }
 
 static TIB *
-func_randint (const tib_Expression *expr)
+func_randint (const struct tib_expr *expr)
 {
-  size_t i, len = tib_Expression_len (expr), num_commas = 0;
-  for (i = 0; i < len; ++i)
+  unsigned int len = expr->len, num_commas = 0;
+
+  for (unsigned int i = 0; i < len; ++i)
     {
-      if (',' == tib_Expression_ref (expr, i))
+      if (',' == expr->data[i])
 	{
 	  if (++num_commas > 2)
 	    break;
@@ -129,7 +127,7 @@ func_randint (const tib_Expression *expr)
     }
 
   gsl_complex min, max, count;
-  split_number_args (expr, &min, &max, &count);
+  tib_errno = split_number_args (expr, &min, &max, &count);
   if (tib_errno)
     return NULL;
 
@@ -139,9 +137,10 @@ func_randint (const tib_Expression *expr)
 
   double diff = GSL_REAL (max) - GSL_REAL (min);
 
-  len = (size_t) GSL_REAL (count);
+  len = (unsigned int) GSL_REAL (count);
   gsl_complex vals[len];
-  for (i = 0; i < len; ++i)
+
+  for (unsigned int i = 0; i < len; ++i)
     {
       GSL_SET_COMPLEX (&vals[i], (double) gsl_rng_get (rng), 0);
 
@@ -179,6 +178,7 @@ tib_registry_init ()
  fail:
   if (rc)
     tib_registry_free ();
+
   return rc;
 }
 
@@ -232,7 +232,7 @@ tib_is_func (int key)
 }
 
 TIB *
-tib_call (int key, const tib_Expression *expr)
+tib_call (int key, const struct tib_expr *expr)
 {
   size_t i;
   for (i = 0; i < registry.len; ++i)

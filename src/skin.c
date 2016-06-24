@@ -1,6 +1,6 @@
 /*
  *  LiberTI - Libre TI calculator emulator designed for LibreCalc
- *  Copyright (C) 2015 Delwink, LLC
+ *  Copyright (C) 2015-2016 Delwink, LLC
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as published by
@@ -821,8 +821,7 @@ static SDL_Surface *
 render_line (const struct lbt_screen_line *line, TTF_Font *font)
 {
   int rc, w, h, font_height;
-  SDL_Surface **parts = malloc (tib_Expression_len (line->value)
-				* sizeof (SDL_Surface *));
+  SDL_Surface **parts = malloc (line->value.len * sizeof (SDL_Surface *));
   if (!parts)
     {
       error ("Failed to initialize expression portions array");
@@ -833,10 +832,10 @@ render_line (const struct lbt_screen_line *line, TTF_Font *font)
   w = 0;
   h = font_height;
 
-  size_t i;
-  tib_foreachexpr (line->value, i)
+  unsigned int i;
+  tib_expr_foreach (&line->value, i)
     {
-      int c = tib_Expression_ref (line->value, i);
+      int c = line->value.data[i];
       const char *s = tib_special_char_text (c);
       SDL_Surface *part = NULL;
 
@@ -885,7 +884,7 @@ render_line (const struct lbt_screen_line *line, TTF_Font *font)
 
   w = 0;
   h = 0;
-  for (i = 0; i < tib_Expression_len (line->value); ++i)
+  for (i = 0; i < line->value.len; ++i)
     {
       if (w + parts[i]->w >= 96)
 	{
@@ -908,7 +907,7 @@ render_line (const struct lbt_screen_line *line, TTF_Font *font)
     }
 
  fail:
-  for (i = 0; i < tib_Expression_len (line->value); ++i)
+  for (i = 0; i < line->value.len; ++i)
     if (parts[i])
       SDL_FreeSurface (parts[i]);
 

@@ -1,6 +1,6 @@
 /*
  *  libliberti - Backend functionality for LiberTI
- *  Copyright (C) 2015 Delwink, LLC
+ *  Copyright (C) 2015-2016 Delwink, LLC
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as published by
@@ -18,7 +18,6 @@
 #ifndef DELWINK_LIBLIBERTI_STATE_H
 #define DELWINK_LIBLIBERTI_STATE_H
 
-#include <stdint.h>
 #include <stdlib.h>
 
 #include "tibexpr.h"
@@ -31,9 +30,9 @@ enum lbt_screen_mode
 
 struct lbt_screen_line
 {
-  tib_Expression *value;
-  int64_t x;
-  int64_t y;
+  struct tib_expr value;
+  int x;
+  int y;
 
   struct lbt_screen_line *next;
   struct lbt_screen_line *prev;
@@ -58,15 +57,16 @@ void
 lbt_State_decref (lbt_State *self);
 
 int
-lbt_State_add_line (lbt_State *self, const tib_Expression *text, int64_t x,
-		    int64_t y, enum lbt_screen_mode mode);
+lbt_State_add_line (lbt_State *self, const struct tib_expr *text, int x, int y,
+		    enum lbt_screen_mode mode);
 
 struct lbt_screen_line *
-lbt_State_get_line (const lbt_State *self, size_t i,
+lbt_State_get_line (const lbt_State *self, unsigned int i,
 		    enum lbt_screen_mode mode);
 
 void
-lbt_State_del_line (lbt_State *self, size_t i, enum lbt_screen_mode mode);
+lbt_State_del_line (lbt_State *self, unsigned int i,
+		    enum lbt_screen_mode mode);
 
 void
 lbt_State_clear_lines (lbt_State *self, enum lbt_screen_mode mode);
@@ -74,7 +74,7 @@ lbt_State_clear_lines (lbt_State *self, enum lbt_screen_mode mode);
 void
 lbt_State_clear_all_lines (lbt_State *self);
 
-size_t
+unsigned int
 lbt_State_num_lines (const lbt_State *self, enum lbt_screen_mode mode);
 
 #endif

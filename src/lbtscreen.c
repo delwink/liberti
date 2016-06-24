@@ -1,6 +1,6 @@
 /*
  *  libliberti - Backend functionality for LiberTI
- *  Copyright (C) 2015 Delwink, LLC
+ *  Copyright (C) 2015-2016 Delwink, LLC
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as published by
@@ -59,20 +59,20 @@ lbt_Screen_decref (lbt_Screen *self)
 }
 
 int
-lbt_Screen_add_line (lbt_Screen *self, const tib_Expression *text, int64_t x,
-		     int64_t y)
+lbt_Screen_add_line (lbt_Screen *self, const struct tib_expr *text, int x,
+		     int y)
 {
   return lbt_State_add_line (self->state, text, x, y, self->mode);
 }
 
 struct lbt_screen_line *
-lbt_Screen_get_line (const lbt_Screen *self, size_t i)
+lbt_Screen_get_line (const lbt_Screen *self, unsigned int i)
 {
   return lbt_State_get_line (self->state, i, self->mode);
 }
 
 void
-lbt_Screen_del_line (lbt_Screen *self, size_t i)
+lbt_Screen_del_line (lbt_Screen *self, unsigned int i)
 {
   lbt_State_del_line (self->state, i, self->mode);
 }
@@ -83,7 +83,7 @@ lbt_Screen_clear_lines (lbt_Screen *self)
   lbt_State_clear_lines (self->state, self->mode);
 }
 
-size_t
+unsigned int
 lbt_Screen_num_lines (const lbt_Screen *self)
 {
   return lbt_State_num_lines (self->state, self->mode);
@@ -106,8 +106,8 @@ lbt_Screen_refresh (lbt_Screen *self)
   lbt_Screen_set_mode (self, self->mode);
 }
 
-int64_t
-to_bounds (int64_t x, int64_t min, int64_t max)
+static int
+to_bounds (int x, int min, int max)
 {
   if (x < min)
     x = min;
@@ -131,7 +131,7 @@ lbt_Screen_current_line (const lbt_Screen *self)
 }
 
 void
-lbt_Screen_move_cursor (lbt_Screen *self, int64_t x, int64_t y)
+lbt_Screen_move_cursor (lbt_Screen *self, int x, int y)
 {
   self->cursor.x += x;
   self->cursor.y += y;
@@ -140,12 +140,11 @@ lbt_Screen_move_cursor (lbt_Screen *self, int64_t x, int64_t y)
     {
     case LBT_COMMAND_MODE:
       self->cursor.y = to_bounds (self->cursor.y, 0,
-				  (int64_t) lbt_Screen_num_lines (self));
+				  (int) lbt_Screen_num_lines (self));
 
       struct lbt_screen_line *line = lbt_Screen_current_line (self);
       if (line)
-	self->cursor.x = to_bounds (self->cursor.x, 0,
-				    tib_Expression_len (line->value));
+	self->cursor.x = to_bounds (self->cursor.x, 0, line->value.len);
       break;
 
     default:
@@ -158,18 +157,19 @@ lbt_Screen_write_char (lbt_Screen *self, int c)
 {
   struct lbt_screen_line *line = lbt_Screen_current_line (self);
 
-  int64_t x = self->cursor.x;
-  if (NULL == line || x < 0 || (size_t) x > tib_Expression_len (line->value))
+  int x = self->cursor.x;
+  if (NULL == line || x < 0 || (unsigned int) x > line->value.len)
     return TIB_EINDEX;
 
   int rc = 0;
-  if (tib_Expression_len (line->value) == (size_t) x)
-    rc = tib_Expression_push (line->value, c);
+  if (line->value.len == (unsigned int) x)
+    rc = tib_expr_push (&line->value, c);
   else
-    line->value->value[x] = c;
+    line->value.data[x] = c;
 
   if (!rc)
     ++self->cursor.x;
+
   return rc;
 }
 
@@ -180,7 +180,7 @@ lbt_Screen_insert_char (lbt_Screen *self, int c)
   if (NULL == line)
     return TIB_EINDEX;
 
-  int rc = tib_Expression_insert (line->value, (size_t) self->cursor.x, c);
+  int rc = tib_expr_insert (&line->value, (unsigned int) self->cursor.x, c);
   if (!rc)
     ++self->cursor.x;
 
@@ -194,7 +194,7 @@ lbt_Screen_set_mode (lbt_Screen *self, enum lbt_screen_mode mode)
     {
     case LBT_COMMAND_MODE:
       self->cursor.x = 0;
-      self->cursor.y = (int64_t) lbt_Screen_num_lines (self);
+      self->cursor.y = (int) lbt_Screen_num_lines (self);
       break;
 
     default:

@@ -1,6 +1,6 @@
 /*
  *  libtib - Read, write, and evaluate TI BASIC programs
- *  Copyright (C) 2015 Delwink, LLC
+ *  Copyright (C) 2015-2016 Delwink, LLC
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as published by
@@ -25,173 +25,145 @@
 
 #define BUFFER_BLOCK_SIZE 16
 
-tib_Expression *
-tib_new_Expression ()
-{
-  tib_Expression *out = malloc (sizeof (tib_Expression));
-  if (NULL == out)
-    {
-      tib_errno = TIB_EALLOC;
-      return NULL;
-    }
-
-  out->bufsize = BUFFER_BLOCK_SIZE;
-  out->len = 0;
-  out->refs = 1;
-
-  out->value = malloc (out->bufsize * sizeof (int));
-  if (NULL == out->value)
-    {
-      free (out);
-      tib_errno = TIB_EALLOC;
-      return NULL;
-    }
-
-  return out;
-}
-
-tib_Expression *
-tib_copy_Expression (const tib_Expression *expr)
-{
-  tib_Expression *out = tib_new_Expression ();
-  if (NULL == out)
-    return NULL;
-
-  size_t i;
-  tib_foreachexpr (expr, i)
-    {
-      tib_errno = tib_Expression_push (out, tib_Expression_ref (expr, i));
-      if (tib_errno)
-	break;
-    }
-
-  if (tib_errno)
-    {
-      tib_Expression_decref (out);
-      return NULL;
-    }
-
-  return out;
-}
-
-void
-tib_Expression_incref (tib_Expression *expr)
-{
-  ++expr->refs;
-}
-
-void
-tib_Expression_decref (tib_Expression *expr)
-{
-  if (0 == expr->refs)
-    return;
-
-  if (0 == --expr->refs)
-    {
-      free (expr->value);
-      free (expr);
-    }
-}
-
 int
-tib_Expression_set (tib_Expression *expr, const char *s)
+tib_expr_init (struct tib_expr *self)
 {
-  tib_Expression *new = tib_encode_str (s);
-  if (NULL == new)
-    return tib_errno;
+  self->data = malloc (BUFFER_BLOCK_SIZE * sizeof (int));
+  if (!self->data)
+    return TIB_EALLOC;
 
-  free (expr->value);
-  expr->len = new->len;
-  expr->value = new->value;
-  free (new);
+  self->bufsize = BUFFER_BLOCK_SIZE;
+  self->len = 0;
 
   return 0;
 }
 
 void
-tib_Expression_clear (tib_Expression *expr)
+tib_expr_free_data (struct tib_expr *self)
 {
-  free (expr->value);
-  expr->value = NULL;
-  expr->len = 0;
+  if (self->bufsize)
+    {
+      free (self->data);
+
+      self->data = NULL;
+      self->bufsize = 0;
+      self->len = 0;
+    }
+}
+
+int
+tib_exprcpy (struct tib_expr *dest, const struct tib_expr *src)
+{
+  dest->len = 0;
+  return tib_exprcat (dest, src);
+}
+
+int
+tib_exprcat (struct tib_expr *dest, const struct tib_expr *src)
+{
+  int rc;
+
+  if (!dest->bufsize)
+    {
+      rc = tib_expr_init (dest);
+      if (rc)
+	return rc;
+    }
+
+  unsigned int i;
+  tib_expr_foreach (src, i)
+    {
+      rc = tib_expr_push (dest, src->data[i]);
+      if (rc)
+	{
+	  tib_expr_free_data (dest);
+	  return rc;
+	}
+    }
+
+  return 0;
 }
 
 char *
-tib_Expression_as_str (const tib_Expression *expr)
+tib_expr_tostr (const struct tib_expr *self)
 {
-  size_t i, bump = 0, len = 1;
-  char *s;
-  const char *t;
-
-  if (NULL == expr->value)
+  if (!self->data)
     {
       tib_errno = TIB_ENULLPTR;
       return NULL;
     }
 
-  tib_foreachexpr (expr, i)
+  unsigned int i, len = 1;
+  tib_expr_foreach (self, i)
     {
-      t = tib_special_char_text (expr->value[i]);
-      if (t)
-	len += strlen (t);
+      const char *special = tib_special_char_text (self->data[i]);
+      if (special)
+	len += strlen (special);
       else
 	++len;
     }
 
-  s = malloc (len * sizeof (char));
-  if (NULL == s)
+  char *out = malloc (len * sizeof (char));
+  if (!out)
     {
       tib_errno = TIB_EALLOC;
       return NULL;
     }
 
-  tib_foreachexpr (expr, i)
+  unsigned int bump = 0;
+  tib_expr_foreach (self, i)
     {
-      t = tib_special_char_text (expr->value[i]);
-      if (t)
+      const char *special = tib_special_char_text (self->data[i]);
+      if (special)
 	{
-	  s[i+bump] = '\0';
-	  strcat (s, t);
-	  bump += strlen (t) - 1;
+	  out[i + bump] = '\0';
+	  strcat (out, special);
+	  bump += strlen (special) - 1;
 	}
       else
 	{
-	  s[i+bump] = expr->value[i];
+	  out[i + bump] = self->data[i];
 	}
     }
 
-  s[i+bump] = '\0';
-
-  return s;
+  out[i + bump] = '\0';
+  return out;
 }
 
 int
-tib_Expression_as_num (const tib_Expression *expr, gsl_complex *out)
+tib_expr_parse_complex (const struct tib_expr *self, gsl_complex *out)
 {
-  if (!tib_eval_isnum (expr))
+  if (!tib_eval_isnum (self))
     return TIB_ESYNTAX;
 
-  size_t i, numop = sign_count (expr);
+  const unsigned int len = self->len;
+  char s[len + 1];
 
-  char *s = tib_Expression_as_str (expr);
-  if (NULL == s)
-    return TIB_EALLOC;
+  for (unsigned int i = 0; i < len; ++i)
+    s[i] = self->data[i];
+
+  s[len] = '\0';
 
   char *i_start = NULL;
-  if (contains_i (expr))
-    for (i = 0; i < strlen(s); ++i)
-      {
-	if ('i' == s[i])
-	  {
-	    i_start = s;
-	    break;
-	  }
-	else if (sign_operator (s[i]) && --numop == 0)
-	  {
-	    i_start = &(s[i]);
-	    break;
-	  }
-      }
+  if (contains_i (self))
+    {
+      unsigned int num_operators = sign_count (self);
+      for (unsigned int i = 0; i < len; ++i)
+	{
+	  int c = self->data[i];
+
+	  if ('i' == c)
+	    {
+	      i_start = s;
+	      break;
+	    }
+	  else if (sign_operator (c) && --num_operators == 0)
+	    {
+	      i_start = &s[i];
+	      break;
+	    }
+	}
+    }
 
   GSL_SET_REAL (out, s == i_start ? 0 : strtod (s, NULL));
 
@@ -203,126 +175,81 @@ tib_Expression_as_num (const tib_Expression *expr, gsl_complex *out)
 	i_start[0] = '1';
     }
 
-  GSL_SET_IMAG (out, NULL == i_start ? 0 : strtod (i_start, NULL));
+  GSL_SET_IMAG (out, i_start ? strtod (i_start, NULL) : 0);
 
-  free (s);
   return 0;
 }
 
 int
-tib_Expression_remove (tib_Expression *expr, size_t i)
+tib_expr_delete (struct tib_expr *self, unsigned int i)
 {
-  if (i > expr->len)
+  if (i > self->len)
     return TIB_EINDEX;
 
-  --expr->len;
+  --self->len;
 
-  for (; i < expr->len; ++i)
-    expr->value[i] = expr->value[i+1];
+  for (; i < self->len; ++i)
+    self->data[i] = self->data[i + 1];
 
   return 0;
 }
 
 int
-tib_Expression_insert (tib_Expression *expr, size_t i, int c)
+tib_expr_insert (struct tib_expr *self, unsigned int i, int c)
 {
-  ++expr->len;
-
-  if (i > expr->len)
+  if (i > ++self->len)
     {
-      --expr->len;
+      --self->len;
       return TIB_EINDEX;
     }
 
-  if (expr->len > expr->bufsize)
+  if (!self->bufsize)
     {
-      int *old = expr->value;
-      expr->bufsize += BUFFER_BLOCK_SIZE;
+      struct tib_expr temp = { .bufsize = 0 };
+      int rc = tib_exprcpy (&temp, self);
+      if (rc)
+	return rc;
 
-      expr->value = realloc (expr->value, expr->bufsize * sizeof (int));
-      if (NULL == expr->value)
+      *self = temp;
+    }
+  else if (self->len > self->bufsize)
+    {
+      int *old = self->data;
+      self->bufsize *= 2;
+
+      self->data = realloc (self->data, self->bufsize * sizeof (int));
+      if (!self->data)
 	{
-	  expr->value = old;
-	  --expr->len;
+	  self->bufsize /= 2;
+	  --self->len;
+	  self->data = old;
 	  return TIB_EALLOC;
 	}
     }
 
-  size_t j;
-  for (j = expr->len - 1; j > i; --j)
-    expr->value[j] = expr->value[j-1];
+  for (unsigned int j = self->len - 1; j > i; --j)
+    self->data[j] = self->data[j - 1];
 
-  expr->value[i] = c;
-
+  self->data[i] = c;
   return 0;
 }
 
 int
-tib_Expression_push (tib_Expression *expr, int c)
+tib_expr_push (struct tib_expr *self, int c)
 {
-  return tib_Expression_insert (expr, tib_Expression_len (expr), c);
-}
-
-tib_Expression *
-tib_Expression_substring (const tib_Expression *in, size_t beg, size_t end)
-{
-  if (beg > in->len || end > in->len || beg > end)
-    {
-      tib_errno = TIB_EINDEX;
-      return NULL;
-    }
-
-  tib_Expression *out = tib_new_Expression ();
-  if (NULL == out)
-    return NULL;
-
-  for (; beg <= end; ++beg)
-    {
-      tib_errno = tib_Expression_push (out, tib_Expression_ref (in, beg));
-      if (tib_errno)
-	break;
-    }
-
-  if (tib_errno)
-    {
-      tib_Expression_decref (out);
-      return NULL;
-    }
-
-  return out;
+  return tib_expr_insert (self, self->len, c);
 }
 
 int
-tib_Expression_cat (tib_Expression *dest, const tib_Expression *src)
+tib_subexpr (struct tib_expr *dest, const struct tib_expr *src,
+	     unsigned int beg, unsigned int end)
 {
-  int rc = 0;
-  size_t i, oldlen = tib_Expression_len (dest);
+  if (end > src->len || end < beg)
+    return TIB_EINDEX;
 
-  tib_foreachexpr (src, i)
-    {
-      rc = tib_Expression_push (dest, tib_Expression_ref (src, i));
-      if (rc)
-	break;
-    }
+  dest->len = end - beg;
+  dest->bufsize = 0;
+  dest->data = &src->data[beg];
 
-  if (rc)
-    dest->len = oldlen;
-
-  return rc;
-}
-
-int
-tib_Expression_ref (const tib_Expression *expr, size_t i)
-{
-  if (i < tib_Expression_len (expr))
-    return expr->value[i];
-
-  tib_errno = TIB_EINDEX;
-  return '\0';
-}
-
-size_t
-tib_Expression_len (const tib_Expression *expr)
-{
-  return expr->len;
+  return 0;
 }

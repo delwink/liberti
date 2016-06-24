@@ -1,6 +1,6 @@
 /*
  *  tibdecode - Decompile a TI BASIC program
- *  Copyright (C) 2015 Delwink, LLC
+ *  Copyright (C) 2015-2016 Delwink, LLC
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as published by
@@ -15,11 +15,12 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <getopt.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <getopt.h>
 
 #include "tiberr.h"
 #include "tibtranscode.h"
@@ -32,7 +33,7 @@ OPTIONS:\n\
 \t-v, --version\tPrints version info and exits\n"
 
 #define VERSION_INFO "tibdecode (Delwink LiberTI) 1.0.0\n\
-Copyright (C) 2015 Delwink, LLC\n\
+Copyright (C) 2015-2016 Delwink, LLC\n\
 License AGPLv3: GNU AGPL version 3 only <http://gnu.org/licenses/agpl.html>.\n\
 This is libre software: you are free to change and redistribute it.\n\
 There is NO WARRANTY, to the extent permitted by law.\n\n\
@@ -44,7 +45,7 @@ Written by David McMackins II."
 static int
 isascii (int c)
 {
-  return c >= 0 && c < 128;
+  return c & 0x7F;
 }
 #endif
 
@@ -52,8 +53,6 @@ int
 main (int argc, char *argv[])
 {
   bool debug = false;
-  unsigned long parsed;
-  size_t i;
 
   struct option longopts[] =
     {
@@ -89,26 +88,28 @@ main (int argc, char *argv[])
 	}
     }
 
-  tib_Expression *translated = tib_fread (stdin, &parsed);
-  if (NULL == translated)
+  struct tib_expr translated;
+  unsigned long parsed;
+  tib_errno = tib_fread (&translated, stdin, &parsed);
+  if (tib_errno)
     {
       fprintf (stderr, "tibdecode: Error %d occurred while processing. "
 	       "Parsed %lu characters.\n",
 	       tib_errno, parsed);
-      return tib_errno;
+      return 1;
     }
 
-  char *s = tib_Expression_as_str (translated);
-  tib_Expression_decref (translated);
+  char *s = tib_expr_tostr (&translated);
+  tib_expr_free_data (&translated);
   if (NULL == s)
     {
       fprintf (stderr, "tibdecode: Error %d occurred while processing\n",
 	       tib_errno);
-      return tib_errno;
+      return 1;
     }
 
-  size_t len = strlen (s);
-  for (i = 0; i < len; ++i)
+  unsigned int len = strlen (s);
+  for (unsigned int i = 0; i < len; ++i)
     {
       if (debug && !isascii (s[i]))
 	printf ("`%d`", s[i]);
@@ -117,6 +118,5 @@ main (int argc, char *argv[])
     }
 
   free (s);
-
   return 0;
 }

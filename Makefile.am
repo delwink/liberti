@@ -12,7 +12,7 @@ libtib_a_SOURCES = src/tibchar.c src/tiberr.c src/tibeval.c src/tibexpr.c \
 libtib_a_CFLAGS = $(COMMON_CFLAGS) $(gsl_CFLAGS)
 
 libliberti_a_SOURCES = src/lbtscreen.c src/lbtstate.c
-libliberti_a_CFLAGS = -Wall -Wextra -Wunreachable-code -ftrapv -std=c89
+libliberti_a_CFLAGS = $(COMMON_CFLAGS)
 
 liberti_SOURCES = src/liberti.c src/log.c src/skin.c src/ttf.c
 liberti_CFLAGS = $(COMMON_CFLAGS) $(sdl2_CFLAGS)
