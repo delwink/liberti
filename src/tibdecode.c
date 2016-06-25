@@ -108,8 +108,8 @@ main (int argc, char *argv[])
       return 1;
     }
 
-  unsigned int len = strlen (s);
-  for (unsigned int i = 0; i < len; ++i)
+  size_t len = strlen (s);
+  for (size_t i = 0; i < len; ++i)
     {
       if (debug && !isascii (s[i]))
 	printf ("`%d`", s[i]);
