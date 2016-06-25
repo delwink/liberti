@@ -1,6 +1,6 @@
 /*
  *  libtib - Read, write, and evaluate TI BASIC programs
- *  Copyright (C) 2015 Delwink, LLC
+ *  Copyright (C) 2015-2016 Delwink, LLC
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as published by
@@ -24,7 +24,7 @@
 #include <gsl/gsl_matrix_complex_double.h>
 #include <gsl/gsl_complex.h>
 
-enum tib_types
+enum tib_type
 {
   TIB_TYPE_NONE=0,
   TIB_TYPE_COMPLEX,
@@ -43,7 +43,7 @@ union variant
 
 typedef struct
 {
-  int8_t type;
+  enum tib_type type;
   union variant value;
   size_t refs;
 } TIB;
@@ -72,7 +72,7 @@ tib_new_list (const gsl_complex *value, size_t len);
 TIB *
 tib_new_matrix (const gsl_complex **value, size_t w, size_t h);
 
-int8_t
+enum tib_type
 tib_type (const TIB *t);
 
 gsl_complex

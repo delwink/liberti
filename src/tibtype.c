@@ -1,6 +1,6 @@
 /*
  *  libtib - Read, write, and evaluate TI BASIC programs
- *  Copyright (C) 2015 Delwink, LLC
+ *  Copyright (C) 2015-2016 Delwink, LLC
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as published by
@@ -127,6 +127,9 @@ tib_decref (TIB *t)
 	case TIB_TYPE_STRING:
 	  free (t->value.string);
 	  break;
+
+	default:
+	  break;
 	}
 
       free (t);
@@ -234,7 +237,7 @@ tib_new_matrix (const gsl_complex **value, size_t w, size_t h)
   return out;
 }
 
-int8_t
+enum tib_type
 tib_type (const TIB *t)
 {
   return t->type;
