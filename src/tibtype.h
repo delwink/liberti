@@ -24,6 +24,8 @@
 #include <gsl/gsl_matrix_complex_double.h>
 #include <gsl/gsl_complex.h>
 
+#include "tibexpr.h"
+
 enum tib_type
 {
   TIB_TYPE_NONE=0,
@@ -86,6 +88,9 @@ tib_list_value (const TIB *t);
 
 const gsl_matrix_complex *
 tib_matrix_value (const TIB *t);
+
+int
+tib_toexpr (struct tib_expr *dest, const TIB *src);
 
 TIB *
 tib_add (const TIB *t1, const TIB *t2);

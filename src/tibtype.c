@@ -283,6 +283,172 @@ tib_matrix_value (const TIB *t)
   return NULL;
 }
 
+static void
+format_double_str (char *buf, double value)
+{
+  int len = sprintf (buf, "%.09f", value);
+
+  while ('0' == buf[--len])
+    ;
+
+  if ('.' == buf[len])
+    --len;
+
+  buf[len + 1] = '\0';
+}
+
+static int
+load_expr (struct tib_expr *dest, const char *src)
+{
+  unsigned int len = strlen (src);
+  for (unsigned int i = 0; i < len; ++i)
+    {
+      int rc = tib_expr_push (dest, src[i]);
+      if (rc)
+	return rc;
+    }
+
+  return 0;
+}
+
+static int
+complex_toexpr (struct tib_expr *dest, gsl_complex value)
+{
+  int rc;
+  char buf[500];
+
+  if (GSL_REAL (value))
+    {
+      format_double_str (buf, GSL_REAL (value));
+
+      rc = load_expr (dest, buf);
+      if (rc)
+	return rc;
+    }
+
+  if (GSL_IMAG (value))
+    {
+      format_double_str (buf, GSL_IMAG (value));
+
+      if (GSL_IMAG (value) > 0 && GSL_REAL (value))
+	{
+	  rc = tib_expr_push (dest, '+');
+	  if (rc)
+	    return rc;
+	}
+
+      rc = load_expr (dest, buf);
+      if (rc)
+	return rc;
+
+      rc = tib_expr_push (dest, 'i');
+      if (rc)
+	return rc;
+    }
+
+  return 0;
+}
+
+int
+tib_toexpr (struct tib_expr *dest, const TIB *src)
+{
+  int rc = tib_expr_init (dest);
+  if (rc)
+    return rc;
+
+  size_t i;
+  switch (src->type)
+    {
+    case TIB_TYPE_NONE:
+      rc = load_expr (dest, "Error");
+      break;
+
+    case TIB_TYPE_COMPLEX:
+      rc = complex_toexpr (dest, tib_complex_value (src));
+      break;
+
+    case TIB_TYPE_STRING:
+      rc = load_expr (dest, tib_str_value (src));
+      break;
+
+    case TIB_TYPE_LIST:
+      rc = tib_expr_push (dest, '{');
+      if (rc)
+	break;
+
+      for (i = 0; i < src->value.list->size; ++i)
+	{
+	  gsl_complex z = gsl_vector_complex_get (src->value.list, i);
+	  rc = complex_toexpr (dest, z);
+	  if (rc)
+	    goto end;
+
+	  rc = tib_expr_push (dest, ',');
+	  if (rc)
+	    goto end;
+	}
+
+      if (i)
+	dest->data[dest->len - 1] = '}';
+      else
+	rc = tib_expr_push (dest, '}');
+      break;
+
+    case TIB_TYPE_MATRIX:
+      rc = tib_expr_push (dest, '[');
+      if (rc)
+	break;
+
+      for (i = 0; i < src->value.matrix->size1; ++i)
+	{
+	  size_t j;
+
+	  rc = tib_expr_push (dest, '[');
+	  if (rc)
+	    goto end;
+
+	  for (j = 0; j < src->value.matrix->size2; ++j)
+	    {
+	      gsl_complex z = gsl_matrix_complex_get (src->value.matrix, i, j);
+	      rc = complex_toexpr (dest, z);
+	      if (rc)
+		goto end;
+
+	      rc = tib_expr_push (dest, ',');
+	      if (rc)
+		goto end;
+	    }
+
+	  if (j)
+	    {
+	      dest->data[dest->len - 1] = ']';
+	    }
+	  else
+	    {
+	      rc = tib_expr_push (dest, ']');
+	      if (rc)
+		goto end;
+	    }
+
+	  rc = tib_expr_push (dest, ',');
+	  if (rc)
+	    goto end;
+	}
+
+      if (i)
+	dest->data[dest->len - 1] = ']';
+      else
+	rc = tib_expr_push (dest, ']');
+      break;
+    }
+
+ end:
+  if (rc)
+    tib_expr_free_data (dest);
+
+  return rc;
+}
+
 TIB *
 tib_add (const TIB *t1, const TIB *t2)
 {
