@@ -570,7 +570,7 @@ open_skin (const char *path, struct state *state, struct point2d size)
 	  for (j = 0; j < NUM_ACTION_STATES; ++j)			\
 	    next->button->actions[(I)][j] = actions[j];
 
-	  ADD_ACTION ("default_mode", DEFAULT_SCREEN_MODE);
+	  ADD_ACTION ("default", DEFAULT_SCREEN_MODE);
 
 #define ADD_DIM(D,V) setting = config_setting_get_member (button, (D));	\
 	  if (!setting || !config_setting_is_number (setting))		\
