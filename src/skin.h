@@ -1,6 +1,6 @@
 /*
- *  LiberTI - Libre TI calculator emulator designed for LibreCalc
- *  Copyright (C) 2015 Delwink, LLC
+ *  LiberTI - TI-like calculator designed for LibreCalc
+ *  Copyright (C) 2015-2016 Delwink, LLC
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as published by
@@ -22,11 +22,9 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
-#include "lbtscreen.h"
 #include "point.h"
+#include "screen.h"
 #include "ttf.h"
-
-#define DEFAULT_MODE LBT_NUM_MODES
 
 enum button_action_type
   {
@@ -48,17 +46,17 @@ enum button_action_state
 
 enum cursor_direction
   {
-    UP,
-    DOWN,
-    LEFT,
-    RIGHT
+    UP    = -16,
+    DOWN  =  16,
+    LEFT  =  -1,
+    RIGHT =   1
   };
 
 union button_action
 {
   int char_insert;
   enum cursor_direction cursor_move;
-  enum lbt_screen_mode mode_open;
+  enum screen_mode mode_open;
 };
 
 struct button_action_set
@@ -69,7 +67,7 @@ struct button_action_set
 
 struct skin_button
 {
-  struct button_action_set actions[LBT_NUM_MODES][NUM_ACTION_STATES];
+  struct button_action_set actions[NUM_SCREEN_MODES][NUM_ACTION_STATES];
   struct point2d pos;
   struct point2d size;
 };
@@ -88,26 +86,26 @@ struct skin_render_cache
 
 struct skin_screen_list
 {
-  lbt_Screen *screen;
-  struct point2d pos;
-  struct point2d size;
+  struct screen screen;
   struct skin_screen_list *next;
 };
 
 typedef struct
 {
-  bool insert_mode;
-  enum button_action_state action_state;
   SDL_Surface *background;
-  struct point2d size;
-  struct skin_button_list *buttons;
   struct skin_render_cache *renders;
-  struct skin_screen_list *active_screen;
+
+  struct screen *active_screen;
   struct skin_screen_list *screens;
+  struct skin_button_list *buttons;
+
+  struct point2d size;
+  enum button_action_state action_state;
+  bool insert_mode;
 } Skin;
 
 Skin *
-open_skin (const char *path, lbt_State *state, struct point2d size);
+open_skin (const char *path, struct state *state, struct point2d size);
 
 void
 free_skin (Skin *self);

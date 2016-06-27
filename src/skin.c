@@ -1,5 +1,5 @@
 /*
- *  LiberTI - Libre TI calculator emulator designed for LibreCalc
+ *  LiberTI - TI-like calculator designed for LibreCalc
  *  Copyright (C) 2015-2016 Delwink, LLC
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -28,7 +28,7 @@
 
 #define DEFAULT_SKIN				\
   "screens=({"					\
-  "mode=\"command\";"				\
+  "mode=\"default\";"				\
   "x=0;"					\
   "y=0;"					\
   "});"
@@ -36,37 +36,35 @@
 #define DEFAULT_SCREEN_WIDTH (96)
 #define DEFAULT_SCREEN_HEIGHT (64)
 
-#define foreachskin(L,E) for (E = L; E != NULL; E = E->next)
-
 static PrefixTree *action_keywords = NULL;
 static const SDL_Color BLACK = {0, 0, 0, 255};
 
 static int
 mode_from_string (const char *s)
 {
-  if (0 == strcmp (s, "command"))
-    return LBT_COMMAND_MODE;
+  if (0 == strcmp (s, "default"))
+    return DEFAULT_SCREEN_MODE;
 
   return -1;
 }
 
 static int
-add_screen (Skin *self, lbt_State *state, struct point2d pos,
-	    enum lbt_screen_mode mode, double scale)
+add_screen (Skin *self, struct state *state, struct point2d pos,
+	    enum screen_mode mode, double scale)
 {
-  struct skin_screen_list *node = self->screens, *prev = NULL;
+  struct skin_screen_list *node = self->screens;
 
   if (scale <= 0)
     return TIB_EBADFILE;
 
-  if (NULL == node)
+  if (!node)
     {
       self->screens = malloc (sizeof (struct skin_screen_list));
-      if (NULL == self->screens)
+      if (!self->screens)
 	return TIB_EALLOC;
 
       node = self->screens;
-      self->active_screen = node;
+      self->active_screen = &node->screen;
     }
   else
     {
@@ -74,31 +72,21 @@ add_screen (Skin *self, lbt_State *state, struct point2d pos,
 	node = node->next;
 
       node->next = malloc (sizeof (struct skin_screen_list));
-      if (NULL == node->next)
+      if (!node->next)
 	return TIB_EALLOC;
 
-      prev = node;
       node = node->next;
     }
 
-  node->screen = lbt_new_Screen (state);
-  if (NULL == node->screen)
-    goto fail;
-
   node->next = NULL;
-  node->pos = pos;
-  node->size.x = DEFAULT_SCREEN_WIDTH * scale;
-  node->size.y = DEFAULT_SCREEN_HEIGHT * scale;
-  lbt_Screen_set_mode (node->screen, mode);
+  node->screen.state = state;
+  node->screen.surface = NULL;
+  node->screen.pos = pos;
+  node->screen.size.x = DEFAULT_SCREEN_WIDTH * scale;
+  node->screen.size.y = DEFAULT_SCREEN_HEIGHT * scale;
+  node->screen.mode = mode;
 
   return 0;
-
- fail:
-  if (prev)
-    prev->next = NULL;
-  lbt_Screen_decref (node->screen);
-  self->active_screen = NULL;
-  return tib_errno;
 }
 
 static char *
@@ -106,7 +94,7 @@ skin_file_path (const char *root, const char *file)
 {
   size_t len = strlen (root) + strlen (file) + 2;
   char *full_path = malloc (len * sizeof (char));
-  if (NULL == full_path)
+  if (!full_path)
     return NULL;
 
   sprintf (full_path, "%s/%s", root, file);
@@ -123,24 +111,23 @@ free_action_keywords ()
 static int
 init_action_keywords ()
 {
-  int i;
-
   action_keywords = pt_new ();
-  if (NULL == action_keywords)
+  if (!action_keywords)
     return TIB_EALLOC;
 
-  for (i = TIB_CHAR_AND; i <= TIB_CHAR_YSCL; ++i)
+  for (int i = TIB_CHAR_AND; i <= TIB_CHAR_YSCL; ++i)
     {
       const char *trans = tib_special_char_text (i);
-      if (NULL == trans)
+      if (!trans)
 	continue;
+
       if (' ' == *trans)
 	++trans; /* trim any leading space */
 
       char trim[11]; /* long enough to hold all translated strings and NUL */
-      sprintf (trim, "%s", trans);
+      strcpy (trim, trans);
 
-      char *p = strchr (trim, ' ');
+      char *p = strrchr (trim, ' ');
       if (p)
 	*p = '\0'; /* trim any trailing space */
 
@@ -162,7 +149,7 @@ init_action_keywords ()
 static int
 action_type_from_string (const char *s)
 {
-  if (NULL == s)
+  if (!s)
     return -1;
 
   if (0 == strcmp (s, "mode"))
@@ -203,7 +190,7 @@ char_insert_from_string (const char *s)
 static int
 cursor_move_from_string (const char *s)
 {
-  if (NULL == s)
+  if (!s)
     return -1;
 
   if (0 == strcmp (s, "up"))
@@ -283,7 +270,7 @@ static int
 get_all_actions (const config_setting_t *mode,
 		 struct button_action_set actions[])
 {
-  if (NULL == mode)
+  if (!mode)
     return TIB_EBADFILE;
 
   tib_errno = init_action_keywords ();
@@ -315,28 +302,22 @@ free_render_cache (struct skin_render_cache *c)
 }
 
 Skin *
-open_skin (const char *path, lbt_State *state, struct point2d size)
+open_skin (const char *path, struct state *state, struct point2d size)
 {
-  if (NULL == state)
+  if (!state)
     {
       tib_errno = TIB_ENULLPTR;
       return NULL;
     }
 
   Skin *new = malloc (sizeof (Skin));
-  if (NULL == new)
+  if (!new)
     {
       tib_errno = TIB_EALLOC;
       return NULL;
     }
 
-  new->insert_mode = false;
-  new->action_state = STATE_NORMAL;
-  new->background = NULL;
-  new->active_screen = NULL;
-  new->buttons = NULL;
-  new->renders = NULL;
-  new->screens = NULL;
+  memset (new, 0, sizeof (Skin));
 
   config_t conf;
   config_init (&conf);
@@ -344,7 +325,7 @@ open_skin (const char *path, lbt_State *state, struct point2d size)
   if (path)
     {
       char *spec_path = skin_file_path (path, "spec.conf");
-      if (NULL == spec_path)
+      if (!spec_path)
 	{
 	  tib_errno = TIB_EALLOC;
 	  goto fail;
@@ -377,7 +358,7 @@ open_skin (const char *path, lbt_State *state, struct point2d size)
 
       char *bgpath = skin_file_path (path,
 				     config_setting_get_string (setting));
-      if (NULL == bgpath)
+      if (!bgpath)
 	{
 	  tib_errno = TIB_EALLOC;
 	  goto fail;
@@ -385,7 +366,7 @@ open_skin (const char *path, lbt_State *state, struct point2d size)
 
       new->background = IMG_Load (bgpath);
       free (bgpath);
-      if (NULL == new->background)
+      if (!new->background)
 	{
 	  tib_errno = TIB_EBADFILE;
 	  goto fail;
@@ -408,7 +389,7 @@ open_skin (const char *path, lbt_State *state, struct point2d size)
 	  goto fail;
 	}
 
-      const config_setting_t *screens = setting;
+      config_setting_t * const screens = setting;
       unsigned int i = 0;
       while ((setting = config_setting_get_elem (screens, i++)))
 	{
@@ -418,7 +399,7 @@ open_skin (const char *path, lbt_State *state, struct point2d size)
 	      goto fail;
 	    }
 
-	  const config_setting_t *screen = setting;
+	  config_setting_t * const screen = setting;
 
 	  setting = config_setting_get_member (screen, "mode");
 	  if (!setting || config_setting_type (setting) != CONFIG_TYPE_STRING)
@@ -479,6 +460,7 @@ open_skin (const char *path, lbt_State *state, struct point2d size)
 	      tib_errno = TIB_EALLOC;
 	      goto fail;
 	    }
+
 	  new->renders->surface = NULL;
 	  new->renders->next = NULL;
 
@@ -496,6 +478,7 @@ open_skin (const char *path, lbt_State *state, struct point2d size)
 	      tib_errno = TIB_EALLOC;
 	      goto fail;
 	    }
+
 	  newfull->surface = NULL;
 	  newfull->next = NULL;
 
@@ -513,7 +496,7 @@ open_skin (const char *path, lbt_State *state, struct point2d size)
 	}
 
       new->buttons = malloc (sizeof (struct skin_button_list));
-      if (NULL == new->buttons)
+      if (!new->buttons)
 	{
 	  tib_errno = TIB_EALLOC;
 	  goto fail;
@@ -533,7 +516,7 @@ open_skin (const char *path, lbt_State *state, struct point2d size)
 	  if (i > 1)
 	    {
 	      next->next = malloc (sizeof (struct skin_button_list));
-	      if (NULL == next->next)
+	      if (!next->next)
 		{
 		  tib_errno = TIB_EALLOC;
 		  goto fail;
@@ -543,7 +526,7 @@ open_skin (const char *path, lbt_State *state, struct point2d size)
 	    }
 
 	  next->button = malloc (sizeof (struct skin_button));
-	  if (NULL == next->button)
+	  if (!next->button)
 	    {
 	      tib_errno = TIB_EALLOC;
 	      goto fail;
@@ -572,7 +555,7 @@ open_skin (const char *path, lbt_State *state, struct point2d size)
 
 	  size_t j;
 	  struct button_action_set actions[NUM_ACTION_STATES];
-#define ADD_ACTION(A,I) setting = config_setting_get_member (modes, A); \
+#define ADD_ACTION(A,I) setting = config_setting_get_member (modes, (A)); \
 	  if (setting)							\
 	    {								\
 	      tib_errno = get_all_actions (setting, actions);		\
@@ -585,17 +568,17 @@ open_skin (const char *path, lbt_State *state, struct point2d size)
 		actions[j] = default_actions[j];			\
 	    }								\
 	  for (j = 0; j < NUM_ACTION_STATES; ++j)			\
-	    next->button->actions[I][j] = actions[j];
+	    next->button->actions[(I)][j] = actions[j];
 
-	  ADD_ACTION ("command", LBT_COMMAND_MODE);
+	  ADD_ACTION ("default_mode", DEFAULT_SCREEN_MODE);
 
-#define ADD_DIM(D,V) setting = config_setting_get_member (button, D);	\
+#define ADD_DIM(D,V) setting = config_setting_get_member (button, (D));	\
 	  if (!setting || !config_setting_is_number (setting))		\
 	    {								\
 	      tib_errno = TIB_EBADFILE;					\
 	      goto fail;						\
 	    }								\
-	  V = config_setting_get_int (setting);
+	  (V) = config_setting_get_int (setting);
 
 	  ADD_DIM ("x", next->button->pos.x);
 	  ADD_DIM ("y", next->button->pos.y);
@@ -618,7 +601,7 @@ open_skin (const char *path, lbt_State *state, struct point2d size)
       struct skin_screen_list *s = new->screens;
       while (s)
 	{
-	  lbt_Screen_decref (s->screen);
+	  screen_destroy (&s->screen);
 	  s = s->next;
 	  free (new->screens);
 	  new->screens = s;
@@ -653,7 +636,7 @@ free_skin (Skin *self)
   struct skin_screen_list *s = self->screens;
   while (s)
     {
-      lbt_Screen_decref (s->screen);
+      screen_destroy (&s->screen);
       s = s->next;
       free (self->screens);
       self->screens = s;
@@ -688,7 +671,7 @@ on_skin (const Skin *self, struct point2d pos)
 }
 
 static bool
-on_screen (const struct skin_screen_list *screen, struct point2d pos)
+on_screen (const struct screen *screen, struct point2d pos)
 {
   return in_bounds (screen->pos, screen->size, pos);
 }
@@ -711,49 +694,26 @@ change_state (Skin *self, enum button_action_state state)
 static int
 do_button_action (Skin *self, struct skin_button *button)
 {
-  enum lbt_screen_mode mode = self->active_screen->screen->mode;
-  int x = 0, y = 0;
-  lbt_Screen *screen = self->active_screen->screen;
+  struct screen *screen = self->active_screen;
+  struct state *state = screen->state;
+  enum screen_mode mode = screen->mode;
   struct button_action_set action = button->actions[mode][self->action_state];
   union button_action which = action.which;
 
   switch (action.type)
     {
     case CHANGE_MODES:
-      lbt_Screen_set_mode (screen, which.mode_open);
+      screen->mode = which.mode_open;
       break;
 
     case CHAR_INSERT:
       if (self->insert_mode)
-	return lbt_Screen_insert_char (screen, which.char_insert);
+	return entry_insert (state, which.char_insert);
       else
-	return lbt_Screen_write_char (screen, which.char_insert);
+	return entry_write (state, which.char_insert);
 
     case CURSOR_MOVE:
-      switch (which.cursor_move)
-	{
-	case UP:
-	  x = 0;
-	  y = 1;
-	  break;
-
-	case DOWN:
-	  x = 0;
-	  y = -1;
-	  break;
-
-	case LEFT:
-	  x = -1;
-	  y = 0;
-	  break;
-
-	case RIGHT:
-	  x = 1;
-	  y = 0;
-	  break;
-	}
-
-      lbt_Screen_move_cursor (screen, x, y);
+      entry_move_cursor (state, which.cursor_move);
       break;
 
     case TOGGLE_2ND:
@@ -778,9 +738,12 @@ Skin_click (Skin *self, struct point2d pos)
   if (!on_skin (self, pos))
     return TIB_EDIM;
 
-  struct skin_screen_list *screen;
-  foreachskin (self->screens, screen)
+  for (struct skin_screen_list *elem = self->screens;
+       elem != NULL;
+       elem = elem->next)
     {
+      struct screen *screen = &elem->screen;
+
       if (on_screen (screen, pos))
 	{
 	  if (screen != self->active_screen)
@@ -793,11 +756,14 @@ Skin_click (Skin *self, struct point2d pos)
 	}
     }
 
-  struct skin_button_list *bnode;
-  foreachskin (self->buttons, bnode)
+  for (struct skin_button_list *elem = self->buttons;
+       elem != NULL;
+       elem = elem->next)
     {
-      if (on_button (bnode->button, pos))
-	return do_button_action (self, bnode->button);
+      struct skin_button *button = elem->button;
+
+      if (on_button (button, pos))
+	return do_button_action (self, button);
     }
 
   return 0;
@@ -818,10 +784,10 @@ get_rect (struct point2d pos, struct point2d size)
 }
 
 static SDL_Surface *
-render_line (const struct lbt_screen_line *line, TTF_Font *font)
+render_line (const struct tib_expr *line, TTF_Font *font)
 {
   int rc, w, h, font_height;
-  SDL_Surface **parts = malloc (line->value.len * sizeof (SDL_Surface *));
+  SDL_Surface **parts = malloc (line->len * sizeof (SDL_Surface *));
   if (!parts)
     {
       error ("Failed to initialize expression portions array");
@@ -833,11 +799,11 @@ render_line (const struct lbt_screen_line *line, TTF_Font *font)
   h = font_height;
 
   unsigned int i;
-  tib_expr_foreach (&line->value, i)
+  tib_expr_foreach (line, i)
     {
-      int c = line->value.data[i];
+      int c = line->data[i];
       const char *s = tib_special_char_text (c);
-      SDL_Surface *part = NULL;
+      SDL_Surface *part;
 
       if (s)
 	{
@@ -860,7 +826,7 @@ render_line (const struct lbt_screen_line *line, TTF_Font *font)
 	}
 
       w += part->w;
-      if (w >= 96)
+      if (w > 96)
 	{
 	  h += font_height;
 	  w -= part->w;
@@ -884,9 +850,9 @@ render_line (const struct lbt_screen_line *line, TTF_Font *font)
 
   w = 0;
   h = 0;
-  for (i = 0; i < line->value.len; ++i)
+  for (i = 0; i < line->len; ++i)
     {
-      if (w + parts[i]->w >= 96)
+      if (w + parts[i]->w > 96)
 	{
 	  w = 0;
 	  h += font_height;
@@ -907,7 +873,7 @@ render_line (const struct lbt_screen_line *line, TTF_Font *font)
     }
 
  fail:
-  for (i = 0; i < line->value.len; ++i)
+  for (i = 0; i < line->len; ++i)
     if (parts[i])
       SDL_FreeSurface (parts[i]);
 
@@ -916,8 +882,32 @@ render_line (const struct lbt_screen_line *line, TTF_Font *font)
   return final;
 }
 
+static void
+draw_line (const struct tib_expr *line, SDL_Surface *final,
+	   const struct fontset *fonts, unsigned int *height, bool right_align)
+{
+  SDL_Surface *line_render = render_line (line, fonts->reg);
+  if (line_render)
+    {
+      SDL_Rect pos;
+      if (right_align)
+	pos.x = 96 - line_render->w;
+      else
+	pos.x = 0;
+
+      pos.y = 64 - *height;
+
+      int rc = SDL_BlitSurface (line_render, NULL, final, &pos);
+      if (rc < 0)
+	error ("Failed to draw line on screen frame: %s", SDL_GetError ());
+
+      *height += line_render->h;
+      SDL_FreeSurface (line_render);
+    }
+}
+
 static SDL_Surface *
-render_screen (lbt_Screen *screen, const struct fontset *fonts)
+render_screen (const struct screen *screen, const struct fontset *fonts)
 {
   int rc;
   SDL_Surface *final;
@@ -934,31 +924,19 @@ render_screen (lbt_Screen *screen, const struct fontset *fonts)
     error ("Failed to fill screen frame with white background: %s",
 	   SDL_GetError ());
 
-  uint8_t height = 0;
-  struct lbt_screen_line *line;
+  struct state *state = screen->state;
+  unsigned int height = 0;
   switch (screen->mode)
     {
-    case LBT_COMMAND_MODE:
-      lbt_foreachline_rev (screen, line)
+    case DEFAULT_SCREEN_MODE:
+      draw_line (&state->entry, final, fonts, &height, false);
+
+      for (int i = state->history_len - 1; i >= 0 && height < 64; --i)
 	{
-	  SDL_Surface *line_render = render_line (line, fonts->reg);
-	  if (line_render)
-	    {
-	      SDL_Rect pos;
-	      pos.x = 0;
-	      pos.y = 64 - height;
+	  draw_line (&state->answer_strings[i], final, fonts, &height, true);
 
-	      rc = SDL_BlitSurface (line_render, NULL, final, &pos);
-	      if (rc < 0)
-		error ("Failed to put line on screen frame: %s",
-		       SDL_GetError ());
-
-	      height += line_render->h;
-
-	      SDL_FreeSurface (line_render);
-	      if (height >= 64)
-		break;
-	    }
+	  if (height < 64)
+	    draw_line (&state->history[i], final, fonts, &height, false);
 	}
       break;
 
@@ -990,15 +968,16 @@ Skin_get_frame (Skin *self, const struct fontset *fonts)
     }
 
   struct skin_render_cache *full = self->renders;
-  struct skin_screen_list *screen = self->screens;
+  struct skin_screen_list *elem = self->screens;
   unsigned int i = 0;
-  for (; screen != NULL; full = full->next, screen = screen->next, ++i)
+  for (; elem != NULL; full = full->next, elem = elem->next, ++i)
     {
+      struct screen *screen = &elem->screen;
       SDL_Rect r = get_rect (screen->pos, screen->size);
 
       if (screen == self->active_screen)
 	{
-	  SDL_Surface *render = render_screen (screen->screen, fonts);
+	  SDL_Surface *render = render_screen (screen, fonts);
 	  if (render)
 	    {
 	      if (full->surface)

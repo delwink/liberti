@@ -1,6 +1,6 @@
 /*
  *  LiberTI - TI-like calculator designed for LibreCalc
- *  Copyright (C) 2015 Delwink, LLC
+ *  Copyright (C) 2016 Delwink, LLC
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as published by
@@ -15,21 +15,16 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef DELWINK_LIBERTI_TTF_H
-#define DELWINK_LIBERTI_TTF_H
+#include "mode_default.h"
 
-#include <SDL_ttf.h>
-
-struct fontset
+int
+default_draw (struct screen *screen)
 {
-  TTF_Font *reg;
-  TTF_Font *small;
-};
+  return 0;
+}
 
-struct fontset *
-get_font_set (int scale);
-
-void
-free_font_set (struct fontset *fs);
-
-#endif
+int
+default_input (struct screen *screen, int c)
+{
+  return 0;
+}

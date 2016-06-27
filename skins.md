@@ -32,7 +32,7 @@ user can do something such as type a graph and watch it draw at the same time
 The default skin is just a single screen, and it is defined as:
 
 ```
-screens = ( { mode = "command";
+screens = ( { mode = "default";
               x = 0;
               y = 0;
               scale = 1.0; } );
@@ -45,7 +45,7 @@ The `mode` string specifies the default mode of the screen, but the mode can be
 changed through button input (described below). The currently-supported mode
 strings are as follows:
 
-- `command` - The standard command mode which takes expression input and
+- `default` - The standard command mode which takes expression input and
 outputs the evaluation of the expression.
 
 The `x` and `y` members of each screen represent coordinates at which the

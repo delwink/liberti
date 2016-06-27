@@ -1,6 +1,6 @@
 /*
  *  LiberTI - TI-like calculator designed for LibreCalc
- *  Copyright (C) 2015 Delwink, LLC
+ *  Copyright (C) 2016 Delwink, LLC
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as published by
@@ -15,21 +15,40 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef DELWINK_LIBERTI_TTF_H
-#define DELWINK_LIBERTI_TTF_H
+#include <stdlib.h>
 
-#include <SDL_ttf.h>
+#include "mode_default.h"
+#include "screen.h"
 
-struct fontset
+struct _screen_mode
 {
-  TTF_Font *reg;
-  TTF_Font *small;
+  int (*draw) (struct screen *);
+  int (*input) (struct screen *, int);
 };
 
-struct fontset *
-get_font_set (int scale);
+const struct _screen_mode SCREEN_MODES[NUM_SCREEN_MODES] =
+  {
+    {
+      .draw = default_draw,
+      .input = default_input
+    }
+  };
 
 void
-free_font_set (struct fontset *fs);
+screen_init (struct screen *screen, struct state *state)
+{
+  static const struct point2d ZERO = { .x = 0, .y = 0 };
 
-#endif
+  screen->state = state;
+  screen->surface = NULL;
+  screen->pos = ZERO;
+  screen->size = ZERO;
+  screen->mode = DEFAULT_SCREEN_MODE;
+}
+
+void
+screen_destroy (struct screen *screen)
+{
+  if (screen->surface)
+    SDL_FreeSurface (screen->surface);
+}

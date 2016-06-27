@@ -1,5 +1,5 @@
 /*
- *  LiberTI - Libre TI calculator emulator designed for LibreCalc
+ *  LiberTI - TI-like calculator designed for LibreCalc
  *  Copyright (C) 2015 Delwink, LLC
  *
  *  This program is free software: you can redistribute it and/or modify

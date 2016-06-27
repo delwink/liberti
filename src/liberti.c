@@ -1,5 +1,5 @@
 /*
- *  LiberTI - Libre TI calculator emulator designed for LibreCalc
+ *  LiberTI - TI-like calculator designed for LibreCalc
  *  Copyright (C) 2015-2016 Delwink, LLC
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -20,9 +20,9 @@
 #include <unistd.h>
 #include <getopt.h>
 
-#include "lbtstate.h"
 #include "log.h"
 #include "skin.h"
+#include "state.h"
 #include "ttf.h"
 
 #ifdef HAVE_CONFIG_H
