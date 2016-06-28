@@ -225,7 +225,7 @@ tib_eval (const struct tib_expr *in)
   struct tib_lst *resolved = tib_new_lst ();
   if (!resolved)
     {
-      tib_expr_free_data (&expr);
+      tib_expr_destroy (&expr);
       tib_errno = TIB_EALLOC;
       return NULL;
     }
@@ -235,7 +235,7 @@ tib_eval (const struct tib_expr *in)
   tib_errno = tib_expr_init (&calc);
   if (tib_errno)
     {
-      tib_expr_free_data (&expr);
+      tib_expr_destroy (&expr);
       tib_free_lst (resolved);
       return NULL;
     }
@@ -296,7 +296,7 @@ tib_eval (const struct tib_expr *in)
 	tib_errno = TIB_ESYNTAX;
     }
 
-  tib_expr_free_data (&expr);
+  tib_expr_destroy (&expr);
 
   if (tib_errno)
     goto end;
@@ -342,7 +342,7 @@ tib_eval (const struct tib_expr *in)
     }
 
  end:
-  tib_expr_free_data (&calc);
+  tib_expr_destroy (&calc);
 
   TIB *out = NULL;
   if (!tib_errno)

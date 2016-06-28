@@ -91,7 +91,7 @@ main (int argc, char *argv[])
   char *buf = malloc (max_line_len * sizeof (char));
   if (NULL == buf)
     {
-      tib_expr_free_data (&translated);
+      tib_expr_destroy (&translated);
       fputs ("tibencode: Error allocating line buffer.\n", stderr);
       return 1;
     }
@@ -133,7 +133,7 @@ main (int argc, char *argv[])
 	goto end;
 
       tib_errno = tib_exprcat (&translated, &line);
-      tib_expr_free_data (&line);
+      tib_expr_destroy (&line);
       if (tib_errno)
 	goto end;
 
@@ -153,14 +153,14 @@ main (int argc, char *argv[])
 
   if (tib_errno)
     {
-      tib_expr_free_data (&translated);
+      tib_expr_destroy (&translated);
       fprintf (stderr, "tibencode: Error %d occurred while assembling.\n",
 	       tib_errno);
       return 1;
     }
 
   tib_errno = tib_fwrite (stdout, &translated, &written);
-  tib_expr_free_data (&translated);
+  tib_expr_destroy (&translated);
   if (tib_errno)
     {
       fprintf (stderr, "tibencode: Error %d occurred while processing. "

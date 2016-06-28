@@ -324,7 +324,7 @@ tokenize (struct tib_expr *expr, char *beg)
   return rc;
 
  fail:
-  tib_expr_free_data (expr);
+  tib_expr_destroy (expr);
   return rc;
 }
 
@@ -355,7 +355,7 @@ tib_encode_str (struct tib_expr *expr, const char *s)
 	break;
 
       rc = tib_exprcat (expr, &part);
-      tib_expr_free_data (&part);
+      tib_expr_destroy (&part);
       if (rc)
 	break;
 
@@ -391,7 +391,7 @@ tib_encode_str (struct tib_expr *expr, const char *s)
 
  end:
   if (rc)
-    tib_expr_free_data (expr);
+    tib_expr_destroy (expr);
 
   free (buf);
   return rc;

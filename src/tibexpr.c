@@ -39,7 +39,7 @@ tib_expr_init (struct tib_expr *self)
 }
 
 void
-tib_expr_free_data (struct tib_expr *self)
+tib_expr_destroy (struct tib_expr *self)
 {
   if (self->bufsize)
     {
@@ -76,7 +76,7 @@ tib_exprcat (struct tib_expr *dest, const struct tib_expr *src)
       rc = tib_expr_push (dest, src->data[i]);
       if (rc)
 	{
-	  tib_expr_free_data (dest);
+	  tib_expr_destroy (dest);
 	  return rc;
 	}
     }

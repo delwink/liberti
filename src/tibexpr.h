@@ -33,7 +33,7 @@ int
 tib_expr_init (struct tib_expr *self);
 
 void
-tib_expr_free_data (struct tib_expr *self);
+tib_expr_destroy (struct tib_expr *self);
 
 int
 tib_exprcpy (struct tib_expr *dest, const struct tib_expr *src);

@@ -394,7 +394,7 @@ tib_fread (struct tib_expr *out, FILE *program, unsigned long *parsed)
 
  end:
   if (rc)
-    tib_expr_free_data (out);
+    tib_expr_destroy (out);
 
   return rc;
 }

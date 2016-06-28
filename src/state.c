@@ -40,8 +40,8 @@ add_history (struct state *state, struct tib_expr *in, struct tib_expr *ans_s,
 {
   if (MAX_HISTORY == state->history_len)
     {
-      tib_expr_free_data (&state->history[0]);
-      tib_expr_free_data (&state->answer_strings[0]);
+      tib_expr_destroy (&state->history[0]);
+      tib_expr_destroy (&state->answer_strings[0]);
       tib_decref (state->answers[0]);
 
       for (unsigned int i = 0; i < MAX_HISTORY - 1; ++i)
@@ -135,7 +135,7 @@ load_state (struct state *dest, const char *path)
 	  rc = load_line (&ans_s, s);
 	  if (rc)
 	    {
-	      tib_expr_free_data (&hist);
+	      tib_expr_destroy (&hist);
 	      goto fail;
 	    }
 
@@ -143,8 +143,8 @@ load_state (struct state *dest, const char *path)
 	  if (!ans)
 	    {
 	      rc = tib_errno;
-	      tib_expr_free_data (&hist);
-	      tib_expr_free_data (&ans_s);
+	      tib_expr_destroy (&hist);
+	      tib_expr_destroy (&ans_s);
 	      goto fail;
 	    }
 
@@ -239,7 +239,7 @@ save_state (const struct state *state, const char *path)
 void
 state_destroy (struct state *state)
 {
-  tib_expr_free_data (&state->entry);
+  tib_expr_destroy (&state->entry);
   state_clear_history (state);
 }
 
@@ -313,7 +313,7 @@ state_add_history (struct state *state, const struct tib_expr *in,
   TIB *ans_copy = tib_copy (answer);
   if (!ans_copy)
     {
-      tib_expr_free_data (&in_copy);
+      tib_expr_destroy (&in_copy);
       return tib_errno;
     }
 
@@ -330,8 +330,8 @@ state_clear_history (struct state *state)
 {
   for (unsigned int i = 0; i < state->history_len; ++i)
     {
-      tib_expr_free_data (&state->history[i]);
-      tib_expr_free_data (&state->answer_strings[i]);
+      tib_expr_destroy (&state->history[i]);
+      tib_expr_destroy (&state->answer_strings[i]);
       tib_decref (state->answers[i]);
     }
 

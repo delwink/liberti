@@ -444,7 +444,7 @@ tib_toexpr (struct tib_expr *dest, const TIB *src)
 
  end:
   if (rc)
-    tib_expr_free_data (dest);
+    tib_expr_destroy (dest);
 
   return rc;
 }

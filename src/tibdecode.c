@@ -100,7 +100,7 @@ main (int argc, char *argv[])
     }
 
   char *s = tib_expr_tostr (&translated);
-  tib_expr_free_data (&translated);
+  tib_expr_destroy (&translated);
   if (NULL == s)
     {
       fprintf (stderr, "tibdecode: Error %d occurred while processing\n",
