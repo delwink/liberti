@@ -39,55 +39,55 @@ need_next (int c, int *err, FILE *program, unsigned long *parsed)
     {
     case -69:
       if (10 == next)
-	return TIB_CHAR_RANDINT;
+        return TIB_CHAR_RANDINT;
 
       *err = TIB_EBADCHAR;
       return EOF;
 
     case 92:
       if (next >= 0 && next <= 8)
-	return next + TIB_CHAR_MATA;
+        return next + TIB_CHAR_MATA;
 
       *err = TIB_EBADCHAR;
       return EOF;
 
     case 93:
       if (next >= 0 && next <= 8)
-	return next + TIB_CHAR_L1;
+        return next + TIB_CHAR_L1;
 
       *err = TIB_EBADCHAR;
       return EOF;
 
     case 96:
       if (0 == next)
-	return TIB_CHAR_PIC1;
+        return TIB_CHAR_PIC1;
 
       *err = TIB_EBADCHAR;
       return EOF;
 
     case 99:
       switch (next)
-	{
-	case 10:
-	  return TIB_CHAR_XMIN;
+        {
+        case 10:
+          return TIB_CHAR_XMIN;
 
-	case 11:
-	  return TIB_CHAR_XMAX;
+        case 11:
+          return TIB_CHAR_XMAX;
 
-	case 12:
-	  return TIB_CHAR_YMIN;
+        case 12:
+          return TIB_CHAR_YMIN;
 
-	case 13:
-	  return TIB_CHAR_YMAX;
+        case 13:
+          return TIB_CHAR_YMAX;
 
-	default:
-	  *err = TIB_EBADCHAR;
-	  return EOF;
-	}
+        default:
+          *err = TIB_EBADCHAR;
+          return EOF;
+        }
 
     case 126:
       if (9 == c)
-	return TIB_CHAR_AXESOFF;
+        return TIB_CHAR_AXESOFF;
 
       *err = TIB_EBADCHAR;
       return EOF;
@@ -342,15 +342,15 @@ trans_from (int c, int *err, FILE *program, unsigned long *parsed)
 
     default:
       if ((c >= '0' && c <= '9') || (c >= 'A' && c <= 'Z'))
-	{
-	  return c;
-	}
+        {
+          return c;
+        }
       else if (fgetc (program) != EOF || fgetc (program) != EOF)
-	{
-	  *err = 0;
-	  *parsed += 2;
-	  return EOF;
-	}
+        {
+          *err = 0;
+          *parsed += 2;
+          return EOF;
+        }
 
       *err = TIB_EBADCHAR;
       return EOF;
@@ -382,14 +382,14 @@ tib_fread (struct tib_expr *out, FILE *program, unsigned long *parsed)
 
       int trans = trans_from ((char) c, &rc, program, parsed);
       if (EOF == trans)
-	break;
+        break;
 
       if (trans)
-	{
-	  rc = tib_expr_push (out, trans);
-	  if (rc)
-	    break;
-	}
+        {
+          rc = tib_expr_push (out, trans);
+          if (rc)
+            break;
+        }
     }
 
  end:
@@ -409,489 +409,489 @@ tib_fwrite (FILE *out, const struct tib_expr *program, unsigned long *written)
     {
       rc = fputc (0, out);
       if (rc)
-	return TIB_EWRITE;
+        return TIB_EWRITE;
     }
 
   tib_expr_foreach (program, i)
     {
       int c = program->data[i];
       /* The original conversion table had a "TODO transpose" comment. May be
-	 an incomplete table. */
+         an incomplete table. */
       switch (c)
-	{
-	case '\n':
-	  rc = fputc (62, out);
-	  break;
-
-	case ' ':
-	  rc = fputc (41, out);
-	  break;
-
-	case '!':
-	  rc = fputc (45, out);
-	  break;
-
-	case '"':
-	  rc = fputc (42, out);
-	  break;
-
-	case '(':
-	  rc = fputc (16, out);
-	  break;
-
-	case ')':
-	  rc = fputc (17, out);
-	  break;
-
-	case '*':
-	  rc = fputc (-126, out);
-	  break;
-
-	case '+':
-	  rc = fputc (112, out);
-	  break;
-
-	case ',':
-	  rc = fputc (43, out);
-	  break;
-
-	case '-':
-	  rc = fputc (113, out);
-	  break;
-
-	case '.':
-	  rc = fputc (58, out);
-	  break;
-
-	case '/':
-	  rc = fputc (-125, out);
-	  break;
-
-	case '<':
-	  rc = fputc (107, out);
-	  break;
-
-	case '=':
-	  rc = fputc (106, out);
-	  break;
-
-	case '>':
-	  rc = fputc (108, out);
-	  break;
-
-	case '?':
-	  rc = fputc (-81, out);
-	  break;
-
-	case '[':
-	  rc = fputc (6, out);
-	  break;
-
-	case ']':
-	  rc = fputc (7, out);
-	  break;
-
-	case '^':
-	  rc = fputc (-16, out);
-	  break;
-
-	case '{':
-	  rc = fputc (8, out);
-	  break;
-
-	case '|':
-	  rc = fputc (22, out);
-	  break;
-
-	case '}':
-	  rc = fputc (9, out);
-	  break;
-
-	case TIB_CHAR_AND:
-	  rc = fputc (64, out);
-	  break;
-
-	case TIB_CHAR_ANS:
-	  rc = fputc (114, out);
-	  break;
-
-	case TIB_CHAR_AXESOFF:
-	  rc = fputc (126, out);
-	  if (EOF == rc)
-	    break;
-	  ++(*written);
-	  rc = fputc (9, out);
-	  break;
-
-	case TIB_CHAR_CLEARHOME:
-	  rc = fputc (-31, out);
-	  break;
-
-	case TIB_CHAR_CLEARDRAW:
-	  rc = fputc (-123, out);
-	  break;
-
-	case TIB_CHAR_CLRLIST:
-	  rc = fputc (-6, out);
-	  break;
-
-	case TIB_CHAR_DEGREE:
-	  rc = fputc (11, out);
-	  break;
-
-	case TIB_CHAR_DIFFERENT:
-	  rc = fputc (111, out);
-	  break;
-
-	case TIB_CHAR_DIM:
-	  rc = fputc (-75, out);
-	  break;
-
-	case TIB_CHAR_DISP:
-	  rc = fputc (-34, out);
-	  break;
-
-	case TIB_CHAR_ELSE:
-	  rc = fputc (-48, out);
-	  break;
-
-	case TIB_CHAR_END:
-	  rc = fputc (-44, out);
-	  break;
-
-	case TIB_CHAR_EPOW10:
-	  rc = fputc (59, out);
-	  break;
-
-	case TIB_CHAR_FILL:
-	  rc = fputc (-30, out);
-	  break;
-
-	case TIB_CHAR_FOR:
-	  rc = fputc (-45, out);
-	  break;
-
-	case TIB_CHAR_GETKEY:
-	  rc = fputc (-83, out);
-	  break;
-
-	case TIB_CHAR_GOTO:
-	  rc = fputc (-41, out);
-	  break;
-
-	case TIB_CHAR_GREATEREQUAL:
-	  rc = fputc (110, out);
-	  break;
-
-	case TIB_CHAR_IF:
-	  rc = fputc (-50, out);
-	  break;
-
-	case TIB_CHAR_INPUT:
-	  rc = fputc (-36, out);
-	  break;
-
-	case TIB_CHAR_INT:
-	  rc = fputc (-79, out);
-	  break;
-
-	case TIB_CHAR_L1:
-	  rc = fputc (93, out);
-	  if (EOF == rc)
-	    break;
-	  ++(*written);
-	  rc = fputc (0, out);
-	  break;
-
-	case TIB_CHAR_L2:
-	  rc = fputc (93, out);
-	  if (EOF == rc)
-	    break;
-	  ++(*written);
-	  rc = fputc (1, out);
-	  break;
-
-	case TIB_CHAR_L3:
-	  rc = fputc (93, out);
-	  if (EOF == rc)
-	    break;
-	  ++(*written);
-	  rc = fputc (2, out);
-	  break;
-
-	case TIB_CHAR_L4:
-	  rc = fputc (93, out);
-	  if (EOF == rc)
-	    break;
-	  ++(*written);
-	  rc = fputc (3, out);
-	  break;
-
-	case TIB_CHAR_L5:
-	  rc = fputc (93, out);
-	  if (EOF == rc)
-	    break;
-	  ++(*written);
-	  rc = fputc (4, out);
-	  break;
-
-	case TIB_CHAR_L6:
-	  rc = fputc (93, out);
-	  if (EOF == rc)
-	    break;
-	  ++(*written);
-	  rc = fputc (5, out);
-	  break;
-
-	case TIB_CHAR_L7:
-	  rc = fputc (93, out);
-	  if (EOF == rc)
-	    break;
-	  ++(*written);
-	  rc = fputc (6, out);
-	  break;
-
-	case TIB_CHAR_L8:
-	  rc = fputc (93, out);
-	  if (EOF == rc)
-	    break;
-	  ++(*written);
-	  rc = fputc (7, out);
-	  break;
-
-	case TIB_CHAR_L9:
-	  rc = fputc (93, out);
-	  if (EOF == rc)
-	    break;
-	  ++(*written);
-	  rc = fputc (8, out);
-	  break;
-
-	case TIB_CHAR_LABEL:
-	  rc = fputc (-42, out);
-	  break;
-
-	case TIB_CHAR_LESSEQUAL:
-	  rc = fputc (109, out);
-	  break;
-
-	case TIB_CHAR_LINE:
-	  rc = fputc (-100, out);
-	  break;
-
-	case TIB_CHAR_LUSER:
-	  rc = fputc (-21, out);
-	  break;
-
-	case TIB_CHAR_MATA:
-	  rc = fputc (92, out);
-	  if (EOF == rc)
-	    break;
-	  ++(*written);
-	  rc = fputc (0, out);
-	  break;
-
-	case TIB_CHAR_MATB:
-	  rc = fputc (92, out);
-	  if (EOF == rc)
-	    break;
-	  ++(*written);
-	  rc = fputc (1, out);
-	  break;
-
-	case TIB_CHAR_MATC:
-	  rc = fputc (92, out);
-	  if (EOF == rc)
-	    break;
-	  ++(*written);
-	  rc = fputc (2, out);
-	  break;
-
-	case TIB_CHAR_MATD:
-	  rc = fputc (92, out);
-	  if (EOF == rc)
-	    break;
-	  ++(*written);
-	  rc = fputc (3, out);
-	  break;
-
-	case TIB_CHAR_MATE:
-	  rc = fputc (92, out);
-	  if (EOF == rc)
-	    break;
-	  ++(*written);
-	  rc = fputc (4, out);
-	  break;
-
-	case TIB_CHAR_MATF:
-	  rc = fputc (92, out);
-	  if (EOF == rc)
-	    break;
-	  ++(*written);
-	  rc = fputc (5, out);
-	  break;
-
-	case TIB_CHAR_MATG:
-	  rc = fputc (92, out);
-	  if (EOF == rc)
-	    break;
-	  ++(*written);
-	  rc = fputc (6, out);
-	  break;
-
-	case TIB_CHAR_MATH:
-	  rc = fputc (92, out);
-	  if (EOF == rc)
-	    break;
-	  ++(*written);
-	  rc = fputc (7, out);
-	  break;
-
-	case TIB_CHAR_MATI:
-	  rc = fputc (92, out);
-	  if (EOF == rc)
-	    break;
-	  ++(*written);
-	  rc = fputc (8, out);
-	  break;
-
-	case TIB_CHAR_MENU:
-	  rc = fputc (-26, out);
-	  break;
-
-	case TIB_CHAR_NOT:
-	  rc = fputc (-72, out);
-	  break;
-
-	case TIB_CHAR_OUTPUT:
-	  rc = fputc (-32, out);
-	  break;
-
-	case TIB_CHAR_OR:
-	  rc = fputc (60, out);
-	  break;
-
-	case TIB_CHAR_PAUSE:
-	  rc = fputc (-40, out);
-	  break;
-
-	case TIB_CHAR_PI:
-	  rc = fputc (-84, out);
-	  break;
-
-	case TIB_CHAR_PIC1:
-	  rc = fputc (96, out);
-	  if (EOF == rc)
-	    break;
-	  ++(*written);
-	  rc = fputc (0, out);
-	  break;
-
-	case TIB_CHAR_PIXEL_TEST:
-	  rc = fputc (19, out);
-	  break;
-
-	case TIB_CHAR_RAND:
-	  rc = fputc (-85, out);
-	  break;
-
-	case TIB_CHAR_RANDINT:
-	  rc = fputc (-69, out);
-	  if (EOF == rc)
-	    break;
-	  rc = fputc (10, out);
-	  break;
-
-	case TIB_CHAR_RECALLPIC:
-	  rc = fputc (-103, out);
-	  break;
-
-	case TIB_CHAR_REPEAT:
-	  rc = fputc (-46, out);
-	  break;
-
-	case TIB_CHAR_RETURN:
-	  rc = fputc (-43, out);
-	  break;
-
-	case TIB_CHAR_ROUND:
-	  rc = fputc (18, out);
-	  break;
-
-	case TIB_CHAR_SMALL_MINUS:
-	  rc = fputc (-80, out);
-	  break;
-
-	case TIB_CHAR_STO:
-	  rc = fputc (4, out);
-	  break;
-
-	case TIB_CHAR_STOP:
-	  rc = fputc (-39, out);
-	  break;
-
-	case TIB_CHAR_STOREPIC:
-	  rc = fputc (-104, out);
-	  break;
-
-	case TIB_CHAR_TEXT:
-	  rc = fputc (-109, out);
-	  break;
-
-	case TIB_CHAR_THEN:
-	  rc = fputc (-49, out);
-	  break;
-
-	case TIB_CHAR_THETA:
-	  rc = fputc (91, out);
-	  break;
-
-	case TIB_CHAR_WHILE:
-	  rc = fputc (-47, out);
-	  break;
-
-	case TIB_CHAR_XMAX:
-	  rc = fputc (99, out);
-	  if (EOF == rc)
-	    break;
-	  ++(*written);
-	  rc = fputc (11, out);
-	  break;
-
-	case TIB_CHAR_XMIN:
-	  rc = fputc (99, out);
-	  if (EOF == rc)
-	    break;
-	  ++(*written);
-	  rc = fputc (10, out);
-	  break;
-
-	case TIB_CHAR_YMAX:
-	  rc = fputc (99, out);
-	  if (EOF == rc)
-	    break;
-	  ++(*written);
-	  rc = fputc (13, out);
-	  break;
-
-	case TIB_CHAR_YMIN:
-	  rc = fputc (99, out);
-	  if (EOF == rc)
-	    break;
-	  ++(*written);
-	  rc = fputc (12, out);
-	  break;
-
-	default:
-	  if ((c >= '0' && c <= '9') || (c >= 'A' && c <= 'Z'))
-	    rc = fputc (c, out);
-	  else
-	    rc = EOF;
-	  break;
-	}
+        {
+        case '\n':
+          rc = fputc (62, out);
+          break;
+
+        case ' ':
+          rc = fputc (41, out);
+          break;
+
+        case '!':
+          rc = fputc (45, out);
+          break;
+
+        case '"':
+          rc = fputc (42, out);
+          break;
+
+        case '(':
+          rc = fputc (16, out);
+          break;
+
+        case ')':
+          rc = fputc (17, out);
+          break;
+
+        case '*':
+          rc = fputc (-126, out);
+          break;
+
+        case '+':
+          rc = fputc (112, out);
+          break;
+
+        case ',':
+          rc = fputc (43, out);
+          break;
+
+        case '-':
+          rc = fputc (113, out);
+          break;
+
+        case '.':
+          rc = fputc (58, out);
+          break;
+
+        case '/':
+          rc = fputc (-125, out);
+          break;
+
+        case '<':
+          rc = fputc (107, out);
+          break;
+
+        case '=':
+          rc = fputc (106, out);
+          break;
+
+        case '>':
+          rc = fputc (108, out);
+          break;
+
+        case '?':
+          rc = fputc (-81, out);
+          break;
+
+        case '[':
+          rc = fputc (6, out);
+          break;
+
+        case ']':
+          rc = fputc (7, out);
+          break;
+
+        case '^':
+          rc = fputc (-16, out);
+          break;
+
+        case '{':
+          rc = fputc (8, out);
+          break;
+
+        case '|':
+          rc = fputc (22, out);
+          break;
+
+        case '}':
+          rc = fputc (9, out);
+          break;
+
+        case TIB_CHAR_AND:
+          rc = fputc (64, out);
+          break;
+
+        case TIB_CHAR_ANS:
+          rc = fputc (114, out);
+          break;
+
+        case TIB_CHAR_AXESOFF:
+          rc = fputc (126, out);
+          if (EOF == rc)
+            break;
+          ++(*written);
+          rc = fputc (9, out);
+          break;
+
+        case TIB_CHAR_CLEARHOME:
+          rc = fputc (-31, out);
+          break;
+
+        case TIB_CHAR_CLEARDRAW:
+          rc = fputc (-123, out);
+          break;
+
+        case TIB_CHAR_CLRLIST:
+          rc = fputc (-6, out);
+          break;
+
+        case TIB_CHAR_DEGREE:
+          rc = fputc (11, out);
+          break;
+
+        case TIB_CHAR_DIFFERENT:
+          rc = fputc (111, out);
+          break;
+
+        case TIB_CHAR_DIM:
+          rc = fputc (-75, out);
+          break;
+
+        case TIB_CHAR_DISP:
+          rc = fputc (-34, out);
+          break;
+
+        case TIB_CHAR_ELSE:
+          rc = fputc (-48, out);
+          break;
+
+        case TIB_CHAR_END:
+          rc = fputc (-44, out);
+          break;
+
+        case TIB_CHAR_EPOW10:
+          rc = fputc (59, out);
+          break;
+
+        case TIB_CHAR_FILL:
+          rc = fputc (-30, out);
+          break;
+
+        case TIB_CHAR_FOR:
+          rc = fputc (-45, out);
+          break;
+
+        case TIB_CHAR_GETKEY:
+          rc = fputc (-83, out);
+          break;
+
+        case TIB_CHAR_GOTO:
+          rc = fputc (-41, out);
+          break;
+
+        case TIB_CHAR_GREATEREQUAL:
+          rc = fputc (110, out);
+          break;
+
+        case TIB_CHAR_IF:
+          rc = fputc (-50, out);
+          break;
+
+        case TIB_CHAR_INPUT:
+          rc = fputc (-36, out);
+          break;
+
+        case TIB_CHAR_INT:
+          rc = fputc (-79, out);
+          break;
+
+        case TIB_CHAR_L1:
+          rc = fputc (93, out);
+          if (EOF == rc)
+            break;
+          ++(*written);
+          rc = fputc (0, out);
+          break;
+
+        case TIB_CHAR_L2:
+          rc = fputc (93, out);
+          if (EOF == rc)
+            break;
+          ++(*written);
+          rc = fputc (1, out);
+          break;
+
+        case TIB_CHAR_L3:
+          rc = fputc (93, out);
+          if (EOF == rc)
+            break;
+          ++(*written);
+          rc = fputc (2, out);
+          break;
+
+        case TIB_CHAR_L4:
+          rc = fputc (93, out);
+          if (EOF == rc)
+            break;
+          ++(*written);
+          rc = fputc (3, out);
+          break;
+
+        case TIB_CHAR_L5:
+          rc = fputc (93, out);
+          if (EOF == rc)
+            break;
+          ++(*written);
+          rc = fputc (4, out);
+          break;
+
+        case TIB_CHAR_L6:
+          rc = fputc (93, out);
+          if (EOF == rc)
+            break;
+          ++(*written);
+          rc = fputc (5, out);
+          break;
+
+        case TIB_CHAR_L7:
+          rc = fputc (93, out);
+          if (EOF == rc)
+            break;
+          ++(*written);
+          rc = fputc (6, out);
+          break;
+
+        case TIB_CHAR_L8:
+          rc = fputc (93, out);
+          if (EOF == rc)
+            break;
+          ++(*written);
+          rc = fputc (7, out);
+          break;
+
+        case TIB_CHAR_L9:
+          rc = fputc (93, out);
+          if (EOF == rc)
+            break;
+          ++(*written);
+          rc = fputc (8, out);
+          break;
+
+        case TIB_CHAR_LABEL:
+          rc = fputc (-42, out);
+          break;
+
+        case TIB_CHAR_LESSEQUAL:
+          rc = fputc (109, out);
+          break;
+
+        case TIB_CHAR_LINE:
+          rc = fputc (-100, out);
+          break;
+
+        case TIB_CHAR_LUSER:
+          rc = fputc (-21, out);
+          break;
+
+        case TIB_CHAR_MATA:
+          rc = fputc (92, out);
+          if (EOF == rc)
+            break;
+          ++(*written);
+          rc = fputc (0, out);
+          break;
+
+        case TIB_CHAR_MATB:
+          rc = fputc (92, out);
+          if (EOF == rc)
+            break;
+          ++(*written);
+          rc = fputc (1, out);
+          break;
+
+        case TIB_CHAR_MATC:
+          rc = fputc (92, out);
+          if (EOF == rc)
+            break;
+          ++(*written);
+          rc = fputc (2, out);
+          break;
+
+        case TIB_CHAR_MATD:
+          rc = fputc (92, out);
+          if (EOF == rc)
+            break;
+          ++(*written);
+          rc = fputc (3, out);
+          break;
+
+        case TIB_CHAR_MATE:
+          rc = fputc (92, out);
+          if (EOF == rc)
+            break;
+          ++(*written);
+          rc = fputc (4, out);
+          break;
+
+        case TIB_CHAR_MATF:
+          rc = fputc (92, out);
+          if (EOF == rc)
+            break;
+          ++(*written);
+          rc = fputc (5, out);
+          break;
+
+        case TIB_CHAR_MATG:
+          rc = fputc (92, out);
+          if (EOF == rc)
+            break;
+          ++(*written);
+          rc = fputc (6, out);
+          break;
+
+        case TIB_CHAR_MATH:
+          rc = fputc (92, out);
+          if (EOF == rc)
+            break;
+          ++(*written);
+          rc = fputc (7, out);
+          break;
+
+        case TIB_CHAR_MATI:
+          rc = fputc (92, out);
+          if (EOF == rc)
+            break;
+          ++(*written);
+          rc = fputc (8, out);
+          break;
+
+        case TIB_CHAR_MENU:
+          rc = fputc (-26, out);
+          break;
+
+        case TIB_CHAR_NOT:
+          rc = fputc (-72, out);
+          break;
+
+        case TIB_CHAR_OUTPUT:
+          rc = fputc (-32, out);
+          break;
+
+        case TIB_CHAR_OR:
+          rc = fputc (60, out);
+          break;
+
+        case TIB_CHAR_PAUSE:
+          rc = fputc (-40, out);
+          break;
+
+        case TIB_CHAR_PI:
+          rc = fputc (-84, out);
+          break;
+
+        case TIB_CHAR_PIC1:
+          rc = fputc (96, out);
+          if (EOF == rc)
+            break;
+          ++(*written);
+          rc = fputc (0, out);
+          break;
+
+        case TIB_CHAR_PIXEL_TEST:
+          rc = fputc (19, out);
+          break;
+
+        case TIB_CHAR_RAND:
+          rc = fputc (-85, out);
+          break;
+
+        case TIB_CHAR_RANDINT:
+          rc = fputc (-69, out);
+          if (EOF == rc)
+            break;
+          rc = fputc (10, out);
+          break;
+
+        case TIB_CHAR_RECALLPIC:
+          rc = fputc (-103, out);
+          break;
+
+        case TIB_CHAR_REPEAT:
+          rc = fputc (-46, out);
+          break;
+
+        case TIB_CHAR_RETURN:
+          rc = fputc (-43, out);
+          break;
+
+        case TIB_CHAR_ROUND:
+          rc = fputc (18, out);
+          break;
+
+        case TIB_CHAR_SMALL_MINUS:
+          rc = fputc (-80, out);
+          break;
+
+        case TIB_CHAR_STO:
+          rc = fputc (4, out);
+          break;
+
+        case TIB_CHAR_STOP:
+          rc = fputc (-39, out);
+          break;
+
+        case TIB_CHAR_STOREPIC:
+          rc = fputc (-104, out);
+          break;
+
+        case TIB_CHAR_TEXT:
+          rc = fputc (-109, out);
+          break;
+
+        case TIB_CHAR_THEN:
+          rc = fputc (-49, out);
+          break;
+
+        case TIB_CHAR_THETA:
+          rc = fputc (91, out);
+          break;
+
+        case TIB_CHAR_WHILE:
+          rc = fputc (-47, out);
+          break;
+
+        case TIB_CHAR_XMAX:
+          rc = fputc (99, out);
+          if (EOF == rc)
+            break;
+          ++(*written);
+          rc = fputc (11, out);
+          break;
+
+        case TIB_CHAR_XMIN:
+          rc = fputc (99, out);
+          if (EOF == rc)
+            break;
+          ++(*written);
+          rc = fputc (10, out);
+          break;
+
+        case TIB_CHAR_YMAX:
+          rc = fputc (99, out);
+          if (EOF == rc)
+            break;
+          ++(*written);
+          rc = fputc (13, out);
+          break;
+
+        case TIB_CHAR_YMIN:
+          rc = fputc (99, out);
+          if (EOF == rc)
+            break;
+          ++(*written);
+          rc = fputc (12, out);
+          break;
+
+        default:
+          if ((c >= '0' && c <= '9') || (c >= 'A' && c <= 'Z'))
+            rc = fputc (c, out);
+          else
+            rc = EOF;
+          break;
+        }
 
       if (EOF == rc)
-	return TIB_EWRITE;
+        return TIB_EWRITE;
 
       ++(*written);
     }

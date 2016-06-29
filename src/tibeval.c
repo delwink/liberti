@@ -115,7 +115,7 @@ single_eval (const struct tib_expr *expr)
     {
       char *s = tib_expr_tostr (expr);
       if (NULL == s)
-	return NULL;
+        return NULL;
 
       TIB *temp = tib_new_str (s);
       free (s);
@@ -129,8 +129,8 @@ single_eval (const struct tib_expr *expr)
 
 static void
 do_arith (struct tib_lst *resolved, size_t i, int operator, char arith1,
-	  TIB *(*func1) (const TIB *t1, const TIB *t2), char arith2,
-	  TIB *(*func2) (const TIB *t1, const TIB *t2))
+          TIB *(*func1) (const TIB *t1, const TIB *t2), char arith2,
+          TIB *(*func2) (const TIB *t1, const TIB *t2))
 {
   TIB *temp;
 
@@ -163,14 +163,14 @@ tib_eval (const struct tib_expr *in)
   tib_expr_foreach (in, i)
     {
       if (in->data[i] != TIB_CHAR_STO)
-	continue;
+        continue;
 
       int c = in->data[++i];
       if ((i != len - 1) || ((c < 'A' || c > 'Z') && c != TIB_CHAR_THETA))
-	{
-	  tib_errno = TIB_ESYNTAX;
-	  return NULL;
-	}
+        {
+          tib_errno = TIB_ESYNTAX;
+          return NULL;
+        }
 
       unsigned int end = len - 3;
       struct tib_expr e;
@@ -178,14 +178,14 @@ tib_eval (const struct tib_expr *in)
 
       TIB *stoval = tib_eval (&e);
       if (NULL == stoval)
-	return NULL;
+        return NULL;
 
       tib_errno = tib_var_set (c, stoval);
       if (tib_errno)
-	{
-	  tib_decref (stoval);
-	  return NULL;
-	}
+        {
+          tib_decref (stoval);
+          return NULL;
+        }
 
       return stoval;
     }
@@ -207,18 +207,18 @@ tib_eval (const struct tib_expr *in)
       int c = expr.data[i];
 
       if ('"' == c)
-	add = !add; /* don't change anything inside a string */
+        add = !add; /* don't change anything inside a string */
 
       if (add)
-	{
-	  if (is_left_paren (c) && i && needs_mult_left (c))
-	    tib_errno = tib_expr_insert (&expr, i, '*');
-	  else if (')' == c && needs_mult_right (expr.data[i + 1]))
-	    tib_errno = tib_expr_insert (&expr, ++i, '*');
+        {
+          if (is_left_paren (c) && i && needs_mult_left (c))
+            tib_errno = tib_expr_insert (&expr, i, '*');
+          else if (')' == c && needs_mult_right (expr.data[i + 1]))
+            tib_errno = tib_expr_insert (&expr, ++i, '*');
 
-	  if (tib_errno)
-	    return NULL;
-	}
+          if (tib_errno)
+            return NULL;
+        }
     }
 
   /* this is temp storage for internally-resolved portions */
@@ -247,53 +247,53 @@ tib_eval (const struct tib_expr *in)
       int c = expr.data[i];
 
       if (is_left_paren (c))
-	{
-	  ++numpar;
-	}
+        {
+          ++numpar;
+        }
       else if (')' == c)
-	{
-	  if (0 == numpar)
-	    {
-	      tib_errno = TIB_ESYNTAX;
-	      break;
-	    }
+        {
+          if (0 == numpar)
+            {
+              tib_errno = TIB_ESYNTAX;
+              break;
+            }
 
-	  --numpar;
-	}
+          --numpar;
+        }
 
       if (0 == numpar && is_math_operator (c))
-	{
-	  tib_errno = tib_expr_push (&calc, c);
-	  if (tib_errno)
-	    break;
+        {
+          tib_errno = tib_expr_push (&calc, c);
+          if (tib_errno)
+            break;
 
-	  struct tib_expr sub;
-	  tib_subexpr (&sub, &expr, beg, i - 1);
+          struct tib_expr sub;
+          tib_subexpr (&sub, &expr, beg, i - 1);
 
-	  TIB *temp = single_eval (&sub);
-	  if (!temp)
-	    break;
+          TIB *temp = single_eval (&sub);
+          if (!temp)
+            break;
 
-	  tib_errno = tib_lst_push (resolved, temp);
-	  tib_decref (temp);
-	  if (tib_errno)
-	    break;
+          tib_errno = tib_lst_push (resolved, temp);
+          tib_decref (temp);
+          if (tib_errno)
+            break;
 
-	  beg = i + 1;
-	}
+          beg = i + 1;
+        }
     }
 
   if (!tib_errno)
     {
       if (tib_lst_len (resolved) == 0)
-	{
-	  TIB *temp = single_eval (&expr);
-	  tib_errno = tib_lst_push (resolved, temp);
-	  tib_decref (temp);
-	}
+        {
+          TIB *temp = single_eval (&expr);
+          tib_errno = tib_lst_push (resolved, temp);
+          tib_decref (temp);
+        }
 
       if (tib_lst_len (resolved) != calc.len + 1)
-	tib_errno = TIB_ESYNTAX;
+        tib_errno = TIB_ESYNTAX;
     }
 
   tib_expr_destroy (&expr);
@@ -304,41 +304,41 @@ tib_eval (const struct tib_expr *in)
   tib_expr_foreach (&calc, i)
     {
       if ('^' == calc.data[i])
-	{
-	  TIB *power = tib_lst_ref (resolved, i + 1);
-	  if (TIB_TYPE_COMPLEX != tib_type (power))
-	    {
-	      tib_errno = TIB_ETYPE;
-	      goto end;
-	    }
+        {
+          TIB *power = tib_lst_ref (resolved, i + 1);
+          if (TIB_TYPE_COMPLEX != tib_type (power))
+            {
+              tib_errno = TIB_ETYPE;
+              goto end;
+            }
 
-	  TIB *temp = tib_pow (tib_lst_ref (resolved, i),
-			       tib_complex_value (power));
-	  if (!temp)
-	    goto end;
+          TIB *temp = tib_pow (tib_lst_ref (resolved, i),
+                               tib_complex_value (power));
+          if (!temp)
+            goto end;
 
-	  tib_lst_remove (resolved, i);
-	  tib_lst_remove (resolved, i+1);
+          tib_lst_remove (resolved, i);
+          tib_lst_remove (resolved, i+1);
 
-	  tib_errno = tib_lst_insert (resolved, temp, i);
-	  tib_decref (temp);
-	  if (tib_errno)
-	    goto end;
-	}
+          tib_errno = tib_lst_insert (resolved, temp, i);
+          tib_decref (temp);
+          if (tib_errno)
+            goto end;
+        }
     }
 
   tib_expr_foreach (&calc, i)
     {
       do_arith (resolved, i, calc.data[i], '*', tib_mul, '/', tib_div);
       if (tib_errno)
-	goto end;
+        goto end;
     }
 
   tib_expr_foreach (&calc, i)
     {
       do_arith (resolved, i, calc.data[i], '+', tib_add, '-', tib_sub);
       if (tib_errno)
-	goto end;
+        goto end;
     }
 
  end:
@@ -364,14 +364,14 @@ tib_eval_surrounded (const struct tib_expr *expr)
       count = 1;
 
       for (unsigned int i = 1; i < len-1; ++i)
-	{
-	  int c = expr->data[i];
+        {
+          int c = expr->data[i];
 
-	  if (is_left_paren (c))
-	    ++count;
-	  else if (')' == c && --count == 0)
-	    return 0;
-	}
+          if (is_left_paren (c))
+            ++count;
+          else if (')' == c && --count == 0)
+            return 0;
+        }
 
       return opening;
     }
@@ -417,10 +417,10 @@ get_char_pos (const struct tib_expr *expr, int c, unsigned int which)
   tib_expr_foreach (expr, i)
     {
       if (c == expr->data[i])
-	++found;
+        ++found;
 
       if (found == which)
-	break;
+        break;
     }
 
   return i;
@@ -434,10 +434,10 @@ get_sign_pos (const struct tib_expr *expr, unsigned int which)
   tib_expr_foreach (expr, i)
     {
       if (sign_operator (expr->data[i]))
-	++found;
+        ++found;
 
       if (found == which)
-	break;
+        break;
     }
 
   return i;
@@ -445,7 +445,7 @@ get_sign_pos (const struct tib_expr *expr, unsigned int which)
 
 static bool
 good_sign_pos (const struct tib_expr *expr, unsigned int numsign,
-	       unsigned int numi)
+               unsigned int numi)
 {
   switch (numsign)
     {
@@ -454,13 +454,13 @@ good_sign_pos (const struct tib_expr *expr, unsigned int numsign,
 
     case 1:
       if (!numi && get_sign_pos (expr, 1) != 0)
-	return false;
+        return false;
       break;
 
     case 2:
       if (!numi || get_sign_pos (expr, 1) != 0
-	  || get_sign_pos (expr, 2) > get_char_pos (expr, 'i', 1))
-	return false;
+          || get_sign_pos (expr, 2) > get_char_pos (expr, 'i', 1))
+        return false;
       break;
 
     default:
@@ -502,12 +502,12 @@ tib_eval_isstr (const struct tib_expr *expr)
   if (len > 1 && '"' == expr->data[0])
     {
       for (unsigned int i = 1; i < len-1; ++i)
-	{
-	  int c = expr->data[i];
+        {
+          int c = expr->data[i];
 
-	  if (c > 127 || '"' == c)
-	    return false;
-	}
+          if (c > 127 || '"' == c)
+            return false;
+        }
 
       return true;
     }
@@ -523,12 +523,12 @@ tib_eval_islist (const struct tib_expr *expr)
   if (len > 2 && '{' == expr->data[0] && '}' == expr->data[len - 1])
     {
       for (unsigned int i = 1; i < len-1; ++i)
-	{
-	  int c = expr->data[i];
+        {
+          int c = expr->data[i];
 
-	  if ('{' == c || '}' == c)
-	    return false;
-	}
+          if ('{' == c || '}' == c)
+            return false;
+        }
 
       return true;
     }
@@ -563,46 +563,46 @@ tib_eval_ismatrix (const struct tib_expr *expr)
       bool first = true;
 
       for (; i < len; ++i)
-	{
-	  int c = expr->data[i];
+        {
+          int c = expr->data[i];
 
-	  switch (c)
-	    {
-	    case '[':
-	      ++open_brackets;
-	      beg = i + 1;
-	      break;
+          switch (c)
+            {
+            case '[':
+              ++open_brackets;
+              beg = i + 1;
+              break;
 
-	    case ']':
-	      --open_brackets;
+            case ']':
+              --open_brackets;
 
-	      if (!first && dim != fdim)
-		return false;
+              if (!first && dim != fdim)
+                return false;
 
-	      first = false;
-	      dim = 1;
-	      end = i - 1;
+              first = false;
+              dim = 1;
+              end = i - 1;
 
-	      if (!sub_isnum (expr, beg, end))
-		return false;
-	      break;
+              if (!sub_isnum (expr, beg, end))
+                return false;
+              break;
 
-	    case ',':
-	      if (first)
-		++fdim;
-	      else
-		++dim;
+            case ',':
+              if (first)
+                ++fdim;
+              else
+                ++dim;
 
-	      end = i - 1;
-	      if (!sub_isnum (expr, beg, end))
-		return false;
-	      beg = i + 1;
-	      break;
-	    }
+              end = i - 1;
+              if (!sub_isnum (expr, beg, end))
+                return false;
+              beg = i + 1;
+              break;
+            }
 
-	  if ((0 == open_brackets && i != len-1) || open_brackets > 2)
-	    return false;
-	}
+          if ((0 == open_brackets && i != len-1) || open_brackets > 2)
+            return false;
+        }
 
       return true;
     }
@@ -621,23 +621,23 @@ tib_eval_close_parens (struct tib_expr *expr)
       int c = expr->data[i];
 
       if ('"' == c)
-	str = !str;
+        str = !str;
 
       if (!str)
-	{
-	  if (is_left_paren (c))
-	    ++count;
+        {
+          if (is_left_paren (c))
+            ++count;
 
-	  if (')' == c)
-	    --count;
-	}
+          if (')' == c)
+            --count;
+        }
     }
 
   while (count--)
     {
       int rc = tib_expr_push (expr, ')');
       if (rc)
-	return rc;
+        return rc;
     }
 
   return 0;

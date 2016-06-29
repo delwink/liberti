@@ -244,11 +244,11 @@ load_range (int beg, int end)
     {
       const char *trans = tib_special_char_text (i);
       if (NULL == trans)
-	continue;
+        continue;
 
       rc = pt_add (keywords, trans, i);
       if (rc)
-	return rc;
+        return rc;
     }
 
   return rc;
@@ -271,54 +271,54 @@ tokenize (struct tib_expr *expr, char *beg)
       char *end = strchr (beg, '(');
 
       if (end)
-	{
-	  temp = *(++end);
-	  *end = '\0';
+        {
+          temp = *(++end);
+          *end = '\0';
 
-	  const PrefixTree *t = pt_search (keywords, beg);
-	  *end = temp;
+          const PrefixTree *t = pt_search (keywords, beg);
+          *end = temp;
 
-	  if (t)
-	    {
-	      rc = tib_expr_push (expr, pt_data (t));
-	      if (rc)
-		goto fail;
+          if (t)
+            {
+              rc = tib_expr_push (expr, pt_data (t));
+              if (rc)
+                goto fail;
 
-	      beg = end;
-	      continue;
-	    }
-	}
+              beg = end;
+              continue;
+            }
+        }
 
       bool found = false;
       for (end = beg + 1; end <= orig + len; ++end)
-	{
-	  temp = *end;
-	  *end = '\0';
+        {
+          temp = *end;
+          *end = '\0';
 
-	  const PrefixTree *t = pt_search (keywords, beg);
-	  if (t)
-	    {
-	      rc = tib_expr_push (expr, pt_data (t));
-	      if (rc)
-		goto fail;
+          const PrefixTree *t = pt_search (keywords, beg);
+          if (t)
+            {
+              rc = tib_expr_push (expr, pt_data (t));
+              if (rc)
+                goto fail;
 
-	      beg = end;
-	      found = true;
-	    }
+              beg = end;
+              found = true;
+            }
 
-	  *end = temp;
-	  if (found)
-	    break;
-	}
+          *end = temp;
+          if (found)
+            break;
+        }
 
       if (!found)
-	{
-	  rc = tib_expr_push (expr, *beg);
-	  if (rc)
-	    goto fail;
+        {
+          rc = tib_expr_push (expr, *beg);
+          if (rc)
+            goto fail;
 
-	  ++beg;
-	}
+          ++beg;
+        }
     }
 
   return rc;
@@ -347,44 +347,44 @@ tib_encode_str (struct tib_expr *expr, const char *s)
     {
       char *end = strchr (beg, '"');
       if (end)
-	*end = '\0';
+        *end = '\0';
 
       struct tib_expr part;
       rc = tokenize (&part, beg);
       if (rc)
-	break;
+        break;
 
       rc = tib_exprcat (expr, &part);
       tib_expr_destroy (&part);
       if (rc)
-	break;
+        break;
 
       if (!end)
-	break;
+        break;
 
       beg = end + 1;
       end = strchr (beg, '"');
 
       if (!end)
-	end = buf + line_len;
+        end = buf + line_len;
 
       rc = tib_expr_push (expr, '"');
       if (rc)
-	break;
+        break;
 
       for (; beg < end; ++beg)
-	{
-	  rc = tib_expr_push (expr, *beg);
-	  if (rc)
-	    goto end;
-	}
+        {
+          rc = tib_expr_push (expr, *beg);
+          if (rc)
+            goto end;
+        }
 
       if (*end)
-	{
-	  rc = tib_expr_push (expr, *end);
-	  if (rc)
-	    break;
-	}
+        {
+          rc = tib_expr_push (expr, *end);
+          if (rc)
+            break;
+        }
 
       beg = end + 1;
     }

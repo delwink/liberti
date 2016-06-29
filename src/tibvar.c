@@ -75,18 +75,18 @@ tib_var_set (int key, const TIB *value)
   for (i = 0; i < varlist.len; ++i)
     {
       if (key == varlist.vars[i].key)
-	{
-	  TIB *old = varlist.vars[i].value;
-	  varlist.vars[i].value = tib_copy (value);
-	  if (tib_errno)
-	    {
-	      varlist.vars[i].value = old;
-	      return tib_errno;
-	    }
+        {
+          TIB *old = varlist.vars[i].value;
+          varlist.vars[i].value = tib_copy (value);
+          if (tib_errno)
+            {
+              varlist.vars[i].value = old;
+              return tib_errno;
+            }
 
-	  tib_decref (old);
-	  return 0;
-	}
+          tib_decref (old);
+          return 0;
+        }
     }
 
   return TIB_EINDEX; /* should be unreachable */

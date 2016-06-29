@@ -67,7 +67,7 @@ tib_exprcat (struct tib_expr *dest, const struct tib_expr *src)
     {
       rc = tib_expr_init (dest);
       if (rc)
-	return rc;
+        return rc;
     }
 
   unsigned int i;
@@ -75,10 +75,10 @@ tib_exprcat (struct tib_expr *dest, const struct tib_expr *src)
     {
       rc = tib_expr_push (dest, src->data[i]);
       if (rc)
-	{
-	  tib_expr_destroy (dest);
-	  return rc;
-	}
+        {
+          tib_expr_destroy (dest);
+          return rc;
+        }
     }
 
   return 0;
@@ -98,9 +98,9 @@ tib_expr_tostr (const struct tib_expr *self)
     {
       const char *special = tib_special_char_text (self->data[i]);
       if (special)
-	len += strlen (special);
+        len += strlen (special);
       else
-	++len;
+        ++len;
     }
 
   char *out = malloc (len * sizeof (char));
@@ -115,15 +115,15 @@ tib_expr_tostr (const struct tib_expr *self)
     {
       const char *special = tib_special_char_text (self->data[i]);
       if (special)
-	{
-	  out[i + bump] = '\0';
-	  strcat (out, special);
-	  bump += strlen (special) - 1;
-	}
+        {
+          out[i + bump] = '\0';
+          strcat (out, special);
+          bump += strlen (special) - 1;
+        }
       else
-	{
-	  out[i + bump] = self->data[i];
-	}
+        {
+          out[i + bump] = self->data[i];
+        }
     }
 
   out[i + bump] = '\0';
@@ -149,20 +149,20 @@ tib_expr_parse_complex (const struct tib_expr *self, gsl_complex *out)
     {
       unsigned int num_operators = sign_count (self);
       for (unsigned int i = 0; i < len; ++i)
-	{
-	  int c = self->data[i];
+        {
+          int c = self->data[i];
 
-	  if ('i' == c)
-	    {
-	      i_start = s;
-	      break;
-	    }
-	  else if (sign_operator (c) && --num_operators == 0)
-	    {
-	      i_start = &s[i];
-	      break;
-	    }
-	}
+          if ('i' == c)
+            {
+              i_start = s;
+              break;
+            }
+          else if (sign_operator (c) && --num_operators == 0)
+            {
+              i_start = &s[i];
+              break;
+            }
+        }
     }
 
   GSL_SET_REAL (out, s == i_start ? 0 : strtod (s, NULL));
@@ -170,9 +170,9 @@ tib_expr_parse_complex (const struct tib_expr *self, gsl_complex *out)
   if (i_start)
     {
       if (sign_operator (i_start[0]) && 'i' == i_start[1])
-	i_start[1] = '1';
+        i_start[1] = '1';
       else if ('i' == i_start[0])
-	i_start[0] = '1';
+        i_start[0] = '1';
     }
 
   GSL_SET_IMAG (out, i_start ? strtod (i_start, NULL) : 0);
@@ -208,7 +208,7 @@ tib_expr_insert (struct tib_expr *self, unsigned int i, int c)
       struct tib_expr temp = { .bufsize = 0 };
       int rc = tib_exprcpy (&temp, self);
       if (rc)
-	return rc;
+        return rc;
 
       *self = temp;
     }
@@ -219,12 +219,12 @@ tib_expr_insert (struct tib_expr *self, unsigned int i, int c)
 
       self->data = realloc (self->data, self->bufsize * sizeof (int));
       if (!self->data)
-	{
-	  self->bufsize /= 2;
-	  --self->len;
-	  self->data = old;
-	  return TIB_EALLOC;
-	}
+        {
+          self->bufsize /= 2;
+          --self->len;
+          self->data = old;
+          return TIB_EALLOC;
+        }
     }
 
   for (unsigned int j = self->len - 1; j > i; --j)
@@ -242,7 +242,7 @@ tib_expr_push (struct tib_expr *self, int c)
 
 int
 tib_subexpr (struct tib_expr *dest, const struct tib_expr *src,
-	     unsigned int beg, unsigned int end)
+             unsigned int beg, unsigned int end)
 {
   if (end > src->len || end < beg)
     return TIB_EINDEX;

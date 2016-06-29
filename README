@@ -78,8 +78,7 @@ Hacking
 
 We prefer the GNU coding style for C with a strict limit of 79 columns in the
 source code. Indentations are two spaces, and tab characters are eight
-spaces. It is polite to use a tab character any time eight spaces would be used
-in an indentation, but not required.
+spaces.
 
 To submit a patch, [submit your diff to Delwink][2], or use GitHub's pull
 request system.

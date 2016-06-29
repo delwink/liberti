@@ -67,25 +67,25 @@ main (int argc, char *argv[])
       int c;
       int longindex;
       while ((c = getopt_long (argc, argv, "dhv", longopts, &longindex)) != -1)
-	{
-	  switch (c)
-	    {
-	    case 'd':
-	      debug_mode = true;
-	      break;
+        {
+          switch (c)
+            {
+            case 'd':
+              debug_mode = true;
+              break;
 
-	    case 'h':
-	      puts (USAGE_INFO);
-	      return 0;
+            case 'h':
+              puts (USAGE_INFO);
+              return 0;
 
-	    case 'v':
-	      puts (VERSION_INFO);
-	      return 0;
+            case 'v':
+              puts (VERSION_INFO);
+              return 0;
 
-	    case '?':
-	      return 1;
-	    }
-	}
+            case '?':
+              return 1;
+            }
+        }
     }
 
   rc = SDL_VideoInit (NULL);

@@ -39,7 +39,7 @@ el_ref (const struct tib_lst *lst, size_t index)
   for (i = lst->beg; i != NULL; i = i->next)
     {
       if (looped++ == index)
-	return i;
+        return i;
     }
 
   return NULL;
@@ -140,7 +140,7 @@ tib_lst_ref (const struct tib_lst *lst, size_t index)
   for (i = lst->beg; i != NULL; i = i->next)
     {
       if (looped++ == index)
-	return i->val;
+        return i->val;
     }
 
   return NULL;

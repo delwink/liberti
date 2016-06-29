@@ -55,21 +55,21 @@ main (int argc, char *argv[])
       int c;
       int longindex;
       while ((c = getopt_long (argc, argv, "hv", longopts, &longindex)) != -1)
-	{
-	  switch (c)
-	    {
-	    case 'h':
-	      puts (USAGE_INFO);
-	      return 0;
+        {
+          switch (c)
+            {
+            case 'h':
+              puts (USAGE_INFO);
+              return 0;
 
-	    case 'v':
-	      puts (VERSION_INFO);
-	      return 0;
+            case 'v':
+              puts (VERSION_INFO);
+              return 0;
 
-	    case '?':
-	      return 1;
-	    }
-	}
+            case '?':
+              return 1;
+            }
+        }
     }
 
   tib_errno = tib_keyword_init ();
@@ -101,48 +101,48 @@ main (int argc, char *argv[])
   while (c != EOF)
     {
       for (; line_len < max_line_len - 1; ++line_len)
-	{
-	  c = getchar ();
-	  if ('\n' == c || EOF == c)
-	    break;
+        {
+          c = getchar ();
+          if ('\n' == c || EOF == c)
+            break;
 
-	  buf[line_len] = c;
-	}
+          buf[line_len] = c;
+        }
 
       if (max_line_len - 1 == line_len)
-	{
-	  char *old = buf;
+        {
+          char *old = buf;
 
-	  max_line_len *= 2;
-	  buf = realloc (buf, max_line_len * sizeof (char));
-	  if (!buf)
-	    {
-	      free (old);
-	      tib_errno = TIB_EALLOC;
-	      goto end;
-	    }
+          max_line_len *= 2;
+          buf = realloc (buf, max_line_len * sizeof (char));
+          if (!buf)
+            {
+              free (old);
+              tib_errno = TIB_EALLOC;
+              goto end;
+            }
 
-	  continue;
-	}
+          continue;
+        }
 
       buf[line_len] = '\0';
 
       struct tib_expr line;
       tib_errno = tib_encode_str (&line, buf);
       if (tib_errno)
-	goto end;
+        goto end;
 
       tib_errno = tib_exprcat (&translated, &line);
       tib_expr_destroy (&line);
       if (tib_errno)
-	goto end;
+        goto end;
 
       if (c != EOF)
-	{
-	  tib_errno = tib_expr_push (&translated, '\n');
-	  if (tib_errno)
-	    goto end;
-	}
+        {
+          tib_errno = tib_expr_push (&translated, '\n');
+          if (tib_errno)
+            goto end;
+        }
 
       line_len = 0;
     }
@@ -155,7 +155,7 @@ main (int argc, char *argv[])
     {
       tib_expr_destroy (&translated);
       fprintf (stderr, "tibencode: Error %d occurred while assembling.\n",
-	       tib_errno);
+               tib_errno);
       return 1;
     }
 
@@ -164,8 +164,8 @@ main (int argc, char *argv[])
   if (tib_errno)
     {
       fprintf (stderr, "tibencode: Error %d occurred while processing. "
-	       "Wrote %lu characters.\n",
-	       tib_errno, written);
+               "Wrote %lu characters.\n",
+               tib_errno, written);
       return 1;
     }
 

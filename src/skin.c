@@ -26,11 +26,11 @@
 #include "tibchar.h"
 #include "tiberr.h"
 
-#define DEFAULT_SKIN				\
-  "screens=({"					\
-  "mode=\"default\";"				\
-  "x=0;"					\
-  "y=0;"					\
+#define DEFAULT_SKIN                                \
+  "screens=({"                                        \
+  "mode=\"default\";"                                \
+  "x=0;"                                        \
+  "y=0;"                                        \
   "});"
 
 #define DEFAULT_SCREEN_WIDTH (96)
@@ -50,7 +50,7 @@ mode_from_string (const char *s)
 
 static int
 add_screen (Skin *self, struct state *state, struct point2d pos,
-	    enum screen_mode mode, double scale)
+            enum screen_mode mode, double scale)
 {
   struct skin_screen_list *node = self->screens;
 
@@ -61,7 +61,7 @@ add_screen (Skin *self, struct state *state, struct point2d pos,
     {
       self->screens = malloc (sizeof (struct skin_screen_list));
       if (!self->screens)
-	return TIB_EALLOC;
+        return TIB_EALLOC;
 
       node = self->screens;
       self->active_screen = &node->screen;
@@ -69,11 +69,11 @@ add_screen (Skin *self, struct state *state, struct point2d pos,
   else
     {
       while (node->next)
-	node = node->next;
+        node = node->next;
 
       node->next = malloc (sizeof (struct skin_screen_list));
       if (!node->next)
-	return TIB_EALLOC;
+        return TIB_EALLOC;
 
       node = node->next;
     }
@@ -119,24 +119,24 @@ init_action_keywords ()
     {
       const char *trans = tib_special_char_text (i);
       if (!trans)
-	continue;
+        continue;
 
       if (' ' == *trans)
-	++trans; /* trim any leading space */
+        ++trans; /* trim any leading space */
 
       char trim[11]; /* long enough to hold all translated strings and NUL */
       strcpy (trim, trans);
 
       char *p = strrchr (trim, ' ');
       if (p)
-	*p = '\0'; /* trim any trailing space */
+        *p = '\0'; /* trim any trailing space */
 
       for (p = trim; *p != '\0'; ++p)
-	*p = tolower (*p);
+        *p = tolower (*p);
 
       tib_errno = pt_add (action_keywords, trim, i);
       if (tib_errno)
-	goto fail;
+        goto fail;
     }
 
   return 0;
@@ -207,7 +207,7 @@ cursor_move_from_string (const char *s)
 
 static int
 get_action_set (const config_setting_t *mode, const char *name,
-		struct button_action_set *action)
+                struct button_action_set *action)
 {
   const config_setting_t *root = config_setting_get_member (mode, name);
   if (!root)
@@ -230,31 +230,31 @@ get_action_set (const config_setting_t *mode, const char *name,
     {
     case CHANGE_MODES:
       if (!setting)
-	return TIB_EBADFILE;
+        return TIB_EBADFILE;
 
       i = mode_from_string (value);
       if (-1 == i)
-	return TIB_EBADFILE;
+        return TIB_EBADFILE;
 
       action->which.mode_open = i;
       break;
 
     case CHAR_INSERT:
       if (!setting)
-	return TIB_EBADFILE;
+        return TIB_EBADFILE;
 
       action->which.char_insert = char_insert_from_string (value);
       if (-1 == action->which.char_insert)
-	return TIB_EBADFILE;
+        return TIB_EBADFILE;
       break;
 
     case CURSOR_MOVE:
       if (!setting)
-	return TIB_EBADFILE;
+        return TIB_EBADFILE;
 
       i = cursor_move_from_string (value);
       if (-1 == i)
-	return TIB_EBADFILE;
+        return TIB_EBADFILE;
 
       action->which.cursor_move = i;
       break;
@@ -268,14 +268,14 @@ get_action_set (const config_setting_t *mode, const char *name,
 
 static int
 get_all_actions (const config_setting_t *mode,
-		 struct button_action_set actions[])
+                 struct button_action_set actions[])
 {
   if (!mode)
     return TIB_EBADFILE;
 
   tib_errno = init_action_keywords ();
 
-#define GET_ACTION_SET(A,S) tib_errno = get_action_set (mode, S, &A);	\
+#define GET_ACTION_SET(A,S) tib_errno = get_action_set (mode, S, &A);        \
   if (tib_errno) goto fail;
 
   GET_ACTION_SET (actions[STATE_NORMAL], "normal");
@@ -294,7 +294,7 @@ free_render_cache (struct skin_render_cache *c)
     {
       struct skin_render_cache *temp = c;
       if (temp->surface)
-	SDL_FreeSurface (temp->surface);
+        SDL_FreeSurface (temp->surface);
 
       c = c->next;
       free (temp);
@@ -326,10 +326,10 @@ open_skin (const char *path, struct state *state, struct point2d size)
     {
       char *spec_path = skin_file_path (path, "spec.conf");
       if (!spec_path)
-	{
-	  tib_errno = TIB_EALLOC;
-	  goto fail;
-	}
+        {
+          tib_errno = TIB_EALLOC;
+          goto fail;
+        }
 
       tib_errno = config_read_file (&conf, spec_path);
       free (spec_path);
@@ -351,26 +351,26 @@ open_skin (const char *path, struct state *state, struct point2d size)
   if (setting)
     {
       if (CONFIG_TYPE_STRING != config_setting_type (setting))
-	{
-	  tib_errno = TIB_EBADFILE;
-	  goto fail;
-	}
+        {
+          tib_errno = TIB_EBADFILE;
+          goto fail;
+        }
 
       char *bgpath = skin_file_path (path,
-				     config_setting_get_string (setting));
+                                     config_setting_get_string (setting));
       if (!bgpath)
-	{
-	  tib_errno = TIB_EALLOC;
-	  goto fail;
-	}
+        {
+          tib_errno = TIB_EALLOC;
+          goto fail;
+        }
 
       new->background = IMG_Load (bgpath);
       free (bgpath);
       if (!new->background)
-	{
-	  tib_errno = TIB_EBADFILE;
-	  goto fail;
-	}
+        {
+          tib_errno = TIB_EBADFILE;
+          goto fail;
+        }
 
       new->size.x = new->background->w;
       new->size.y = new->background->h;
@@ -384,207 +384,207 @@ open_skin (const char *path, struct state *state, struct point2d size)
   if (setting)
     {
       if (!config_setting_is_list (setting))
-	{
-	  tib_errno = TIB_EBADFILE;
-	  goto fail;
-	}
+        {
+          tib_errno = TIB_EBADFILE;
+          goto fail;
+        }
 
       config_setting_t * const screens = setting;
       unsigned int i = 0;
       while ((setting = config_setting_get_elem (screens, i++)))
-	{
-	  if (!config_setting_is_group (setting))
-	    {
-	      tib_errno = TIB_EBADFILE;
-	      goto fail;
-	    }
+        {
+          if (!config_setting_is_group (setting))
+            {
+              tib_errno = TIB_EBADFILE;
+              goto fail;
+            }
 
-	  config_setting_t * const screen = setting;
+          config_setting_t * const screen = setting;
 
-	  setting = config_setting_get_member (screen, "mode");
-	  if (!setting || config_setting_type (setting) != CONFIG_TYPE_STRING)
-	    {
-	      tib_errno = TIB_EBADFILE;
-	      goto fail;
-	    }
+          setting = config_setting_get_member (screen, "mode");
+          if (!setting || config_setting_type (setting) != CONFIG_TYPE_STRING)
+            {
+              tib_errno = TIB_EBADFILE;
+              goto fail;
+            }
 
-	  int mode = mode_from_string (config_setting_get_string (setting));
-	  if (-1 == mode)
-	    {
-	      tib_errno = TIB_EBADFILE;
-	      goto fail;
-	    }
+          int mode = mode_from_string (config_setting_get_string (setting));
+          if (-1 == mode)
+            {
+              tib_errno = TIB_EBADFILE;
+              goto fail;
+            }
 
-	  setting = config_setting_get_member (screen, "x");
-	  if (!setting || !config_setting_is_number (setting))
-	    {
-	      tib_errno = TIB_EBADFILE;
-	      goto fail;
-	    }
+          setting = config_setting_get_member (screen, "x");
+          if (!setting || !config_setting_is_number (setting))
+            {
+              tib_errno = TIB_EBADFILE;
+              goto fail;
+            }
 
-	  struct point2d pos;
-	  pos.x = config_setting_get_int (setting);
+          struct point2d pos;
+          pos.x = config_setting_get_int (setting);
 
-	  setting = config_setting_get_member (screen, "y");
-	  if (!setting || !config_setting_is_number (setting))
-	    {
-	      tib_errno = TIB_EBADFILE;
-	      goto fail;
-	    }
+          setting = config_setting_get_member (screen, "y");
+          if (!setting || !config_setting_is_number (setting))
+            {
+              tib_errno = TIB_EBADFILE;
+              goto fail;
+            }
 
-	  pos.y = config_setting_get_int (setting);
+          pos.y = config_setting_get_int (setting);
 
-	  double scale = 1.0;
-	  setting = config_setting_get_member (screen, "scale");
-	  if (setting)
-	    {
-	      if (!config_setting_is_number (setting))
-		{
-		  tib_errno = TIB_EBADFILE;
-		  goto fail;
-		}
+          double scale = 1.0;
+          setting = config_setting_get_member (screen, "scale");
+          if (setting)
+            {
+              if (!config_setting_is_number (setting))
+                {
+                  tib_errno = TIB_EBADFILE;
+                  goto fail;
+                }
 
-	      scale = config_setting_get_float (setting);
-	    }
+              scale = config_setting_get_float (setting);
+            }
 
-	  tib_errno = add_screen (new, state, pos, mode, scale);
-	  if (tib_errno)
-	    goto fail;
-	}
+          tib_errno = add_screen (new, state, pos, mode, scale);
+          if (tib_errno)
+            goto fail;
+        }
 
       if (--i)
-	{
-	  new->renders = malloc (sizeof (struct skin_render_cache));
-	  if (!new->renders)
-	    {
-	      tib_errno = TIB_EALLOC;
-	      goto fail;
-	    }
+        {
+          new->renders = malloc (sizeof (struct skin_render_cache));
+          if (!new->renders)
+            {
+              tib_errno = TIB_EALLOC;
+              goto fail;
+            }
 
-	  new->renders->surface = NULL;
-	  new->renders->next = NULL;
+          new->renders->surface = NULL;
+          new->renders->next = NULL;
 
-	  --i;
-	}
+          --i;
+        }
 
       struct skin_render_cache *full = new->renders;
       for (; i > 0; --i, full = full->next)
-	{
-	  struct skin_render_cache *newfull;
+        {
+          struct skin_render_cache *newfull;
 
-	  newfull = malloc (sizeof (struct skin_render_cache));
-	  if (!newfull)
-	    {
-	      tib_errno = TIB_EALLOC;
-	      goto fail;
-	    }
+          newfull = malloc (sizeof (struct skin_render_cache));
+          if (!newfull)
+            {
+              tib_errno = TIB_EALLOC;
+              goto fail;
+            }
 
-	  newfull->surface = NULL;
-	  newfull->next = NULL;
+          newfull->surface = NULL;
+          newfull->next = NULL;
 
-	  full->next = newfull;
-	}
+          full->next = newfull;
+        }
     }
 
   setting = config_lookup (&conf, "buttons");
   if (setting)
     {
       if (!config_setting_is_list (setting))
-	{
-	  tib_errno = TIB_EBADFILE;
-	  goto fail;
-	}
+        {
+          tib_errno = TIB_EBADFILE;
+          goto fail;
+        }
 
       new->buttons = malloc (sizeof (struct skin_button_list));
       if (!new->buttons)
-	{
-	  tib_errno = TIB_EALLOC;
-	  goto fail;
-	}
+        {
+          tib_errno = TIB_EALLOC;
+          goto fail;
+        }
 
       const config_setting_t *buttons = setting;
       struct skin_button_list *next = new->buttons;
       unsigned int i = 0;
       while ((setting = config_setting_get_elem (buttons, i++)))
-	{
-	  if (!config_setting_is_group (setting))
-	    {
-	      tib_errno = TIB_EBADFILE;
-	      goto fail;
-	    }
+        {
+          if (!config_setting_is_group (setting))
+            {
+              tib_errno = TIB_EBADFILE;
+              goto fail;
+            }
 
-	  if (i > 1)
-	    {
-	      next->next = malloc (sizeof (struct skin_button_list));
-	      if (!next->next)
-		{
-		  tib_errno = TIB_EALLOC;
-		  goto fail;
-		}
+          if (i > 1)
+            {
+              next->next = malloc (sizeof (struct skin_button_list));
+              if (!next->next)
+                {
+                  tib_errno = TIB_EALLOC;
+                  goto fail;
+                }
 
-	      next = next->next;
-	    }
+              next = next->next;
+            }
 
-	  next->button = malloc (sizeof (struct skin_button));
-	  if (!next->button)
-	    {
-	      tib_errno = TIB_EALLOC;
-	      goto fail;
-	    }
+          next->button = malloc (sizeof (struct skin_button));
+          if (!next->button)
+            {
+              tib_errno = TIB_EALLOC;
+              goto fail;
+            }
 
-	  const config_setting_t *button = setting;
+          const config_setting_t *button = setting;
 
-	  setting = config_setting_get_member (button, "actions");
-	  if (!setting)
-	    {
-	      tib_errno = TIB_EBADFILE;
-	      goto fail;
-	    }
+          setting = config_setting_get_member (button, "actions");
+          if (!setting)
+            {
+              tib_errno = TIB_EBADFILE;
+              goto fail;
+            }
 
-	  const config_setting_t *modes = setting;
+          const config_setting_t *modes = setting;
 
-	  setting = config_setting_get_member (modes, "default");
-	  bool have_default = setting != NULL;
-	  struct button_action_set default_actions[NUM_ACTION_STATES];
-	  if (have_default)
-	    {
-	      tib_errno = get_all_actions (setting, default_actions);
-	      if (tib_errno)
-		goto fail;
-	    }
+          setting = config_setting_get_member (modes, "default");
+          bool have_default = setting != NULL;
+          struct button_action_set default_actions[NUM_ACTION_STATES];
+          if (have_default)
+            {
+              tib_errno = get_all_actions (setting, default_actions);
+              if (tib_errno)
+                goto fail;
+            }
 
-	  size_t j;
-	  struct button_action_set actions[NUM_ACTION_STATES];
+          size_t j;
+          struct button_action_set actions[NUM_ACTION_STATES];
 #define ADD_ACTION(A,I) setting = config_setting_get_member (modes, (A)); \
-	  if (setting)							\
-	    {								\
-	      tib_errno = get_all_actions (setting, actions);		\
-	      if (tib_errno)						\
-		goto fail;						\
-	    }								\
-	  else								\
-	    {								\
-	      for (j = 0; j < NUM_ACTION_STATES; ++j)			\
-		actions[j] = default_actions[j];			\
-	    }								\
-	  for (j = 0; j < NUM_ACTION_STATES; ++j)			\
-	    next->button->actions[(I)][j] = actions[j];
+          if (setting)                                                        \
+            {                                                                \
+              tib_errno = get_all_actions (setting, actions);                \
+              if (tib_errno)                                                \
+                goto fail;                                                \
+            }                                                                \
+          else                                                                \
+            {                                                                \
+              for (j = 0; j < NUM_ACTION_STATES; ++j)                        \
+                actions[j] = default_actions[j];                        \
+            }                                                                \
+          for (j = 0; j < NUM_ACTION_STATES; ++j)                        \
+            next->button->actions[(I)][j] = actions[j];
 
-	  ADD_ACTION ("default", DEFAULT_SCREEN_MODE);
+          ADD_ACTION ("default", DEFAULT_SCREEN_MODE);
 
-#define ADD_DIM(D,V) setting = config_setting_get_member (button, (D));	\
-	  if (!setting || !config_setting_is_number (setting))		\
-	    {								\
-	      tib_errno = TIB_EBADFILE;					\
-	      goto fail;						\
-	    }								\
-	  (V) = config_setting_get_int (setting);
+#define ADD_DIM(D,V) setting = config_setting_get_member (button, (D));        \
+          if (!setting || !config_setting_is_number (setting))                \
+            {                                                                \
+              tib_errno = TIB_EBADFILE;                                        \
+              goto fail;                                                \
+            }                                                                \
+          (V) = config_setting_get_int (setting);
 
-	  ADD_DIM ("x", next->button->pos.x);
-	  ADD_DIM ("y", next->button->pos.y);
-	  ADD_DIM ("w", next->button->size.x);
-	  ADD_DIM ("h", next->button->size.y);
-	}
+          ADD_DIM ("x", next->button->pos.x);
+          ADD_DIM ("y", next->button->pos.y);
+          ADD_DIM ("w", next->button->size.x);
+          ADD_DIM ("h", next->button->size.y);
+        }
     }
 
   config_destroy (&conf);
@@ -600,12 +600,12 @@ open_skin (const char *path, struct state *state, struct point2d size)
     {
       struct skin_screen_list *s = new->screens;
       while (s)
-	{
-	  screen_destroy (&s->screen);
-	  s = s->next;
-	  free (new->screens);
-	  new->screens = s;
-	}
+        {
+          screen_destroy (&s->screen);
+          s = s->next;
+          free (new->screens);
+          new->screens = s;
+        }
     }
 
   free_render_cache (new->renders);
@@ -614,13 +614,13 @@ open_skin (const char *path, struct state *state, struct point2d size)
     {
       struct skin_button_list *s = new->buttons;
       while (s)
-	{
-	  if (s->button)
-	    free (s->button);
-	  s = s->next;
-	  free (new->buttons);
-	  new->buttons = s;
-	}
+        {
+          if (s->button)
+            free (s->button);
+          s = s->next;
+          free (new->buttons);
+          new->buttons = s;
+        }
     }
 
   free (new);
@@ -708,9 +708,9 @@ do_button_action (Skin *self, struct skin_button *button)
 
     case CHAR_INSERT:
       if (self->insert_mode)
-	return entry_insert (state, which.char_insert);
+        return entry_insert (state, which.char_insert);
       else
-	return entry_write (state, which.char_insert);
+        return entry_write (state, which.char_insert);
 
     case CURSOR_MOVE:
       entry_move_cursor (state, which.cursor_move);
@@ -745,15 +745,15 @@ Skin_click (Skin *self, struct point2d pos)
       struct screen *screen = &elem->screen;
 
       if (on_screen (screen, pos))
-	{
-	  if (screen != self->active_screen)
-	    {
-	      self->active_screen = screen;
-	      self->action_state = STATE_NORMAL;
-	    }
+        {
+          if (screen != self->active_screen)
+            {
+              self->active_screen = screen;
+              self->action_state = STATE_NORMAL;
+            }
 
-	  return 0;
-	}
+          return 0;
+        }
     }
 
   for (struct skin_button_list *elem = self->buttons;
@@ -763,7 +763,7 @@ Skin_click (Skin *self, struct point2d pos)
       struct skin_button *button = elem->button;
 
       if (on_button (button, pos))
-	return do_button_action (self, button);
+        return do_button_action (self, button);
     }
 
   return 0;
@@ -806,31 +806,31 @@ render_line (const struct tib_expr *line, TTF_Font *font)
       SDL_Surface *part;
 
       if (s)
-	{
-	  part = TTF_RenderUTF8_Solid (font, s, BLACK);
-	}
+        {
+          part = TTF_RenderUTF8_Solid (font, s, BLACK);
+        }
       else
-	{
-	  char single[2];
-	  single[0] = c;
-	  single[1] = '\0';
+        {
+          char single[2];
+          single[0] = c;
+          single[1] = '\0';
 
-	  part = TTF_RenderUTF8_Solid (font, single, BLACK);
-	}
+          part = TTF_RenderUTF8_Solid (font, single, BLACK);
+        }
 
       if (!part)
-	{
-	  error ("Failed to render expression portion: %s", TTF_GetError ());
-	  parts[i] = NULL;
-	  continue;
-	}
+        {
+          error ("Failed to render expression portion: %s", TTF_GetError ());
+          parts[i] = NULL;
+          continue;
+        }
 
       w += part->w;
       if (w > 96)
-	{
-	  h += font_height;
-	  w -= part->w;
-	}
+        {
+          h += font_height;
+          w -= part->w;
+        }
 
       parts[i] = part;
     }
@@ -839,24 +839,24 @@ render_line (const struct tib_expr *line, TTF_Font *font)
   if (!final)
     {
       error ("Failed to initialize expression render surface: %s",
-	     SDL_GetError ());
+             SDL_GetError ());
       goto fail;
     }
 
   rc = SDL_FillRect (final, NULL, SDL_MapRGBA (final->format, 0, 0, 0, 0));
   if (rc < 0)
     error ("Failed to set background of expression render surface: %s",
-	   SDL_GetError ());
+           SDL_GetError ());
 
   w = 0;
   h = 0;
   for (i = 0; i < line->len; ++i)
     {
       if (w + parts[i]->w > 96)
-	{
-	  w = 0;
-	  h += font_height;
-	}
+        {
+          w = 0;
+          h += font_height;
+        }
 
       SDL_Rect pos;
       pos.x = w;
@@ -864,10 +864,10 @@ render_line (const struct tib_expr *line, TTF_Font *font)
 
       rc = SDL_BlitSurface (parts[i], NULL, final, &pos);
       if (rc < 0)
-	{
-	  error ("Failed to blit expression portion: %s", SDL_GetError ());
-	  continue;
-	}
+        {
+          error ("Failed to blit expression portion: %s", SDL_GetError ());
+          continue;
+        }
 
       w += parts[i]->w;
     }
@@ -884,22 +884,22 @@ render_line (const struct tib_expr *line, TTF_Font *font)
 
 static void
 draw_line (const struct tib_expr *line, SDL_Surface *final,
-	   const struct fontset *fonts, unsigned int *height, bool right_align)
+           const struct fontset *fonts, unsigned int *height, bool right_align)
 {
   SDL_Surface *line_render = render_line (line, fonts->reg);
   if (line_render)
     {
       SDL_Rect pos;
       if (right_align)
-	pos.x = 96 - line_render->w;
+        pos.x = 96 - line_render->w;
       else
-	pos.x = 0;
+        pos.x = 0;
 
       pos.y = 64 - *height;
 
       int rc = SDL_BlitSurface (line_render, NULL, final, &pos);
       if (rc < 0)
-	error ("Failed to draw line on screen frame: %s", SDL_GetError ());
+        error ("Failed to draw line on screen frame: %s", SDL_GetError ());
 
       *height += line_render->h;
       SDL_FreeSurface (line_render);
@@ -922,7 +922,7 @@ render_screen (const struct screen *screen, const struct fontset *fonts)
   rc = SDL_FillRect (final, NULL, SDL_MapRGB (final->format, 255, 255, 255));
   if (rc < 0)
     error ("Failed to fill screen frame with white background: %s",
-	   SDL_GetError ());
+           SDL_GetError ());
 
   struct state *state = screen->state;
   unsigned int height = 0;
@@ -932,12 +932,12 @@ render_screen (const struct screen *screen, const struct fontset *fonts)
       draw_line (&state->entry, final, fonts, &height, false);
 
       for (int i = state->history_len - 1; i >= 0 && height < 64; --i)
-	{
-	  draw_line (&state->answer_strings[i], final, fonts, &height, true);
+        {
+          draw_line (&state->answer_strings[i], final, fonts, &height, true);
 
-	  if (height < 64)
-	    draw_line (&state->history[i], final, fonts, &height, false);
-	}
+          if (height < 64)
+            draw_line (&state->history[i], final, fonts, &height, false);
+        }
       break;
 
     default:
@@ -964,7 +964,7 @@ Skin_get_frame (Skin *self, const struct fontset *fonts)
     {
       rc = SDL_BlitSurface (self->background, NULL, final, NULL);
       if (rc < 0)
-	error ("Failed to blit background: %s", SDL_GetError ());
+        error ("Failed to blit background: %s", SDL_GetError ());
     }
 
   struct skin_render_cache *full = self->renders;
@@ -976,23 +976,23 @@ Skin_get_frame (Skin *self, const struct fontset *fonts)
       SDL_Rect r = get_rect (screen->pos, screen->size);
 
       if (screen == self->active_screen)
-	{
-	  SDL_Surface *render = render_screen (screen, fonts);
-	  if (render)
-	    {
-	      if (full->surface)
-		SDL_FreeSurface (full->surface);
+        {
+          SDL_Surface *render = render_screen (screen, fonts);
+          if (render)
+            {
+              if (full->surface)
+                SDL_FreeSurface (full->surface);
 
-	      full->surface = render;
-	    }
-	}
+              full->surface = render;
+            }
+        }
 
       if (full->surface)
-	{
-	  rc = SDL_BlitScaled (full->surface, NULL, final, &r);
-	  if (rc < 0)
-	    error ("Failed to blit screen %u: %s", i, SDL_GetError ());
-	}
+        {
+          rc = SDL_BlitScaled (full->surface, NULL, final, &r);
+          if (rc < 0)
+            error ("Failed to blit screen %u: %s", i, SDL_GetError ());
+        }
     }
 
   return final;

@@ -36,7 +36,7 @@ load_line (struct tib_expr *expr, const char *s)
 
 static void
 add_history (struct state *state, struct tib_expr *in, struct tib_expr *ans_s,
-	     TIB *ans)
+             TIB *ans)
 {
   if (MAX_HISTORY == state->history_len)
     {
@@ -45,11 +45,11 @@ add_history (struct state *state, struct tib_expr *in, struct tib_expr *ans_s,
       tib_decref (state->answers[0]);
 
       for (unsigned int i = 0; i < MAX_HISTORY - 1; ++i)
-	{
-	  state->history[i] = state->history[i + 1];
-	  state->answer_strings[i] = state->answer_strings[i + 1];
-	  state->answers[i] = state->answers[i + 1];
-	}
+        {
+          state->history[i] = state->history[i + 1];
+          state->answer_strings[i] = state->answer_strings[i + 1];
+          state->answers[i] = state->answers[i + 1];
+        }
     }
   else
     {
@@ -94,62 +94,62 @@ load_state (struct state *dest, const char *path)
   if (setting)
     {
       if (config_setting_type (setting) != CONFIG_TYPE_LIST)
-	{
-	  rc = TIB_EBADFILE;
-	  goto fail;
-	}
+        {
+          rc = TIB_EBADFILE;
+          goto fail;
+        }
 
       unsigned int i = 0;
       config_setting_t *line;
 
       while ((line = config_setting_get_elem (setting, i++)))
-	{
-	  if (config_setting_type (line) != CONFIG_TYPE_GROUP)
-	    {
-	      rc = TIB_EBADFILE;
-	      goto fail;
-	    }
+        {
+          if (config_setting_type (line) != CONFIG_TYPE_GROUP)
+            {
+              rc = TIB_EBADFILE;
+              goto fail;
+            }
 
-	  config_setting_t *e = config_setting_get_member (line, "input");
-	  if (!e || config_setting_type (e) != CONFIG_TYPE_STRING)
-	    {
-	      rc = TIB_EBADFILE;
-	      goto fail;
-	    }
+          config_setting_t *e = config_setting_get_member (line, "input");
+          if (!e || config_setting_type (e) != CONFIG_TYPE_STRING)
+            {
+              rc = TIB_EBADFILE;
+              goto fail;
+            }
 
-	  const char *s = config_setting_get_string (e);
-	  struct tib_expr hist;
-	  rc = load_line (&hist, s);
-	  if (rc)
-	    goto fail;
+          const char *s = config_setting_get_string (e);
+          struct tib_expr hist;
+          rc = load_line (&hist, s);
+          if (rc)
+            goto fail;
 
-	  e = config_setting_get_member (line, "output");
-	  if (!e || config_setting_type (e) != CONFIG_TYPE_STRING)
-	    {
-	      rc = TIB_EBADFILE;
-	      goto fail;
-	    }
+          e = config_setting_get_member (line, "output");
+          if (!e || config_setting_type (e) != CONFIG_TYPE_STRING)
+            {
+              rc = TIB_EBADFILE;
+              goto fail;
+            }
 
-	  s = config_setting_get_string (e);
-	  struct tib_expr ans_s;
-	  rc = load_line (&ans_s, s);
-	  if (rc)
-	    {
-	      tib_expr_destroy (&hist);
-	      goto fail;
-	    }
+          s = config_setting_get_string (e);
+          struct tib_expr ans_s;
+          rc = load_line (&ans_s, s);
+          if (rc)
+            {
+              tib_expr_destroy (&hist);
+              goto fail;
+            }
 
-	  TIB *ans = tib_eval (&ans_s);
-	  if (!ans)
-	    {
-	      rc = tib_errno;
-	      tib_expr_destroy (&hist);
-	      tib_expr_destroy (&ans_s);
-	      goto fail;
-	    }
+          TIB *ans = tib_eval (&ans_s);
+          if (!ans)
+            {
+              rc = tib_errno;
+              tib_expr_destroy (&hist);
+              tib_expr_destroy (&ans_s);
+              goto fail;
+            }
 
-	  add_history (dest, &hist, &ans_s, ans);
-	}
+          add_history (dest, &hist, &ans_s, ans);
+        }
     }
 
   config_destroy (&conf);
@@ -178,51 +178,51 @@ save_state (const struct state *state, const char *path)
 
   {
     config_setting_t *history = config_setting_add (root, "history",
-						    CONFIG_TYPE_LIST);
+                                                    CONFIG_TYPE_LIST);
     CHECK_NULL (history);
 
     for (unsigned int i = 0; i < state->history_len; ++i)
       {
-	config_setting_t * const line = config_setting_add (history, NULL,
-							    CONFIG_TYPE_GROUP);
-	CHECK_NULL (line);
+        config_setting_t * const line = config_setting_add (history, NULL,
+                                                            CONFIG_TYPE_GROUP);
+        CHECK_NULL (line);
 
-	config_setting_t *info = config_setting_add (line, "input",
-						     CONFIG_TYPE_STRING);
-	CHECK_NULL (info);
+        config_setting_t *info = config_setting_add (line, "input",
+                                                     CONFIG_TYPE_STRING);
+        CHECK_NULL (info);
 
-	char *s = tib_expr_tostr (&state->history[i]);
-	if (!s)
-	  {
-	    rc = tib_errno;
-	    goto end;
-	  }
+        char *s = tib_expr_tostr (&state->history[i]);
+        if (!s)
+          {
+            rc = tib_errno;
+            goto end;
+          }
 
-	rc = config_setting_set_string (info, s);
-	free (s);
-	if (CONFIG_FALSE == rc)
-	  {
-	    rc = TIB_EALLOC;
-	    goto end;
-	  }
+        rc = config_setting_set_string (info, s);
+        free (s);
+        if (CONFIG_FALSE == rc)
+          {
+            rc = TIB_EALLOC;
+            goto end;
+          }
 
-	info = config_setting_add (line, "output", CONFIG_TYPE_STRING);
-	CHECK_NULL (info);
+        info = config_setting_add (line, "output", CONFIG_TYPE_STRING);
+        CHECK_NULL (info);
 
-	s = tib_expr_tostr (&state->answer_strings[i]);
-	if (!s)
-	  {
-	    rc = tib_errno;
-	    goto end;
-	  }
+        s = tib_expr_tostr (&state->answer_strings[i]);
+        if (!s)
+          {
+            rc = tib_errno;
+            goto end;
+          }
 
-	rc = config_setting_set_string (info, s);
-	free (s);
-	if (CONFIG_FALSE == rc)
-	  {
-	    rc = TIB_EALLOC;
-	    goto end;
-	  }
+        rc = config_setting_set_string (info, s);
+        free (s);
+        if (CONFIG_FALSE == rc)
+          {
+            rc = TIB_EALLOC;
+            goto end;
+          }
       }
   }
 
@@ -251,16 +251,16 @@ entry_move_cursor (struct state *state, int distance)
       distance *= -1;
 
       if (state->entry_cursor > (unsigned int) distance)
-	state->entry_cursor -= distance;
+        state->entry_cursor -= distance;
       else
-	state->entry_cursor = 0;
+        state->entry_cursor = 0;
     }
   else
     {
       state->entry_cursor += distance;
 
       if (state->entry_cursor > state->entry.len)
-	state->entry_cursor = state->entry.len;
+        state->entry_cursor = state->entry.len;
     }
 }
 
@@ -303,7 +303,7 @@ state_calc_entry (struct state *state)
 
 int
 state_add_history (struct state *state, const struct tib_expr *in,
-		   const TIB *answer)
+                   const TIB *answer)
 {
   struct tib_expr in_copy;
   int rc = tib_exprcpy (&in_copy, in);

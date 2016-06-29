@@ -79,21 +79,21 @@ split_number_args (const struct tib_expr *expr, ...)
   for (beg = expr->data, end = beg; end < expr->data + expr->len; ++end)
     {
       if (',' == *end || end + 1 == expr->data + expr->len)
-	{
-	  unsigned int start = beg - expr->data, stop = end - expr->data - 1;
-	  if (end + 1 == expr->data + expr->len)
-	    ++stop;
+        {
+          unsigned int start = beg - expr->data, stop = end - expr->data - 1;
+          if (end + 1 == expr->data + expr->len)
+            ++stop;
 
-	  struct tib_expr arg;
-	  tib_subexpr (&arg, expr, start, stop);
+          struct tib_expr arg;
+          tib_subexpr (&arg, expr, start, stop);
 
-	  gsl_complex *out = va_arg (ap, gsl_complex *);
-	  rc = tib_expr_parse_complex (&arg, out);
-	  if (rc)
-	    break;
+          gsl_complex *out = va_arg (ap, gsl_complex *);
+          rc = tib_expr_parse_complex (&arg, out);
+          if (rc)
+            break;
 
-	  beg = end + 1;
-	}
+          beg = end + 1;
+        }
     }
   va_end (ap);
 
@@ -114,10 +114,10 @@ func_randint (const struct tib_expr *expr)
   for (unsigned int i = 0; i < len; ++i)
     {
       if (',' == expr->data[i])
-	{
-	  if (++num_commas > 2)
-	    break;
-	}
+        {
+          if (++num_commas > 2)
+            break;
+        }
     }
 
   if (num_commas != 2)
@@ -145,9 +145,9 @@ func_randint (const struct tib_expr *expr)
       GSL_SET_COMPLEX (&vals[i], (double) gsl_rng_get (rng), 0);
 
       while (GSL_REAL (vals[i]) < GSL_REAL (min))
-	GSL_SET_REAL (&vals[i], GSL_REAL (vals[i]) + diff);
+        GSL_SET_REAL (&vals[i], GSL_REAL (vals[i]) + diff);
       while (GSL_REAL (vals[i]) > GSL_REAL (max))
-	GSL_SET_REAL (&vals[i], GSL_REAL (vals[i]) - diff);
+        GSL_SET_REAL (&vals[i], GSL_REAL (vals[i]) - diff);
     }
 
   return tib_new_list (vals, len);
@@ -202,7 +202,7 @@ tib_registry_add (int key, tib_Function f)
 
   ++registry.len;
   registry.nodes = realloc (registry.nodes,
-			    registry.len * sizeof (struct registry_node));
+                            registry.len * sizeof (struct registry_node));
   if (NULL == registry.nodes)
     {
       registry.nodes = old;

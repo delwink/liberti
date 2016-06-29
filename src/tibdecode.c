@@ -67,25 +67,25 @@ main (int argc, char *argv[])
       int c;
       int longindex;
       while ((c = getopt_long (argc, argv, "dhv", longopts, &longindex)) != -1)
-	{
-	  switch (c)
-	    {
-	    case 'd':
-	      debug = true;
-	      break;
+        {
+          switch (c)
+            {
+            case 'd':
+              debug = true;
+              break;
 
-	    case 'h':
-	      puts (USAGE_INFO);
-	      return 0;
+            case 'h':
+              puts (USAGE_INFO);
+              return 0;
 
-	    case 'v':
-	      puts (VERSION_INFO);
-	      return 0;
+            case 'v':
+              puts (VERSION_INFO);
+              return 0;
 
-	    case '?':
-	      return 1;
-	    }
-	}
+            case '?':
+              return 1;
+            }
+        }
     }
 
   struct tib_expr translated;
@@ -94,8 +94,8 @@ main (int argc, char *argv[])
   if (tib_errno)
     {
       fprintf (stderr, "tibdecode: Error %d occurred while processing. "
-	       "Parsed %lu characters.\n",
-	       tib_errno, parsed);
+               "Parsed %lu characters.\n",
+               tib_errno, parsed);
       return 1;
     }
 
@@ -104,7 +104,7 @@ main (int argc, char *argv[])
   if (NULL == s)
     {
       fprintf (stderr, "tibdecode: Error %d occurred while processing\n",
-	       tib_errno);
+               tib_errno);
       return 1;
     }
 
@@ -112,9 +112,9 @@ main (int argc, char *argv[])
   for (size_t i = 0; i < len; ++i)
     {
       if (debug && !isascii (s[i]))
-	printf ("`%d`", s[i]);
+        printf ("`%d`", s[i]);
       else
-	putchar (s[i]);
+        putchar (s[i]);
     }
 
   free (s);
