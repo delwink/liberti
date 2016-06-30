@@ -15,25 +15,25 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef DELWINK_TIB_H
-#define DELWINK_TIB_H
+#ifndef DELWINK_TIB_ERR_H
+#define DELWINK_TIB_ERR_H
 
 enum tib_err
-{
-  TIB_EALLOC   = -1,
-  TIB_EINDEX   = -2,
-  TIB_ESYNTAX  = -3,
-  TIB_ETYPE    = -4,
-  TIB_EDIM     = -5,
-  TIB_ENULLPTR = -6,
-  TIB_EDOMAIN  = -7,
-  TIB_EBADCHAR = -8,
-  TIB_EWRITE   = -9,
-  TIB_EBADFILE = -10,
-  TIB_EBADFUNC = -11,
-  TIB_EARGNUM  = -12,
-  TIB_DBYZERO  = -13
-};
+  {
+    TIB_EALLOC   = -1,
+    TIB_EINDEX   = -2,
+    TIB_ESYNTAX  = -3,
+    TIB_ETYPE    = -4,
+    TIB_EDIM     = -5,
+    TIB_ENULLPTR = -6,
+    TIB_EDOMAIN  = -7,
+    TIB_EBADCHAR = -8,
+    TIB_EWRITE   = -9,
+    TIB_EBADFILE = -10,
+    TIB_EBADFUNC = -11,
+    TIB_EARGNUM  = -12,
+    TIB_DBYZERO  = -13
+  };
 
 extern int tib_errno;
 

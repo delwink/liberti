@@ -23,15 +23,15 @@
 
 bool debug_mode = false;
 
-#define log(FMT,FILE,PRE)                        \
-  {                                                \
-    fputs (PRE, FILE);                                \
-    va_list ap;                                        \
-    va_start (ap, FMT);                                \
-    int n = vfprintf (FILE, FMT, ap);                \
+#define log(FMT,FILE,PRE)                       \
+  {                                             \
+    fputs (PRE, FILE);                          \
+    va_list ap;                                 \
+    va_start (ap, FMT);                         \
+    int n = vfprintf (FILE, FMT, ap);           \
     va_end (ap);                                \
-    fputc ('\n', FILE);                                \
-    return n;                                        \
+    fputc ('\n', FILE);                         \
+    return n;                                   \
   }
 
 int

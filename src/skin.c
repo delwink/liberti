@@ -26,11 +26,11 @@
 #include "tibchar.h"
 #include "tiberr.h"
 
-#define DEFAULT_SKIN                                \
+#define DEFAULT_SKIN                                  \
   "screens=({"                                        \
-  "mode=\"default\";"                                \
-  "x=0;"                                        \
-  "y=0;"                                        \
+  "mode=\"default\";"                                 \
+  "x=0;"                                              \
+  "y=0;"                                              \
   "});"
 
 #define DEFAULT_SCREEN_WIDTH (96)
@@ -275,7 +275,7 @@ get_all_actions (const config_setting_t *mode,
 
   tib_errno = init_action_keywords ();
 
-#define GET_ACTION_SET(A,S) tib_errno = get_action_set (mode, S, &A);        \
+#define GET_ACTION_SET(A,S) tib_errno = get_action_set (mode, S, &A);   \
   if (tib_errno) goto fail;
 
   GET_ACTION_SET (actions[STATE_NORMAL], "normal");
@@ -556,28 +556,28 @@ open_skin (const char *path, struct state *state, struct point2d size)
           size_t j;
           struct button_action_set actions[NUM_ACTION_STATES];
 #define ADD_ACTION(A,I) setting = config_setting_get_member (modes, (A)); \
-          if (setting)                                                        \
-            {                                                                \
-              tib_errno = get_all_actions (setting, actions);                \
-              if (tib_errno)                                                \
-                goto fail;                                                \
-            }                                                                \
-          else                                                                \
-            {                                                                \
-              for (j = 0; j < NUM_ACTION_STATES; ++j)                        \
+          if (setting)                                                  \
+            {                                                           \
+              tib_errno = get_all_actions (setting, actions);           \
+              if (tib_errno)                                            \
+                goto fail;                                              \
+            }                                                           \
+          else                                                          \
+            {                                                           \
+              for (j = 0; j < NUM_ACTION_STATES; ++j)                   \
                 actions[j] = default_actions[j];                        \
-            }                                                                \
-          for (j = 0; j < NUM_ACTION_STATES; ++j)                        \
+            }                                                           \
+          for (j = 0; j < NUM_ACTION_STATES; ++j)                       \
             next->button->actions[(I)][j] = actions[j];
 
           ADD_ACTION ("default", DEFAULT_SCREEN_MODE);
 
-#define ADD_DIM(D,V) setting = config_setting_get_member (button, (D));        \
-          if (!setting || !config_setting_is_number (setting))                \
-            {                                                                \
-              tib_errno = TIB_EBADFILE;                                        \
+#define ADD_DIM(D,V) setting = config_setting_get_member (button, (D)); \
+          if (!setting || !config_setting_is_number (setting))          \
+            {                                                           \
+              tib_errno = TIB_EBADFILE;                                 \
               goto fail;                                                \
-            }                                                                \
+            }                                                           \
           (V) = config_setting_get_int (setting);
 
           ADD_DIM ("x", next->button->pos.x);
