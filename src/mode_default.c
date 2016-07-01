@@ -17,8 +17,8 @@
 
 #include "mode_default.h"
 
-int
-default_draw (struct screen *screen)
+SDL_Surface *
+default_draw (const struct screen *screen)
 {
   return 0;
 }

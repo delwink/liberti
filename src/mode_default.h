@@ -20,8 +20,8 @@
 
 #include "screen.h"
 
-int
-default_draw (struct screen *screen);
+SDL_Surface *
+default_draw (const struct screen *screen);
 
 int
 default_input (struct screen *screen, int c);

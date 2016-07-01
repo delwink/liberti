@@ -80,7 +80,6 @@ add_screen (Skin *self, struct state *state, struct point2d pos,
 
   node->next = NULL;
   node->screen.state = state;
-  node->screen.surface = NULL;
   node->screen.pos = pos;
   node->screen.size.x = DEFAULT_SCREEN_WIDTH * scale;
   node->screen.size.y = DEFAULT_SCREEN_HEIGHT * scale;
@@ -601,7 +600,6 @@ open_skin (const char *path, struct state *state, struct point2d size)
       struct skin_screen_list *s = new->screens;
       while (s)
         {
-          screen_destroy (&s->screen);
           s = s->next;
           free (new->screens);
           new->screens = s;
@@ -636,7 +634,6 @@ free_skin (Skin *self)
   struct skin_screen_list *s = self->screens;
   while (s)
     {
-      screen_destroy (&s->screen);
       s = s->next;
       free (self->screens);
       self->screens = s;

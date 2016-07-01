@@ -22,7 +22,7 @@
 
 struct _screen_mode
 {
-  int (*draw) (struct screen *);
+  SDL_Surface * (*draw) (const struct screen *);
   int (*input) (struct screen *, int);
 };
 
@@ -34,21 +34,8 @@ const struct _screen_mode SCREEN_MODES[NUM_SCREEN_MODES] =
     }
   };
 
-void
-screen_init (struct screen *screen, struct state *state)
+SDL_Surface *
+screen_draw (const struct screen *screen)
 {
-  static const struct point2d ZERO = { .x = 0, .y = 0 };
-
-  screen->state = state;
-  screen->surface = NULL;
-  screen->pos = ZERO;
-  screen->size = ZERO;
-  screen->mode = DEFAULT_SCREEN_MODE;
-}
-
-void
-screen_destroy (struct screen *screen)
-{
-  if (screen->surface)
-    SDL_FreeSurface (screen->surface);
+  return SCREEN_MODES[screen->mode].draw (screen);
 }

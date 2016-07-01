@@ -32,7 +32,6 @@ enum screen_mode
 struct screen
 {
   struct state *state;
-  SDL_Surface *surface;
 
   struct point2d pos;
   struct point2d size;
@@ -40,10 +39,7 @@ struct screen
   enum screen_mode mode;
 };
 
-void
-screen_init (struct screen *screen, struct state *state);
-
-void
-screen_destroy (struct screen *screen);
+SDL_Surface *
+screen_draw (const struct screen *screen);
 
 #endif
