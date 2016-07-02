@@ -70,6 +70,7 @@ load_state (struct state *dest, const char *path)
   if (!dest)
     return TIB_ENULLPTR;
 
+  dest->action_state = STATE_NORMAL;
   dest->entry_cursor = 0;
   dest->history_len = 0;
 

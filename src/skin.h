@@ -36,14 +36,6 @@ enum button_action_type
     TOGGLE_INSERT
   };
 
-enum button_action_state
-  {
-    STATE_NORMAL,
-    STATE_2ND,
-    STATE_ALPHA,
-    NUM_ACTION_STATES
-  };
-
 enum cursor_direction
   {
     UP    = -16,
@@ -87,13 +79,13 @@ struct skin_screen_list
 typedef struct
 {
   SDL_Surface *background;
-
   struct screen *active_screen;
   struct skin_screen_list *screens;
   struct skin_button_list *buttons;
+  struct state *state;
 
   struct point2d size;
-  enum button_action_state action_state;
+
   bool insert_mode;
 } Skin;
 

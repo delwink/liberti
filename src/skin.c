@@ -302,6 +302,7 @@ open_skin (const char *path, struct state *state, struct point2d size)
     }
 
   memset (new, 0, sizeof (Skin));
+  new->state = state;
 
   config_t conf;
   config_init (&conf);
@@ -628,24 +629,28 @@ on_button (const struct skin_button *button, struct point2d pos)
 }
 
 static void
-change_state (Skin *self, enum button_action_state state)
+change_state (Skin *self, enum button_action_state action_state)
 {
-  if (self->action_state != state)
-    self->action_state = state;
+  struct state *state = self->state;
+
+  if (state->action_state != action_state)
+    state->action_state = action_state;
   else
-    self->action_state = STATE_NORMAL;
+    state->action_state = STATE_NORMAL;
 }
 
 static int
 do_button_action (Skin *self, struct skin_button *button)
 {
   struct screen *screen = self->active_screen;
-  struct state *state = screen->state;
+  struct state *state = self->state;
   enum screen_mode mode = screen->mode;
-  struct button_action_set action = button->actions[mode][self->action_state];
-  union button_action which = action.which;
 
-  switch (action.type)
+  struct button_action_set *action;
+  action = &button->actions[mode][state->action_state];
+  union button_action which = action->which;
+
+  switch (action->type)
     {
     case CHANGE_MODES:
       screen->mode = which.mode_open;
@@ -694,7 +699,7 @@ Skin_click (Skin *self, struct point2d pos)
           if (screen != self->active_screen)
             {
               self->active_screen = screen;
-              self->action_state = STATE_NORMAL;
+              self->state->action_state = STATE_NORMAL;
             }
 
           return 0;
