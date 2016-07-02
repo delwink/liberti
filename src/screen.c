@@ -22,7 +22,7 @@
 
 struct _screen_mode
 {
-  SDL_Surface * (*draw) (const struct screen *);
+  SDL_Surface * (*draw) (const struct screen *, const struct fontset *);
   int (*input) (struct screen *, int);
 };
 
@@ -35,7 +35,7 @@ const struct _screen_mode SCREEN_MODES[NUM_SCREEN_MODES] =
   };
 
 SDL_Surface *
-screen_draw (const struct screen *screen)
+screen_draw (const struct screen *screen, const struct fontset *fonts)
 {
-  return SCREEN_MODES[screen->mode].draw (screen);
+  return SCREEN_MODES[screen->mode].draw (screen, fonts);
 }

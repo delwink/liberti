@@ -37,7 +37,6 @@
 #define DEFAULT_SCREEN_HEIGHT (64)
 
 static PrefixTree *action_keywords = NULL;
-static const SDL_Color BLACK = {0, 0, 0, 255};
 
 static int
 mode_from_string (const char *s)
@@ -286,20 +285,6 @@ get_all_actions (const config_setting_t *mode,
   return tib_errno;
 }
 
-static void
-free_render_cache (struct skin_render_cache *c)
-{
-  while (c)
-    {
-      struct skin_render_cache *temp = c;
-      if (temp->surface)
-        SDL_FreeSurface (temp->surface);
-
-      c = c->next;
-      free (temp);
-    }
-}
-
 Skin *
 open_skin (const char *path, struct state *state, struct point2d size)
 {
@@ -450,39 +435,6 @@ open_skin (const char *path, struct state *state, struct point2d size)
           if (tib_errno)
             goto fail;
         }
-
-      if (--i)
-        {
-          new->renders = malloc (sizeof (struct skin_render_cache));
-          if (!new->renders)
-            {
-              tib_errno = TIB_EALLOC;
-              goto fail;
-            }
-
-          new->renders->surface = NULL;
-          new->renders->next = NULL;
-
-          --i;
-        }
-
-      struct skin_render_cache *full = new->renders;
-      for (; i > 0; --i, full = full->next)
-        {
-          struct skin_render_cache *newfull;
-
-          newfull = malloc (sizeof (struct skin_render_cache));
-          if (!newfull)
-            {
-              tib_errno = TIB_EALLOC;
-              goto fail;
-            }
-
-          newfull->surface = NULL;
-          newfull->next = NULL;
-
-          full->next = newfull;
-        }
     }
 
   setting = config_lookup (&conf, "buttons");
@@ -606,8 +558,6 @@ open_skin (const char *path, struct state *state, struct point2d size)
         }
     }
 
-  free_render_cache (new->renders);
-
   if (new->buttons)
     {
       struct skin_button_list *s = new->buttons;
@@ -647,8 +597,6 @@ free_skin (Skin *self)
       free (self->buttons);
       self->buttons = b;
     }
-
-  free_render_cache (self->renders);
 
   free (self);
 }
@@ -780,170 +728,6 @@ get_rect (struct point2d pos, struct point2d size)
   return r;
 }
 
-static SDL_Surface *
-render_line (const struct tib_expr *line, TTF_Font *font)
-{
-  int rc, w, h, font_height;
-  SDL_Surface **parts = malloc (line->len * sizeof (SDL_Surface *));
-  if (!parts)
-    {
-      error ("Failed to initialize expression portions array");
-      return NULL;
-    }
-
-  font_height = TTF_FontHeight (font);
-  w = 0;
-  h = font_height;
-
-  unsigned int i;
-  tib_expr_foreach (line, i)
-    {
-      int c = line->data[i];
-      const char *s = tib_special_char_text (c);
-      SDL_Surface *part;
-
-      if (s)
-        {
-          part = TTF_RenderUTF8_Solid (font, s, BLACK);
-        }
-      else
-        {
-          char single[2];
-          single[0] = c;
-          single[1] = '\0';
-
-          part = TTF_RenderUTF8_Solid (font, single, BLACK);
-        }
-
-      if (!part)
-        {
-          error ("Failed to render expression portion: %s", TTF_GetError ());
-          parts[i] = NULL;
-          continue;
-        }
-
-      w += part->w;
-      if (w > 96)
-        {
-          h += font_height;
-          w -= part->w;
-        }
-
-      parts[i] = part;
-    }
-
-  SDL_Surface *final = SDL_CreateRGBSurface (0, w, h, 32, 0, 0, 0, 0);
-  if (!final)
-    {
-      error ("Failed to initialize expression render surface: %s",
-             SDL_GetError ());
-      goto fail;
-    }
-
-  rc = SDL_FillRect (final, NULL, SDL_MapRGBA (final->format, 0, 0, 0, 0));
-  if (rc < 0)
-    error ("Failed to set background of expression render surface: %s",
-           SDL_GetError ());
-
-  w = 0;
-  h = 0;
-  for (i = 0; i < line->len; ++i)
-    {
-      if (w + parts[i]->w > 96)
-        {
-          w = 0;
-          h += font_height;
-        }
-
-      SDL_Rect pos;
-      pos.x = w;
-      pos.y = h;
-
-      rc = SDL_BlitSurface (parts[i], NULL, final, &pos);
-      if (rc < 0)
-        {
-          error ("Failed to blit expression portion: %s", SDL_GetError ());
-          continue;
-        }
-
-      w += parts[i]->w;
-    }
-
- fail:
-  for (i = 0; i < line->len; ++i)
-    if (parts[i])
-      SDL_FreeSurface (parts[i]);
-
-  free (parts);
-
-  return final;
-}
-
-static void
-draw_line (const struct tib_expr *line, SDL_Surface *final,
-           const struct fontset *fonts, unsigned int *height, bool right_align)
-{
-  SDL_Surface *line_render = render_line (line, fonts->reg);
-  if (line_render)
-    {
-      SDL_Rect pos;
-      if (right_align)
-        pos.x = 96 - line_render->w;
-      else
-        pos.x = 0;
-
-      pos.y = 64 - *height;
-
-      int rc = SDL_BlitSurface (line_render, NULL, final, &pos);
-      if (rc < 0)
-        error ("Failed to draw line on screen frame: %s", SDL_GetError ());
-
-      *height += line_render->h;
-      SDL_FreeSurface (line_render);
-    }
-}
-
-static SDL_Surface *
-render_screen (const struct screen *screen, const struct fontset *fonts)
-{
-  int rc;
-  SDL_Surface *final;
-
-  final = SDL_CreateRGBSurface (0, 96, 64, 32, 0, 0, 0, 0);
-  if (!final)
-    {
-      error ("Failed to initialize screen frame: %s", SDL_GetError ());
-      return NULL;
-    }
-
-  rc = SDL_FillRect (final, NULL, SDL_MapRGB (final->format, 255, 255, 255));
-  if (rc < 0)
-    error ("Failed to fill screen frame with white background: %s",
-           SDL_GetError ());
-
-  struct state *state = screen->state;
-  unsigned int height = 0;
-  switch (screen->mode)
-    {
-    case DEFAULT_SCREEN_MODE:
-      draw_line (&state->entry, final, fonts, &height, false);
-
-      for (int i = state->history_len - 1; i >= 0 && height < 64; --i)
-        {
-          draw_line (&state->answer_strings[i], final, fonts, &height, true);
-
-          if (height < 64)
-            draw_line (&state->history[i], final, fonts, &height, false);
-        }
-      break;
-
-    default:
-      break;
-    }
-
-  return final;
-}
-
 SDL_Surface *
 Skin_get_frame (Skin *self, const struct fontset *fonts)
 {
@@ -964,29 +748,17 @@ Skin_get_frame (Skin *self, const struct fontset *fonts)
         error ("Failed to blit background: %s", SDL_GetError ());
     }
 
-  struct skin_render_cache *full = self->renders;
   struct skin_screen_list *elem = self->screens;
   unsigned int i = 0;
-  for (; elem != NULL; full = full->next, elem = elem->next, ++i)
+  for (; elem != NULL; elem = elem->next, ++i)
     {
       struct screen *screen = &elem->screen;
-      SDL_Rect r = get_rect (screen->pos, screen->size);
-
-      if (screen == self->active_screen)
+      SDL_Surface *render = screen_draw (screen, fonts);
+      if (render)
         {
-          SDL_Surface *render = render_screen (screen, fonts);
-          if (render)
-            {
-              if (full->surface)
-                SDL_FreeSurface (full->surface);
-
-              full->surface = render;
-            }
-        }
-
-      if (full->surface)
-        {
-          rc = SDL_BlitScaled (full->surface, NULL, final, &r);
+          SDL_Rect r = get_rect (screen->pos, screen->size);
+          rc = SDL_BlitScaled (render, NULL, final, &r);
+          SDL_FreeSurface (render);
           if (rc < 0)
             error ("Failed to blit screen %u: %s", i, SDL_GetError ());
         }

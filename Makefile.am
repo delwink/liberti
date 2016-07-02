@@ -20,7 +20,8 @@ libtib_a_SOURCES = src/tibchar.c \
 liberti_CFLAGS = $(COMMON_CFLAGS) $(sdl2_CFLAGS)
 liberti_LDADD = libtib.a $(gsl_LIBS) $(libconfig_LIBS) $(pfxtree_LIBS) \
                 $(sdl2_LIBS) -lSDL2_image -lSDL2_ttf
-liberti_SOURCES = src/liberti.c \
+liberti_SOURCES = src/colors.c \
+	src/liberti.c \
 	src/log.c \
 	src/mode_default.c \
 	src/screen.c \

@@ -15,16 +15,6 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef DELWINK_LIBERTI_MODE_DEFAULT_H
-#define DELWINK_LIBERTI_MODE_DEFAULT_H
+#include "colors.h"
 
-#include "screen.h"
-#include "ttf.h"
-
-SDL_Surface *
-default_draw (const struct screen *screen, const struct fontset *fonts);
-
-int
-default_input (struct screen *screen, int c);
-
-#endif
+const SDL_Color BLACK = { 0, 0, 0, 255 };

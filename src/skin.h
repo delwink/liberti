@@ -78,12 +78,6 @@ struct skin_button_list
   struct skin_button_list *next;
 };
 
-struct skin_render_cache
-{
-  SDL_Surface *surface;
-  struct skin_render_cache *next;
-};
-
 struct skin_screen_list
 {
   struct screen screen;
@@ -93,7 +87,6 @@ struct skin_screen_list
 typedef struct
 {
   SDL_Surface *background;
-  struct skin_render_cache *renders;
 
   struct screen *active_screen;
   struct skin_screen_list *screens;
