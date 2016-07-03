@@ -73,6 +73,7 @@ load_state (struct state *dest, const char *path)
   dest->action_state = STATE_NORMAL;
   dest->entry_cursor = 0;
   dest->history_len = 0;
+  dest->insert_mode = false;
 
   rc = tib_expr_init (&dest->entry);
   if (rc)
@@ -265,7 +266,7 @@ entry_move_cursor (struct state *state, int distance)
     }
 }
 
-int
+static int
 entry_insert (struct state *state, int c)
 {
   int rc = tib_expr_insert (&state->entry, state->entry_cursor, c);
@@ -278,7 +279,7 @@ entry_insert (struct state *state, int c)
 int
 entry_write (struct state *state, int c)
 {
-  if (state->entry_cursor == state->entry.len)
+  if (state->insert_mode || state->entry_cursor == state->entry.len)
     return entry_insert (state, c);
 
   state->entry.data[state->entry_cursor++] = c;

@@ -42,6 +42,8 @@ struct state
   enum button_action_state action_state;
   unsigned int entry_cursor;
   unsigned int history_len;
+
+  bool insert_mode;
 };
 
 int
@@ -55,9 +57,6 @@ state_destroy (struct state *state);
 
 void
 entry_move_cursor (struct state *state, int distance);
-
-int
-entry_insert (struct state *state, int c);
 
 int
 entry_write (struct state *state, int c);

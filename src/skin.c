@@ -657,10 +657,7 @@ do_button_action (Skin *self, struct skin_button *button)
       break;
 
     case CHAR_INSERT:
-      if (self->insert_mode)
-        return entry_insert (state, which.char_insert);
-      else
-        return entry_write (state, which.char_insert);
+      return entry_write (state, which.char_insert);
 
     case CURSOR_MOVE:
       entry_move_cursor (state, which.cursor_move);
@@ -675,7 +672,7 @@ do_button_action (Skin *self, struct skin_button *button)
       break;
 
     case TOGGLE_INSERT:
-      self->insert_mode = !self->insert_mode;
+      state->insert_mode = !state->insert_mode;
       break;
     }
 

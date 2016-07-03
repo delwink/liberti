@@ -85,8 +85,6 @@ typedef struct
   struct state *state;
 
   struct point2d size;
-
-  bool insert_mode;
 } Skin;
 
 Skin *
