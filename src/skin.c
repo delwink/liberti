@@ -628,17 +628,6 @@ on_button (const struct skin_button *button, struct point2d pos)
   return in_bounds (button->pos, button->size, pos);
 }
 
-static void
-change_state (Skin *self, enum button_action_state action_state)
-{
-  struct state *state = self->state;
-
-  if (state->action_state != action_state)
-    state->action_state = action_state;
-  else
-    state->action_state = STATE_NORMAL;
-}
-
 static int
 do_button_action (Skin *self, struct skin_button *button)
 {
@@ -664,11 +653,11 @@ do_button_action (Skin *self, struct skin_button *button)
       break;
 
     case TOGGLE_2ND:
-      change_state (self, STATE_2ND);
+      change_action_state (state, STATE_2ND);
       break;
 
     case TOGGLE_ALPHA:
-      change_state (self, STATE_ALPHA);
+      change_action_state (state, STATE_ALPHA);
       break;
 
     case TOGGLE_INSERT:
