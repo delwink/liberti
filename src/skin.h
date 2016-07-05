@@ -26,47 +26,9 @@
 #include "screen.h"
 #include "ttf.h"
 
-enum button_action_type
-  {
-    CHANGE_MODES,
-    CHAR_INSERT,
-    CURSOR_MOVE,
-    TOGGLE_2ND,
-    TOGGLE_ALPHA,
-    TOGGLE_INSERT
-  };
-
-enum cursor_direction
-  {
-    UP    = -16,
-    DOWN  =  16,
-    LEFT  =  -1,
-    RIGHT =   1
-  };
-
-union button_action
-{
-  int char_insert;
-  enum cursor_direction cursor_move;
-  enum screen_mode mode_open;
-};
-
-struct button_action_set
-{
-  enum button_action_type type;
-  union button_action which;
-};
-
-struct skin_button
-{
-  struct button_action_set actions[NUM_SCREEN_MODES][NUM_ACTION_STATES];
-  struct point2d pos;
-  struct point2d size;
-};
-
 struct skin_button_list
 {
-  struct skin_button *button;
+  struct button *button;
   struct skin_button_list *next;
 };
 

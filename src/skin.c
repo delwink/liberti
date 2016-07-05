@@ -21,6 +21,7 @@
 #include <SDL_image.h>
 #include <string.h>
 
+#include "button.h"
 #include "log.h"
 #include "skin.h"
 #include "tibchar.h"
@@ -477,7 +478,7 @@ open_skin (const char *path, struct state *state, struct point2d size)
               next = next->next;
             }
 
-          next->button = malloc (sizeof (struct skin_button));
+          next->button = malloc (sizeof (struct button));
           if (!next->button)
             {
               tib_errno = TIB_EALLOC;
@@ -623,13 +624,13 @@ on_screen (const struct screen *screen, struct point2d pos)
 }
 
 static bool
-on_button (const struct skin_button *button, struct point2d pos)
+on_button (const struct button *button, struct point2d pos)
 {
   return in_bounds (button->pos, button->size, pos);
 }
 
 static int
-do_button_action (Skin *self, struct skin_button *button)
+do_button_action (Skin *self, struct button *button)
 {
   struct screen *screen = self->active_screen;
   struct state *state = self->state;
@@ -696,7 +697,7 @@ Skin_click (Skin *self, struct point2d pos)
        elem != NULL;
        elem = elem->next)
     {
-      struct skin_button *button = elem->button;
+      struct button *button = elem->button;
 
       if (on_button (button, pos))
         return do_button_action (self, button);

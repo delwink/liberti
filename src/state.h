@@ -23,7 +23,7 @@
 
 #define MAX_HISTORY 35
 
-enum button_action_state
+enum action_state
   {
     STATE_NORMAL,
     STATE_2ND,
@@ -39,7 +39,7 @@ struct state
   struct tib_expr history[MAX_HISTORY];
   struct tib_expr answer_strings[MAX_HISTORY];
 
-  enum button_action_state action_state;
+  enum action_state action_state;
   unsigned int entry_cursor;
   unsigned int history_len;
 
@@ -62,8 +62,7 @@ int
 entry_write (struct state *state, int c);
 
 void
-change_action_state (struct state *state,
-                     enum button_action_state action_state);
+change_action_state (struct state *state, enum action_state action_state);
 
 int
 state_calc_entry (struct state *state);

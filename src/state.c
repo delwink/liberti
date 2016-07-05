@@ -287,8 +287,7 @@ entry_write (struct state *state, int c)
 }
 
 void
-change_action_state (struct state *state,
-                     enum button_action_state action_state)
+change_action_state (struct state *state, enum action_state action_state)
 {
   if (state->action_state != action_state)
     state->action_state = action_state;
