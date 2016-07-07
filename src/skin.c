@@ -613,8 +613,8 @@ in_bounds (struct point2d start, struct point2d size, struct point2d pos)
 static bool
 on_skin (const Skin *self, struct point2d pos)
 {
-  int w = self->background->w, h = self->background->h;
-  return in_bounds ((struct point2d) {0, 0}, (struct point2d) {w, h}, pos);
+  struct point2d size = { .x = self->background->w, .y = self->background->h };
+  return in_bounds ((struct point2d) { 0, 0 }, size, pos);
 }
 
 static bool
