@@ -51,7 +51,6 @@ int
 main (int argc, char *argv[])
 {
   int rc = 0;
-  SDL_DisplayMode display_mode;
   struct fontset *fonts = NULL;
 
   struct option longopts[] = 
@@ -111,6 +110,7 @@ main (int argc, char *argv[])
       goto end;
     }
 
+  SDL_DisplayMode display_mode;
   rc = SDL_GetCurrentDisplayMode (0, &display_mode);
   if (rc)
     {
@@ -119,6 +119,25 @@ main (int argc, char *argv[])
     }
 
   debug ("Screen resolution: %dx%d", display_mode.w, display_mode.h);
+
+  for (;;)
+    {
+      SDL_Event event;
+      rc = SDL_WaitEvent (NULL);
+
+      while (SDL_PollEvent (&event))
+        {
+          switch (event.type)
+            {
+            case SDL_QUIT:
+              info ("Got SDL quit event");
+              goto end;
+
+            default:
+              break;
+            }
+        }
+    }
 
  end:
   SDL_VideoQuit ();
