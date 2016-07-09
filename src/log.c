@@ -37,25 +37,25 @@ bool debug_mode = false;
 int
 info (const char *fmt, ...)
 {
-  log (fmt, stdout, "[INFO]: ");
+  log (fmt, stdout, "[info]: ");
 }
 
 int
 warn (const char *fmt, ...)
 {
-  log (fmt, stdout, "[WARN]: ");
+  log (fmt, stdout, "[warn]: ");
 }
 
 int
 error (const char *fmt, ...)
 {
-  log (fmt, stderr, "[ERROR]: ");
+  log (fmt, stderr, "[error]: ");
 }
 
 int
 critical (const char *fmt, ...)
 {
-  log (fmt, stderr, "[CRITICAL]: ");
+  log (fmt, stderr, "[critical]: ");
 }
 
 int
@@ -64,5 +64,5 @@ debug (const char *fmt, ...)
   if (!debug_mode)
     return 0;
 
-  log (fmt, stdout, "[DEBUG]: ");
+  log (fmt, stdout, "[debug]: ");
 }
