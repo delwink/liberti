@@ -1,6 +1,6 @@
 /*
  *  LiberTI - TI-like calculator designed for LibreCalc
- *  Copyright (C) 2015 Delwink, LLC
+ *  Copyright (C) 2015-2016 Delwink, LLC
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as published by
