@@ -17,12 +17,12 @@
 
 #include <SDL.h>
 #include <SDL_image.h>
+#include <stdbool.h>
 #include <unistd.h>
 #include <getopt.h>
 
 #include "log.h"
 #include "skin.h"
-#include "state.h"
 #include "ttf.h"
 
 #ifdef HAVE_CONFIG_H
@@ -50,14 +50,20 @@ Written by David McMackins II."
 int
 main (int argc, char *argv[])
 {
+  bool state_init = false;
   int rc = 0;
+  SDL_Window *window = NULL;
+  Skin *skin = NULL;
   struct fontset *fonts = NULL;
+
+  const char *skin_path = NULL;
 
   struct option longopts[] = 
     {
-      {"debug",   no_argument, 0, 'd'},
-      {"help",    no_argument, 0, 'h'},
-      {"version", no_argument, 0, 'v'},
+      {"debug",   no_argument,       0, 'd'},
+      {"help",    no_argument,       0, 'h'},
+      {"skin",    required_argument, 0, 's'},
+      {"version", no_argument,       0, 'v'},
       {0, 0, 0, 0}
     };
 
@@ -65,7 +71,8 @@ main (int argc, char *argv[])
     {
       int c;
       int longindex;
-      while ((c = getopt_long (argc, argv, "dhv", longopts, &longindex)) != -1)
+      while ((c = getopt_long (argc, argv, "dhs:v", longopts, &longindex))
+             != -1)
         {
           switch (c)
             {
@@ -76,6 +83,10 @@ main (int argc, char *argv[])
             case 'h':
               puts (USAGE_INFO);
               return 0;
+
+            case 's':
+              skin_path = optarg;
+              break;
 
             case 'v':
               puts (VERSION_INFO);
@@ -120,10 +131,48 @@ main (int argc, char *argv[])
 
   debug ("Screen resolution: %dx%d", display_mode.w, display_mode.h);
 
+  struct state state;
+  rc = load_state (&state, NULL);
+  if (rc)
+    {
+      critical ("Could not initialize calculator state. Error %d", rc);
+      goto end;
+    }
+
+  state_init = true;
+
+  skin = open_skin (skin_path, &state, (struct point2d) { 96, 64 });
+  if (!skin)
+    {
+      critical ("Could not load skin");
+      goto end;
+    }
+
+  window = SDL_CreateWindow ("LiberTI " VERSION_STRING,
+                             SDL_WINDOWPOS_UNDEFINED,
+                             SDL_WINDOWPOS_UNDEFINED,
+                             skin->size.x,
+                             skin->size.y,
+                             SDL_WINDOW_OPENGL);
+  if (!window)
+    {
+      critical ("Could not create window: %s", SDL_GetError ());
+      goto end;
+    }
+
   for (;;)
     {
+      SDL_Surface *frame = Skin_get_frame (skin, fonts);
+      if (frame)
+        {
+          SDL_Surface *screen = SDL_GetWindowSurface (window);
+          SDL_BlitSurface (frame, NULL, screen, NULL);
+          SDL_FreeSurface (frame);
+          SDL_UpdateWindowSurface (window);
+        }
+
       SDL_Event event;
-      rc = SDL_WaitEvent (NULL);
+      SDL_WaitEvent (NULL);
 
       while (SDL_PollEvent (&event))
         {
@@ -143,8 +192,17 @@ main (int argc, char *argv[])
   SDL_VideoQuit ();
   IMG_Quit ();
 
+  if (skin)
+    free_skin (skin);
+
+  if (state_init)
+    state_destroy (&state);
+
   if (fonts)
     free_font_set (fonts);
+
+  if (window)
+    SDL_DestroyWindow (window);
 
   return rc;
 }
