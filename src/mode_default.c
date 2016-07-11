@@ -80,6 +80,8 @@ render_line (const struct tib_expr *line, TTF_Font *font)
       goto fail;
     }
 
+  SDL_LockSurface (final);
+
   rc = SDL_FillRect (final, NULL, SDL_MapRGBA (final->format, 0, 0, 0, 0));
   if (rc < 0)
     error ("Failed to set background of expression render surface: %s",
@@ -108,6 +110,8 @@ render_line (const struct tib_expr *line, TTF_Font *font)
 
       w += parts[i]->w;
     }
+
+  SDL_UnlockSurface (final);
 
  fail:
   for (i = 0; i < line->len; ++i)
