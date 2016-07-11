@@ -675,6 +675,16 @@ Skin_click (Skin *self, struct point2d pos)
   if (!on_skin (self, pos))
     return TIB_EDIM;
 
+  for (struct skin_button_list *elem = self->buttons;
+       elem != NULL;
+       elem = elem->next)
+    {
+      struct button *button = elem->button;
+
+      if (on_button (button, pos))
+        return do_button_action (self, button);
+    }
+
   for (struct skin_screen_list *elem = self->screens;
        elem != NULL;
        elem = elem->next)
@@ -688,19 +698,7 @@ Skin_click (Skin *self, struct point2d pos)
               self->active_screen = screen;
               self->state->action_state = STATE_NORMAL;
             }
-
-          return 0;
         }
-    }
-
-  for (struct skin_button_list *elem = self->buttons;
-       elem != NULL;
-       elem = elem->next)
-    {
-      struct button *button = elem->button;
-
-      if (on_button (button, pos))
-        return do_button_action (self, button);
     }
 
   return 0;
