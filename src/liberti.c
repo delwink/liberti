@@ -178,6 +178,12 @@ main (int argc, char *argv[])
         {
           switch (event.type)
             {
+            case SDL_KEYDOWN:
+              rc = Skin_input (skin, &event.key);
+              if (rc)
+                error ("Error %d processing key entry", rc);
+              break;
+
             case SDL_QUIT:
               info ("Got SDL quit event");
               goto end;

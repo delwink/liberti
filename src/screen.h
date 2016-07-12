@@ -43,4 +43,7 @@ struct screen
 SDL_Surface *
 screen_draw (const struct screen *screen, const struct fontset *fonts);
 
+int
+screen_input (struct screen *screen, SDL_KeyboardEvent *event);
+
 #endif

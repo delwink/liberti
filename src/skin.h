@@ -58,6 +58,9 @@ free_skin (Skin *self);
 int
 Skin_click (Skin *self, struct point2d pos);
 
+int
+Skin_input (Skin *self, SDL_KeyboardEvent *event);
+
 SDL_Surface *
 Skin_get_frame (Skin *self, const struct fontset *fonts);
 

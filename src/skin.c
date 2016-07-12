@@ -704,6 +704,12 @@ Skin_click (Skin *self, struct point2d pos)
   return 0;
 }
 
+int
+Skin_input (Skin *self, SDL_KeyboardEvent *event)
+{
+  return screen_input (self->active_screen, event);
+}
+
 static SDL_Rect
 get_rect (struct point2d pos, struct point2d size)
 {

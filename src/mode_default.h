@@ -25,6 +25,6 @@ SDL_Surface *
 default_draw (const struct screen *screen, const struct fontset *fonts);
 
 int
-default_input (struct screen *screen, int c);
+default_input (struct screen *screen, SDL_KeyboardEvent *key);
 
 #endif
