@@ -27,7 +27,8 @@ liberti_SOURCES = src/colors.c \
 	src/screen.c \
 	src/skin.c \
 	src/state.c \
-	src/ttf.c
+	src/ttf.c \
+	src/util.c
 
 tibencode_CFLAGS = $(COMMON_CFLAGS)
 tibencode_LDADD = libtib.a $(gsl_LIBS) $(pfxtree_LIBS)

@@ -19,11 +19,12 @@
 #include "log.h"
 #include "mode_default.h"
 #include "tibchar.h"
+#include "util.h"
 
 static SDL_Surface *
 render_line (const struct tib_expr *line, TTF_Font *font)
 {
-  int rc, w, h, font_height;
+  int rc, total_w, w, h, font_height;
   SDL_Surface **parts = malloc (line->len * sizeof (SDL_Surface *));
   if (!parts)
     {
@@ -32,6 +33,7 @@ render_line (const struct tib_expr *line, TTF_Font *font)
     }
 
   font_height = TTF_FontHeight (font);
+  total_w = 0;
   w = 0;
   h = font_height;
 
@@ -66,13 +68,18 @@ render_line (const struct tib_expr *line, TTF_Font *font)
       if (w > 96)
         {
           h += font_height;
-          w -= part->w;
+          total_w = max (w - part->w, total_w);
+          w = part->w;
+        }
+      else
+        {
+          total_w = max (w, total_w);
         }
 
       parts[i] = part;
     }
 
-  SDL_Surface *final = SDL_CreateRGBSurface (0, w, h, 32, 0, 0, 0, 0);
+  SDL_Surface *final = SDL_CreateRGBSurface (0, total_w, h, 32, 0, 0, 0, 0);
   if (!final)
     {
       error ("Failed to initialize expression render surface: %s",
@@ -82,10 +89,12 @@ render_line (const struct tib_expr *line, TTF_Font *font)
 
   SDL_LockSurface (final);
 
-  rc = SDL_FillRect (final, NULL, SDL_MapRGBA (final->format, 0, 0, 0, 0));
+  rc = SDL_FillRect (final, NULL, SDL_MapRGB (final->format, 255, 255, 255));
   if (rc < 0)
     error ("Failed to set background of expression render surface: %s",
            SDL_GetError ());
+
+  SDL_UnlockSurface (final);
 
   w = 0;
   h = 0;
@@ -111,8 +120,6 @@ render_line (const struct tib_expr *line, TTF_Font *font)
       w += parts[i]->w;
     }
 
-  SDL_UnlockSurface (final);
-
  fail:
   for (i = 0; i < line->len; ++i)
     if (parts[i])
@@ -136,13 +143,13 @@ draw_line (const struct tib_expr *line, SDL_Surface *final,
       else
         pos.x = 0;
 
+      *height += line_render->h;
       pos.y = 64 - *height;
 
       int rc = SDL_BlitSurface (line_render, NULL, final, &pos);
       if (rc < 0)
         error ("Failed to draw line on screen frame: %s", SDL_GetError ());
 
-      *height += line_render->h;
       SDL_FreeSurface (line_render);
     }
 }
@@ -183,5 +190,22 @@ default_draw (const struct screen *screen, const struct fontset *fonts)
 int
 default_input (struct screen *screen, SDL_KeyboardEvent *key)
 {
+  Uint16 mod = key->keysym.mod;
+
+  if (mod & KMOD_CTRL)
+    {
+    }
+  else if (mod & KMOD_SHIFT)
+    {
+      const char *name = SDL_GetKeyName (key->keysym.sym);
+      unsigned int len = strlen (name);
+
+      if (1 == len)
+        return entry_write (screen->state, name[0]);
+    }
+  else
+    {
+    }
+
   return 0;
 }
