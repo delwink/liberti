@@ -57,13 +57,15 @@ main (int argc, char *argv[])
   struct fontset *fonts = NULL;
 
   const char *skin_path = NULL;
+  Uint32 window_flags = SDL_WINDOW_OPENGL;
 
   struct option longopts[] = 
     {
-      {"debug",   no_argument,       0, 'd'},
-      {"help",    no_argument,       0, 'h'},
-      {"skin",    required_argument, 0, 's'},
-      {"version", no_argument,       0, 'v'},
+      {"debug",      no_argument,       0, 'd'},
+      {"fullscreen", no_argument,       0, 'f'},
+      {"help",       no_argument,       0, 'h'},
+      {"skin",       required_argument, 0, 's'},
+      {"version",    no_argument,       0, 'v'},
       {0, 0, 0, 0}
     };
 
@@ -71,13 +73,17 @@ main (int argc, char *argv[])
     {
       int c;
       int longindex;
-      while ((c = getopt_long (argc, argv, "dhs:v", longopts, &longindex))
+      while ((c = getopt_long (argc, argv, "dfhs:v", longopts, &longindex))
              != -1)
         {
           switch (c)
             {
             case 'd':
               debug_mode = true;
+              break;
+
+            case 'f':
+              window_flags |= SDL_WINDOW_FULLSCREEN;
               break;
 
             case 'h':
@@ -153,7 +159,7 @@ main (int argc, char *argv[])
                              SDL_WINDOWPOS_UNDEFINED,
                              skin->size.x,
                              skin->size.y,
-                             SDL_WINDOW_OPENGL);
+                             window_flags);
   if (!window)
     {
       critical ("Could not create window: %s", SDL_GetError ());
