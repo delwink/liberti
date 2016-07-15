@@ -172,7 +172,7 @@ main (int argc, char *argv[])
       if (frame)
         {
           SDL_Surface *screen = SDL_GetWindowSurface (window);
-          SDL_BlitSurface (frame, NULL, screen, NULL);
+          SDL_BlitScaled (frame, NULL, screen, NULL);
           SDL_FreeSurface (frame);
           SDL_UpdateWindowSurface (window);
         }
