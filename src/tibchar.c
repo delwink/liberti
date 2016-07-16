@@ -400,16 +400,14 @@ tib_encode_str (struct tib_expr *expr, const char *s)
 int
 tib_keyword_init ()
 {
-  int rc;
-
   if (keywords)
-    pt_free (keywords);
+    return 0;
 
   keywords = pt_new ();
   if (NULL == keywords)
     return TIB_EALLOC;
 
-  rc = load_range (TIB_CHAR_AND, TIB_CHAR_YSCL);
+  int rc = load_range (TIB_FIRST_CHAR, TIB_LAST_CHAR);
   if (rc)
     tib_keyword_free ();
 

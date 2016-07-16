@@ -22,7 +22,7 @@
 
 enum tib_special_char
   {
-    TIB_CHAR_AND = 1000,
+    TIB_CHAR_AND = 128,
     TIB_CHAR_ANS,
     TIB_CHAR_AXESOFF,
     TIB_CHAR_AXESON, 
@@ -106,6 +106,9 @@ enum tib_special_char
     TIB_CHAR_YMAX,
     TIB_CHAR_YMIN, 
     TIB_CHAR_YSCL,
+
+    TIB_FIRST_CHAR = 128,
+    TIB_LAST_CHAR  = TIB_CHAR_YSCL
   };
 
 const char *

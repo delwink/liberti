@@ -23,6 +23,7 @@
 
 #include "log.h"
 #include "skin.h"
+#include "tibchar.h"
 #include "ttf.h"
 
 #ifdef HAVE_CONFIG_H
@@ -119,6 +120,14 @@ main (int argc, char *argv[])
       goto end;
     }
 
+  rc = tib_keyword_init ();
+  if (rc)
+    {
+      critical ("Could not initialize TI-BASIC keyword lookup tree: Error %d",
+                rc);
+      goto end;
+    }
+
   fonts = get_font_set (7);
   if (!fonts)
     {
@@ -204,17 +213,19 @@ main (int argc, char *argv[])
   SDL_VideoQuit ();
   IMG_Quit ();
 
-  if (skin)
-    free_skin (skin);
-
-  if (state_init)
-    state_destroy (&state);
+  tib_keyword_free ();
 
   if (fonts)
     free_font_set (fonts);
 
+  if (state_init)
+    state_destroy (&state);
+
+  if (skin)
+    free_skin (skin);
+
   if (window)
     SDL_DestroyWindow (window);
 
-  return rc;
+  return !!rc;
 }
