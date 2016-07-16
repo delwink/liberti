@@ -57,7 +57,7 @@ main (int argc, char *argv[])
   struct fontset *fonts = NULL;
 
   const char *skin_path = NULL;
-  Uint32 window_flags = SDL_WINDOW_OPENGL;
+  Uint32 window_flags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE;
 
   struct option longopts[] = 
     {
