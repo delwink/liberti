@@ -725,7 +725,7 @@ get_rect (struct point2d pos, struct point2d size)
 }
 
 SDL_Surface *
-Skin_get_frame (Skin *self, const struct fontset *fonts)
+Skin_get_frame (Skin *self)
 {
   int rc;
   SDL_Surface *final;
@@ -749,7 +749,7 @@ Skin_get_frame (Skin *self, const struct fontset *fonts)
   for (; elem != NULL; elem = elem->next, ++i)
     {
       struct screen *screen = &elem->screen;
-      SDL_Surface *render = screen_draw (screen, fonts);
+      SDL_Surface *render = screen_draw (screen);
       if (render)
         {
           SDL_Rect r = get_rect (screen->pos, screen->size);

@@ -19,10 +19,9 @@
 #define DELWINK_LIBERTI_MODE_DEFAULT_H
 
 #include "screen.h"
-#include "ttf.h"
 
 SDL_Surface *
-default_draw (const struct screen *screen, const struct fontset *fonts);
+default_draw (const struct screen *screen);
 
 int
 default_input (struct screen *screen, SDL_KeyboardEvent *key);

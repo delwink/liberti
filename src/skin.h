@@ -24,7 +24,6 @@
 
 #include "point.h"
 #include "screen.h"
-#include "ttf.h"
 
 struct skin_button_list
 {
@@ -62,6 +61,6 @@ int
 Skin_input (Skin *self, SDL_KeyboardEvent *event);
 
 SDL_Surface *
-Skin_get_frame (Skin *self, const struct fontset *fonts);
+Skin_get_frame (Skin *self);
 
 #endif

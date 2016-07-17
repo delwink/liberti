@@ -22,7 +22,6 @@
 
 #include "point.h"
 #include "state.h"
-#include "ttf.h"
 
 enum screen_mode
   {
@@ -41,7 +40,7 @@ struct screen
 };
 
 SDL_Surface *
-screen_draw (const struct screen *screen, const struct fontset *fonts);
+screen_draw (const struct screen *screen);
 
 int
 screen_input (struct screen *screen, SDL_KeyboardEvent *event);

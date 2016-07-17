@@ -15,76 +15,53 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <string.h>
+
 #include "colors.h"
+#include "font.h"
 #include "log.h"
 #include "mode_default.h"
 #include "tibchar.h"
 #include "util.h"
 
 static SDL_Surface *
-render_line (const struct tib_expr *line, TTF_Font *font)
+render_line (const struct tib_expr *line)
 {
-  int rc, total_w, w, h, font_height;
-  SDL_Surface **parts = malloc (line->len * sizeof (SDL_Surface *));
-  if (!parts)
+  int rc;
+  char *s = tib_expr_tostr (line);
+  if (!s)
     {
-      error ("Failed to initialize expression portions array");
+      error ("Error converting expression to string");
       return NULL;
     }
 
-  font_height = TTF_FontHeight (font);
-  total_w = 0;
-  w = 0;
-  h = font_height;
+  unsigned int len = strlen (s);
+  SDL_Surface *parts[len];
 
-  unsigned int i;
-  tib_expr_foreach (line, i)
+  SDL_Rect pos;
+  pos.x = 0;
+  pos.y = 8;
+
+  for (unsigned int i = 0; i < len; ++i)
     {
-      int c = line->data[i];
-      const char *s = tib_special_char_text (c);
-      SDL_Surface *part;
+      SDL_Surface *part = get_font_char (s[i]);
 
-      if (s)
+      pos.x += 6;
+      if (pos.x > 96)
         {
-          part = TTF_RenderUTF8_Solid (font, s, BLACK);
-        }
-      else
-        {
-          char single[2];
-          single[0] = c;
-          single[1] = '\0';
-
-          part = TTF_RenderUTF8_Solid (font, single, BLACK);
-        }
-
-      if (!part)
-        {
-          error ("Failed to render expression portion: %s", TTF_GetError ());
-          parts[i] = NULL;
-          continue;
-        }
-
-      w += part->w;
-      if (w > 96)
-        {
-          h += font_height;
-          total_w = max (w - part->w, total_w);
-          w = part->w;
-        }
-      else
-        {
-          total_w = max (w, total_w);
+          pos.y += 8;
+          pos.x = 6;
         }
 
       parts[i] = part;
     }
 
-  SDL_Surface *final = SDL_CreateRGBSurface (0, total_w, h, 32, 0, 0, 0, 0);
+  SDL_Surface *final = SDL_CreateRGBSurface (0, 96, pos.y, 32, 0, 0, 0, 0);
   if (!final)
     {
       error ("Failed to initialize expression render surface: %s",
              SDL_GetError ());
-      goto fail;
+      goto end;
     }
 
   SDL_LockSurface (final);
@@ -96,19 +73,15 @@ render_line (const struct tib_expr *line, TTF_Font *font)
 
   SDL_UnlockSurface (final);
 
-  w = 0;
-  h = 0;
-  for (i = 0; i < line->len; ++i)
+  pos.x = 0;
+  pos.y = 0;
+  for (unsigned int i = 0; i < line->len; ++i)
     {
-      if (w + parts[i]->w > 96)
+      if (pos.x + 6 > 96)
         {
-          w = 0;
-          h += font_height;
+          pos.x = 0;
+          pos.y += 8;
         }
-
-      SDL_Rect pos;
-      pos.x = w;
-      pos.y = h;
 
       rc = SDL_BlitSurface (parts[i], NULL, final, &pos);
       if (rc < 0)
@@ -117,24 +90,19 @@ render_line (const struct tib_expr *line, TTF_Font *font)
           continue;
         }
 
-      w += parts[i]->w;
+      pos.x += 6;
     }
 
- fail:
-  for (i = 0; i < line->len; ++i)
-    if (parts[i])
-      SDL_FreeSurface (parts[i]);
-
-  free (parts);
-
+ end:
+  free (s);
   return final;
 }
 
 static void
 draw_line (const struct tib_expr *line, SDL_Surface *final,
-           const struct fontset *fonts, unsigned int *height, bool right_align)
+           unsigned int *height, bool right_align)
 {
-  SDL_Surface *line_render = render_line (line, fonts->reg);
+  SDL_Surface *line_render = render_line (line);
   if (line_render)
     {
       SDL_Rect pos;
@@ -155,7 +123,7 @@ draw_line (const struct tib_expr *line, SDL_Surface *final,
 }
 
 SDL_Surface *
-default_draw (const struct screen *screen, const struct fontset *fonts)
+default_draw (const struct screen *screen)
 {
   int rc;
   SDL_Surface *final;
@@ -174,14 +142,14 @@ default_draw (const struct screen *screen, const struct fontset *fonts)
 
   struct state *state = screen->state;
   unsigned int height = 0;
-  draw_line (&state->entry, final, fonts, &height, false);
+  draw_line (&state->entry, final, &height, false);
 
   for (int i = state->history_len - 1; i >= 0 && height < 64; --i)
     {
-      draw_line (&state->answer_strings[i], final, fonts, &height, true);
+      draw_line (&state->answer_strings[i], final, &height, true);
 
       if (height < 64)
-        draw_line (&state->history[i], final, fonts, &height, false);
+        draw_line (&state->history[i], final, &height, false);
     }
 
   return final;

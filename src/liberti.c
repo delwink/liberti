@@ -21,10 +21,10 @@
 #include <unistd.h>
 #include <getopt.h>
 
+#include "font.h"
 #include "log.h"
 #include "skin.h"
 #include "tibchar.h"
-#include "ttf.h"
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -55,7 +55,6 @@ main (int argc, char *argv[])
   int rc = 0;
   SDL_Window *window = NULL;
   Skin *skin = NULL;
-  struct fontset *fonts = NULL;
 
   const char *skin_path = NULL;
   Uint32 window_flags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE;
@@ -120,19 +119,15 @@ main (int argc, char *argv[])
       goto end;
     }
 
+  rc = font_init ();
+  if (rc)
+    goto end;
+
   rc = tib_keyword_init ();
   if (rc)
     {
       critical ("Could not initialize TI-BASIC keyword lookup tree: Error %d",
                 rc);
-      goto end;
-    }
-
-  fonts = get_font_set (7);
-  if (!fonts)
-    {
-      critical ("Could not load fonts: %s", TTF_GetError ());
-      rc = 1;
       goto end;
     }
 
@@ -177,7 +172,7 @@ main (int argc, char *argv[])
 
   for (;;)
     {
-      SDL_Surface *frame = Skin_get_frame (skin, fonts);
+      SDL_Surface *frame = Skin_get_frame (skin);
       if (frame)
         {
           SDL_Surface *screen = SDL_GetWindowSurface (window);
@@ -213,10 +208,8 @@ main (int argc, char *argv[])
   SDL_VideoQuit ();
   IMG_Quit ();
 
+  font_free ();
   tib_keyword_free ();
-
-  if (fonts)
-    free_font_set (fonts);
 
   if (state_init)
     state_destroy (&state);
