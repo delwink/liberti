@@ -75,7 +75,7 @@ render_line (const struct tib_expr *line)
 
   pos.x = 0;
   pos.y = 0;
-  for (unsigned int i = 0; i < line->len; ++i)
+  for (unsigned int i = 0; i < len; ++i)
     {
       if (pos.x + 6 > 96)
         {
