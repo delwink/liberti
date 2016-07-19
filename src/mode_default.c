@@ -158,6 +158,7 @@ default_draw (const struct screen *screen)
 int
 default_input (struct screen *screen, SDL_KeyboardEvent *key)
 {
+  int sym = key->keysym.sym;
   Uint16 mod = key->keysym.mod;
 
   if (mod & KMOD_CTRL)
@@ -165,11 +166,8 @@ default_input (struct screen *screen, SDL_KeyboardEvent *key)
     }
   else if (mod & KMOD_SHIFT)
     {
-      const char *name = SDL_GetKeyName (key->keysym.sym);
-      unsigned int len = strlen (name);
-
-      if (1 == len)
-        return entry_write (screen->state, name[0]);
+      if (sym >= SDLK_a && sym <= SDLK_z)
+        return entry_write (screen->state, toupper (sym));
     }
   else
     {
