@@ -18,9 +18,9 @@
 #ifndef DELWINK_LIBERTI_KEYS_H
 #define DELWINK_LIBERTI_KEYS_H
 
-#include <SDL_keycode.h>
+#include <SDL.h>
 
 int
-normalize_keycode (SDL_Keycode code);
+normalize_keycode (SDL_Keycode code, Uint16 mod);
 
 #endif

@@ -162,17 +162,7 @@ default_input (struct screen *screen, SDL_KeyboardEvent *key)
   SDL_Keycode code = key->keysym.sym;
   Uint16 mod = key->keysym.mod;
 
-  if (mod & KMOD_CTRL)
-    {
-    }
-  else if (mod & KMOD_SHIFT)
-    {
-    }
-  else
-    {
-    }
-
-  int normal = normalize_keycode (code);
+  int normal = normalize_keycode (code, mod);
   if (normal)
     return entry_write (screen->state, normal);
 

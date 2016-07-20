@@ -15,15 +15,34 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <ctype.h>
-
 #include "keys.h"
 
 int
-normalize_keycode (SDL_Keycode code)
+normalize_keycode (SDL_Keycode code, Uint16 mod)
 {
+  if (mod & KMOD_SHIFT)
+    {
+      switch (code)
+        {
+        case SDLK_6:
+          return '^';
+
+        case SDLK_8:
+          return '*';
+
+        case SDLK_9:
+          return '(';
+
+        case SDLK_0:
+          return ')';
+        }
+    }
+
+  if (code >= SDLK_0 && code <= SDLK_9)
+    return code;
+
   if (code >= SDLK_a && code <= SDLK_z)
-    return toupper (code);
+    return code - SDLK_a + 'A';
 
   return 0;
 }
