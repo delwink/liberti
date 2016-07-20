@@ -1,6 +1,6 @@
 /*
  *  libtib - Read, write, and evaluate TI BASIC programs
- *  Copyright (C) 2015 Delwink, LLC
+ *  Copyright (C) 2015-2016 Delwink, LLC
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as published by
@@ -33,14 +33,9 @@ tib_new_lst ()
 static struct tib_el *
 el_ref (const struct tib_lst *lst, size_t index)
 {
-  struct tib_el *i;
-  size_t looped = 0;
-
-  for (i = lst->beg; i != NULL; i = i->next)
-    {
-      if (looped++ == index)
-        return i;
-    }
+  for (struct tib_el *el = lst->beg; el != NULL; el = el->next, index--)
+    if (0 == index)
+      return el;
 
   return NULL;
 }
@@ -80,13 +75,24 @@ tib_lst_insert (struct tib_lst *lst, TIB *t, size_t index)
   new->val = newval;
 
   if (0 == index)
-    lst->beg = new;
+    {
+      lst->beg = new;
+      new->prev = NULL;
+    }
+  else
+    {
+      new->prev = el_ref (lst, index - 1);
+    }
 
   if (index == len)
-    lst->end = new;
-
-  new->next = el_ref (lst, index+1);
-  new->prev = 0 == index ? NULL : el_ref (lst, index-1);
+    {
+      lst->end = new;
+      new->next = NULL;
+    }
+  else
+    {
+      new->next = el_ref (lst, index + 1);
+    }
 
   if (new->next)
     new->next->prev = new;
@@ -109,9 +115,14 @@ tib_lst_remove (struct tib_lst *lst, size_t index)
   struct tib_el *e = el_ref (lst, index);
 
   if (e->next)
-    e->prev->next = e->next;
-  if (e->prev)
     e->next->prev = e->prev;
+  else
+    lst->end = e->prev;
+
+  if (e->prev)
+    e->prev->next = e->next;
+  else
+    lst->beg = e->next;
 
   free (e);
 }

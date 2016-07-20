@@ -61,6 +61,9 @@ entry_move_cursor (struct state *state, int distance);
 int
 entry_write (struct state *state, int c);
 
+int
+entry_recall (struct state *state);
+
 void
 change_action_state (struct state *state, enum action_state action_state);
 

@@ -108,7 +108,7 @@ draw_line (const struct tib_expr *line, SDL_Surface *final,
     {
       SDL_Rect pos;
       if (right_align)
-        pos.x = 96 - line_render->w;
+        pos.x = 96 - (line->len * 6);
       else
         pos.x = 0;
 
@@ -159,12 +159,22 @@ default_draw (const struct screen *screen)
 int
 default_input (struct screen *screen, SDL_KeyboardEvent *key)
 {
+  struct state *state = screen->state;
   SDL_Keycode code = key->keysym.sym;
   Uint16 mod = key->keysym.mod;
 
+  switch (code)
+    {
+    case SDLK_RETURN:
+      if (mod & KMOD_SHIFT)
+        return entry_recall (state);
+      else
+        return state_calc_entry (state);
+    }
+
   int normal = normalize_keycode (code, mod);
   if (normal)
-    return entry_write (screen->state, normal);
+    return entry_write (state, normal);
 
   return 0;
 }

@@ -17,6 +17,24 @@
 
 #include "keys.h"
 
+static const SDL_Keycode UNCHANGED[] =
+  {
+    SDLK_0,
+    SDLK_1,
+    SDLK_2,
+    SDLK_3,
+    SDLK_4,
+    SDLK_5,
+    SDLK_6,
+    SDLK_7,
+    SDLK_8,
+    SDLK_9,
+
+    SDLK_PERIOD,
+    SDLK_MINUS,
+    SDLK_SLASH
+  };
+
 int
 normalize_keycode (SDL_Keycode code, Uint16 mod)
 {
@@ -24,6 +42,9 @@ normalize_keycode (SDL_Keycode code, Uint16 mod)
     {
       switch (code)
         {
+        case SDLK_EQUALS:
+          return '+';
+
         case SDLK_6:
           return '^';
 
@@ -38,8 +59,9 @@ normalize_keycode (SDL_Keycode code, Uint16 mod)
         }
     }
 
-  if (code >= SDLK_0 && code <= SDLK_9)
-    return code;
+  for (unsigned int i = 0; i < (sizeof UNCHANGED / sizeof (int)); ++i)
+    if (code == UNCHANGED[i])
+      return code;
 
   if (code >= SDLK_a && code <= SDLK_z)
     return code - SDLK_a + 'A';

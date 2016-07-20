@@ -286,6 +286,17 @@ entry_write (struct state *state, int c)
   return 0;
 }
 
+int
+entry_recall (struct state *state)
+{
+  if (state->history_len)
+    return tib_exprcpy (&state->entry,
+                        &state->history[state->history_len - 1]);
+
+  state->entry.len = 0;
+  return 0;
+}
+
 void
 change_action_state (struct state *state, enum action_state action_state)
 {
@@ -316,7 +327,7 @@ int
 state_add_history (struct state *state, const struct tib_expr *in,
                    const TIB *answer)
 {
-  struct tib_expr in_copy;
+  struct tib_expr in_copy = { .bufsize = 0 };
   int rc = tib_exprcpy (&in_copy, in);
   if (rc)
     return rc;
@@ -329,8 +340,13 @@ state_add_history (struct state *state, const struct tib_expr *in,
     }
 
   struct tib_expr ans_s;
-
-  // TODO: create function for converting TIB into expression
+  rc = tib_toexpr (&ans_s, ans_copy);
+  if (rc)
+    {
+      tib_expr_destroy (&in_copy);
+      tib_decref (ans_copy);
+      return rc;
+    }
 
   add_history (state, &in_copy, &ans_s, ans_copy);
   return 0;

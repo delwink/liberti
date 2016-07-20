@@ -145,7 +145,7 @@ do_arith (struct tib_lst *resolved, size_t i, int operator, char arith1,
     return;
 
   tib_lst_remove (resolved, i);
-  tib_lst_remove (resolved, i+1);
+  tib_lst_remove (resolved, i);
 
   tib_errno = tib_lst_insert (resolved, temp, i);
   tib_decref (temp);
@@ -268,7 +268,7 @@ tib_eval (const struct tib_expr *in)
             break;
 
           struct tib_expr sub;
-          tib_subexpr (&sub, &expr, beg, i - 1);
+          tib_subexpr (&sub, &expr, beg, i);
 
           TIB *temp = single_eval (&sub);
           if (!temp)
@@ -288,8 +288,27 @@ tib_eval (const struct tib_expr *in)
       if (tib_lst_len (resolved) == 0)
         {
           TIB *temp = single_eval (&expr);
+          if (!temp)
+            goto end;
+
           tib_errno = tib_lst_push (resolved, temp);
           tib_decref (temp);
+          if (tib_errno)
+            goto end;
+        }
+      else
+        {
+          struct tib_expr sub;
+          tib_subexpr (&sub, &expr, beg, i);
+
+          TIB *temp = single_eval (&sub);
+          if (!temp)
+            goto end;
+
+          tib_errno = tib_lst_push (resolved, temp);
+          tib_decref (temp);
+          if (tib_errno)
+            goto end;
         }
 
       if (tib_lst_len (resolved) != calc.len + 1)
