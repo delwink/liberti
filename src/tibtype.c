@@ -339,9 +339,12 @@ complex_toexpr (struct tib_expr *dest, gsl_complex value)
             return rc;
         }
 
-      rc = load_expr (dest, buf);
-      if (rc)
-        return rc;
+      if (GSL_IMAG (value) != 1.0)
+        {
+          rc = load_expr (dest, buf);
+          if (rc)
+            return rc;
+        }
 
       rc = tib_expr_push (dest, 'i');
       if (rc)
