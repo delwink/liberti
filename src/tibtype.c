@@ -317,6 +317,8 @@ complex_toexpr (struct tib_expr *dest, gsl_complex value)
   int rc;
   char buf[500];
 
+  dest->len = 0;
+
   if (GSL_REAL (value))
     {
       format_double_str (buf, GSL_REAL (value));
@@ -342,6 +344,12 @@ complex_toexpr (struct tib_expr *dest, gsl_complex value)
         return rc;
 
       rc = tib_expr_push (dest, 'i');
+      if (rc)
+        return rc;
+    }
+  else if (!GSL_REAL (value))
+    {
+      rc = tib_expr_push (dest, '0');
       if (rc)
         return rc;
     }
