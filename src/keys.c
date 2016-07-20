@@ -32,7 +32,9 @@ static const SDL_Keycode UNCHANGED[] =
 
     SDLK_PERIOD,
     SDLK_MINUS,
-    SDLK_SLASH
+    SDLK_SLASH,
+
+    SDLK_i
   };
 
 int
