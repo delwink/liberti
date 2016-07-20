@@ -19,6 +19,7 @@
 
 #include "colors.h"
 #include "font.h"
+#include "keys.h"
 #include "log.h"
 #include "mode_default.h"
 #include "tibchar.h"
@@ -158,7 +159,7 @@ default_draw (const struct screen *screen)
 int
 default_input (struct screen *screen, SDL_KeyboardEvent *key)
 {
-  int sym = key->keysym.sym;
+  SDL_Keycode code = key->keysym.sym;
   Uint16 mod = key->keysym.mod;
 
   if (mod & KMOD_CTRL)
@@ -166,12 +167,14 @@ default_input (struct screen *screen, SDL_KeyboardEvent *key)
     }
   else if (mod & KMOD_SHIFT)
     {
-      if (sym >= SDLK_a && sym <= SDLK_z)
-        return entry_write (screen->state, toupper (sym));
     }
   else
     {
     }
+
+  int normal = normalize_keycode (code);
+  if (normal)
+    return entry_write (screen->state, normal);
 
   return 0;
 }
