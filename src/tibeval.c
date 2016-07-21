@@ -337,25 +337,29 @@ tib_eval (const struct tib_expr *in)
             goto end;
 
           tib_lst_remove (resolved, i);
-          tib_lst_remove (resolved, i+1);
+          tib_lst_remove (resolved, i);
 
           tib_errno = tib_lst_insert (resolved, temp, i);
           tib_decref (temp);
           if (tib_errno)
             goto end;
+
+          tib_expr_delete (&calc, i--);
         }
     }
 
+  unsigned int orig_len = tib_lst_len (resolved);
   tib_expr_foreach (&calc, i)
     {
-      do_arith (resolved, i, calc.data[i], '*', tib_mul, '/', tib_div);
+      do_arith (resolved, i - (orig_len - tib_lst_len (resolved)),
+                calc.data[i], '*', tib_mul, '/', tib_div);
       if (tib_errno)
         goto end;
     }
 
   tib_expr_foreach (&calc, i)
     {
-      do_arith (resolved, i, calc.data[i], '+', tib_add, '-', tib_sub);
+      do_arith (resolved, 0, calc.data[i], '+', tib_add, '-', tib_sub);
       if (tib_errno)
         goto end;
     }

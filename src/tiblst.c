@@ -33,7 +33,7 @@ tib_new_lst ()
 static struct tib_el *
 el_ref (const struct tib_lst *lst, size_t index)
 {
-  for (struct tib_el *el = lst->beg; el != NULL; el = el->next, index--)
+  for (struct tib_el *el = lst->beg; el != NULL; el = el->next, --index)
     if (0 == index)
       return el;
 
@@ -43,12 +43,8 @@ el_ref (const struct tib_lst *lst, size_t index)
 void
 tib_free_lst (struct tib_lst *lst)
 {
-  size_t i;
-
-  tib_foreachlst (lst, i)
-    {
-      tib_lst_remove (lst, 0);
-    }
+  while (tib_lst_len (lst))
+    tib_lst_remove (lst, 0);
 
   free (lst);
 }
@@ -65,14 +61,8 @@ tib_lst_insert (struct tib_lst *lst, TIB *t, size_t index)
   if (NULL == new)
     return TIB_EALLOC;
 
-  TIB *newval = tib_copy (t);
-  if (NULL == newval)
-    {
-      free (new);
-      return TIB_EALLOC;
-    }
-
-  new->val = newval;
+  tib_incref (t);
+  new->val = t;
 
   if (0 == index)
     {
@@ -91,7 +81,7 @@ tib_lst_insert (struct tib_lst *lst, TIB *t, size_t index)
     }
   else
     {
-      new->next = el_ref (lst, index + 1);
+      new->next = el_ref (lst, index);
     }
 
   if (new->next)
@@ -124,6 +114,7 @@ tib_lst_remove (struct tib_lst *lst, size_t index)
   else
     lst->beg = e->next;
 
+  tib_decref (e->val);
   free (e);
 }
 
