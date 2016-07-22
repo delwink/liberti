@@ -369,7 +369,10 @@ tib_eval (const struct tib_expr *in)
 
   TIB *out = NULL;
   if (!tib_errno)
-    out = tib_copy (tib_lst_ref (resolved, 0));
+    {
+      out = tib_lst_ref (resolved, 0);
+      tib_incref (out);
+    }
 
   tib_free_lst (resolved);
 
