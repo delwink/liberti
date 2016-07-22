@@ -212,9 +212,15 @@ tib_eval (const struct tib_expr *in)
       if (add)
         {
           if (is_left_paren (c) && i && needs_mult_left (c))
-            tib_errno = tib_expr_insert (&expr, i, '*');
+            {
+              tib_errno = tib_expr_insert (&expr, i++, '*');
+              ++len;
+            }
           else if (')' == c && needs_mult_right (expr.data[i + 1]))
-            tib_errno = tib_expr_insert (&expr, ++i, '*');
+            {
+              tib_errno = tib_expr_insert (&expr, ++i, '*');
+              ++len;
+            }
 
           if (tib_errno)
             return NULL;

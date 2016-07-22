@@ -81,7 +81,7 @@ tib_lst_insert (struct tib_lst *lst, TIB *t, size_t index)
     }
   else
     {
-      new->next = el_ref (lst, index);
+      new->next = el_ref (lst, index + 1);
     }
 
   if (new->next)
@@ -103,6 +103,8 @@ void
 tib_lst_remove (struct tib_lst *lst, size_t index)
 {
   struct tib_el *e = el_ref (lst, index);
+  if (!e)
+    return;
 
   if (e->next)
     e->next->prev = e->prev;
