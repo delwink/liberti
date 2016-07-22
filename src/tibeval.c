@@ -202,7 +202,7 @@ tib_eval (const struct tib_expr *in)
 
   /* add multiplication operators between implicit multiplications */
   bool add = expr.data[0] != '"';
-  for (i = 1; i < len-1; ++i)
+  for (i = 1; i < len - 1; ++i)
     {
       int c = expr.data[i];
 
@@ -211,7 +211,7 @@ tib_eval (const struct tib_expr *in)
 
       if (add)
         {
-          if (is_left_paren (c) && i && needs_mult_left (c))
+          if (is_left_paren (c) && needs_mult_left (expr.data[i - 1]))
             {
               tib_errno = tib_expr_insert (&expr, i++, '*');
               ++len;
