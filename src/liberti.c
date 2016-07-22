@@ -25,6 +25,7 @@
 #include "log.h"
 #include "skin.h"
 #include "tibchar.h"
+#include "tibfunction.h"
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -131,6 +132,13 @@ main (int argc, char *argv[])
       goto end;
     }
 
+  rc = tib_registry_init ();
+  if (rc)
+    {
+      critical ("Could not initialize function registry: Error %d", rc);
+      goto end;
+    }
+
   SDL_DisplayMode display_mode;
   rc = SDL_GetCurrentDisplayMode (0, &display_mode);
   if (rc)
@@ -210,6 +218,7 @@ main (int argc, char *argv[])
 
   font_free ();
   tib_keyword_free ();
+  tib_registry_free ();
 
   if (state_init)
     state_destroy (&state);
