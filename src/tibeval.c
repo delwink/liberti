@@ -25,11 +25,7 @@
 #include "tiblst.h"
 #include "tibvar.h"
 
-static bool
-is_left_paren (int c)
-{
-  return tib_is_func (c);
-}
+#define is_left_paren tib_is_func
 
 static bool
 needs_mult_common (int c)
