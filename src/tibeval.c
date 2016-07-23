@@ -201,15 +201,17 @@ tib_eval (const struct tib_expr *in)
     return NULL;
 
   /* add multiplication operators between implicit multiplications */
+  len = expr.len;
   bool add = expr.data[0] != '"';
   for (i = 1; i < len - 1; ++i)
     {
       int c = expr.data[i];
 
       if ('"' == c)
-        add = !add; /* don't change anything inside a string */
-
-      if (add)
+        {
+          add = !add; /* don't change anything inside a string */
+        }
+      else if (add)
         {
           if (is_left_paren (c) && needs_mult_left (expr.data[i - 1]))
             {
