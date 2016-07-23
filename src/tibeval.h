@@ -24,7 +24,7 @@
 #include "tibtype.h"
 
 bool
-sign_operator (int c);
+is_sign_operator (int c);
 
 unsigned int
 sign_count (const struct tib_expr *expr);

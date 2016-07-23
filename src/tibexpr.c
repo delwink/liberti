@@ -157,7 +157,7 @@ tib_expr_parse_complex (const struct tib_expr *self, gsl_complex *out)
               i_start = s;
               break;
             }
-          else if (sign_operator (c) && --num_operators == 0)
+          else if (is_sign_operator (c) && --num_operators == 0)
             {
               i_start = &s[i];
               break;
@@ -169,7 +169,7 @@ tib_expr_parse_complex (const struct tib_expr *self, gsl_complex *out)
 
   if (i_start)
     {
-      if (sign_operator (i_start[0]) && 'i' == i_start[1])
+      if (is_sign_operator (i_start[0]) && 'i' == i_start[1])
         i_start[1] = '1';
       else if ('i' == i_start[0])
         i_start[0] = '1';

@@ -46,7 +46,7 @@ needs_mult_left (int c)
 }
 
 bool
-sign_operator (int c)
+is_sign_operator (int c)
 {
   return ('+' == c || '-' == c);
 }
@@ -54,7 +54,7 @@ sign_operator (int c)
 static bool
 is_math_operator (int c)
 {
-  return sign_operator (c) || '*' == c || '/' == c || '^' == c;
+  return is_sign_operator (c) || '*' == c || '/' == c || '^' == c;
 }
 
 unsigned int
@@ -63,7 +63,7 @@ sign_count (const struct tib_expr *expr)
   unsigned int i, out = 0;
 
   tib_expr_foreach (expr, i)
-    if (sign_operator (expr->data[i]))
+    if (is_sign_operator (expr->data[i]))
       ++out;
 
   return out;
@@ -436,7 +436,7 @@ dot_count (const struct tib_expr *expr)
 static bool
 is_number_char (int c)
 {
-  return (isdigit (c) || '.' == c || 'i' == c || sign_operator (c));
+  return (isdigit (c) || '.' == c || 'i' == c || is_sign_operator (c));
 }
 
 unsigned int
@@ -463,7 +463,7 @@ get_sign_pos (const struct tib_expr *expr, unsigned int which)
 
   tib_expr_foreach (expr, i)
     {
-      if (sign_operator (expr->data[i]))
+      if (is_sign_operator (expr->data[i]))
         ++found;
 
       if (found == which)
