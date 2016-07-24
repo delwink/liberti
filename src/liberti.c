@@ -49,11 +49,29 @@ This is libre software: you are free to change and redistribute it.\n\
 There is NO WARRANTY, to the extent permitted by law.\n\n\
 Written by David McMackins II."
 
+static Uint32
+timer (Uint32 interval, void *data)
+{
+  SDL_Event event;
+  SDL_UserEvent user;
+
+  user.type = SDL_USEREVENT;
+  user.code = 0;
+  user.data1 = data;
+
+  event.type = SDL_USEREVENT;
+  event.user = user;
+
+  SDL_PushEvent (&event);
+  return interval;
+}
+
 int
 main (int argc, char *argv[])
 {
   bool state_init = false;
   int rc = 0;
+  SDL_TimerID timer_id = 0;
   SDL_Window *window = NULL;
   Skin *skin = NULL;
 
@@ -103,6 +121,13 @@ main (int argc, char *argv[])
               return 1;
             }
         }
+    }
+
+  rc = SDL_Init (SDL_INIT_TIMER);
+  if (rc)
+    {
+      critical ("Could not initialize SDL timer: %s", SDL_GetError ());
+      goto end;
     }
 
   rc = SDL_VideoInit (NULL);
@@ -159,6 +184,13 @@ main (int argc, char *argv[])
 
   state_init = true;
 
+  timer_id = SDL_AddTimer (500, timer, &state);
+  if (!timer_id)
+    {
+      critical ("Could not add blink timer: %s", SDL_GetError ());
+      goto end;
+    }
+
   skin = open_skin (skin_path, &state, (struct point2d) { 96, 64 });
   if (!skin)
     {
@@ -202,6 +234,21 @@ main (int argc, char *argv[])
                 error ("Error %d processing key entry", rc);
               break;
 
+            case SDL_USEREVENT:
+              switch (event.user.code)
+                {
+                case 0:
+                  {
+                    struct state *state = event.user.data1;
+                    state->blink_state = !state->blink_state;
+                  }
+                  break;
+
+                default:
+                  break;
+                }
+              break;
+
             case SDL_QUIT:
               info ("Got SDL quit event");
               goto end;
@@ -213,6 +260,10 @@ main (int argc, char *argv[])
     }
 
  end:
+  if (timer_id)
+    SDL_RemoveTimer (timer_id);
+
+  SDL_Quit ();
   SDL_VideoQuit ();
   IMG_Quit ();
 

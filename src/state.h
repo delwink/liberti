@@ -43,6 +43,7 @@ struct state
   unsigned int entry_cursor;
   unsigned int history_len;
 
+  bool blink_state;
   bool insert_mode;
 };
 

@@ -38,7 +38,7 @@ static const SDL_Keycode UNCHANGED[] =
   };
 
 int
-normalize_keycode (SDL_Keycode code, Uint16 mod)
+normalize_keycode (SDL_Keycode code, SDL_Keymod mod)
 {
   if (mod & KMOD_SHIFT)
     {

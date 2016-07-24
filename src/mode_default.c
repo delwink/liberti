@@ -123,6 +123,31 @@ draw_line (const struct tib_expr *line, SDL_Surface *final,
     }
 }
 
+static void
+draw_cursor (const struct state *state, SDL_Surface *frame)
+{
+  if (!state->blink_state)
+    return;
+
+  SDL_Keymod mod = SDL_GetModState ();
+  int c = 1;
+
+  if (state->insert_mode)
+    c += 4;
+
+  if (mod & KMOD_CTRL)
+    ++c;
+  else if (mod & KMOD_SHIFT)
+    c += 2;
+
+  SDL_Rect pos = { .x = (6 * (state->entry_cursor % 16)), .y = (64 - 8) };
+  SDL_Surface *tile = get_font_char (c);
+
+  int rc = SDL_BlitSurface (tile, NULL, frame, &pos);
+  if (rc < 0)
+    error ("Failed to draw cursor on screen frame: %s", SDL_GetError ());
+}
+
 SDL_Surface *
 default_draw (const struct screen *screen)
 {
@@ -144,6 +169,7 @@ default_draw (const struct screen *screen)
   struct state *state = screen->state;
   unsigned int height = 0;
   draw_line (&state->entry, final, &height, false);
+  draw_cursor (state, final);
 
   for (int i = state->history_len - 1; i >= 0 && height < 64; --i)
     {
@@ -161,7 +187,7 @@ default_input (struct screen *screen, SDL_KeyboardEvent *key)
 {
   struct state *state = screen->state;
   SDL_Keycode code = key->keysym.sym;
-  Uint16 mod = key->keysym.mod;
+  SDL_Keymod mod = key->keysym.mod;
 
   switch (code)
     {

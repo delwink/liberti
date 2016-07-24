@@ -73,6 +73,7 @@ load_state (struct state *dest, const char *path)
   dest->action_state = STATE_NORMAL;
   dest->entry_cursor = 0;
   dest->history_len = 0;
+  dest->blink_state = true;
   dest->insert_mode = false;
 
   rc = tib_expr_init (&dest->entry);
