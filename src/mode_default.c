@@ -167,18 +167,18 @@ default_input (struct screen *screen, SDL_KeyboardEvent *key)
     {
     case SDLK_BACKSPACE:
       if (!state->entry_cursor)
-        break;
+        return 0;
 
       --state->entry_cursor;
       // SPILLS OVER!
     case SDLK_DELETE:
       tib_expr_delete (&state->entry, state->entry_cursor);
-      break;
+      return 0;
 
     case SDLK_LEFT:
       if (state->entry_cursor > 0)
         --state->entry_cursor;
-      break;
+      return 0;
 
     case SDLK_RETURN:
       if (mod & KMOD_SHIFT)
@@ -191,7 +191,7 @@ default_input (struct screen *screen, SDL_KeyboardEvent *key)
         state->entry_cursor = state->entry.len;
       else
         ++state->entry_cursor;
-      break;
+      return 0;
     }
 
   int normal = normalize_keycode (code, mod);
