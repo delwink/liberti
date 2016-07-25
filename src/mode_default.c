@@ -37,7 +37,8 @@ render_line (const struct tib_expr *line)
     }
 
   unsigned int len = strlen (s);
-  SDL_Surface *parts[len];
+  SDL_Surface *parts[len + 1];
+  parts[len] = get_font_char (' ');
 
   SDL_Rect pos;
   pos.x = 0;
@@ -48,7 +49,7 @@ render_line (const struct tib_expr *line)
       SDL_Surface *part = get_font_char (s[i]);
 
       pos.x += 6;
-      if (pos.x > 96)
+      if (pos.x >= 96)
         {
           pos.y += 8;
           pos.x = 6;
@@ -76,7 +77,7 @@ render_line (const struct tib_expr *line)
 
   pos.x = 0;
   pos.y = 0;
-  for (unsigned int i = 0; i < len; ++i)
+  for (unsigned int i = 0; i <= len; ++i)
     {
       if (pos.x + 6 > 96)
         {
