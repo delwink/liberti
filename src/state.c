@@ -272,7 +272,10 @@ entry_insert (struct state *state, int c)
 {
   int rc = tib_expr_insert (&state->entry, state->entry_cursor, c);
   if (!rc)
-    ++state->entry_cursor;
+    {
+      ++state->entry_cursor;
+      state->insert_mode = false;
+    }
 
   return rc;
 }
