@@ -17,6 +17,7 @@
 
 #include <string.h>
 
+#include "button.h"
 #include "colors.h"
 #include "font.h"
 #include "keys.h"
@@ -213,7 +214,8 @@ default_input (struct screen *screen, SDL_KeyboardEvent *key)
       --state->entry_cursor;
       // SPILLS OVER!
     case SDLK_DELETE:
-      tib_expr_delete (&state->entry, state->entry_cursor);
+      if (state->entry_cursor < state->entry.len)
+        tib_expr_delete (&state->entry, state->entry_cursor);
       return 0;
 
     case SDLK_INSERT:
@@ -221,8 +223,7 @@ default_input (struct screen *screen, SDL_KeyboardEvent *key)
       return 0;
 
     case SDLK_LEFT:
-      if (state->entry_cursor > 0)
-        --state->entry_cursor;
+      entry_move_cursor (state, LEFT);
       return 0;
 
     case SDLK_RETURN:
@@ -232,10 +233,7 @@ default_input (struct screen *screen, SDL_KeyboardEvent *key)
         return state_calc_entry (state);
 
     case SDLK_RIGHT:
-      if (state->entry_cursor >= state->entry.len)
-        state->entry_cursor = state->entry.len;
-      else
-        ++state->entry_cursor;
+      entry_move_cursor (state, RIGHT);
       return 0;
     }
 
