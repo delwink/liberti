@@ -136,9 +136,9 @@ draw_cursor (const struct state *state, SDL_Surface *frame)
   if (state->insert_mode)
     c += 4;
 
-  if (mod & KMOD_CTRL)
+  if (STATE_2ND == state->action_state || mod & KMOD_CTRL)
     ++c;
-  else if (mod & KMOD_SHIFT)
+  else if (STATE_ALPHA == state->action_state || mod & KMOD_SHIFT)
     c += 2;
 
   SDL_Rect pos = { .x = (6 * (state->entry_cursor % 16)), .y = (64 - 8) };
@@ -189,6 +189,20 @@ default_input (struct screen *screen, SDL_KeyboardEvent *key)
   struct state *state = screen->state;
   SDL_Keycode code = key->keysym.sym;
   SDL_Keymod mod = key->keysym.mod;
+
+  switch (state->action_state)
+    {
+    case STATE_2ND:
+      mod |= KMOD_LCTRL;
+      break;
+
+    case STATE_ALPHA:
+      mod |= KMOD_LSHIFT;
+      break;
+
+    default:
+      break;
+    }
 
   switch (code)
     {

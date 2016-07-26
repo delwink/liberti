@@ -265,6 +265,8 @@ entry_move_cursor (struct state *state, int distance)
       if (state->entry_cursor > state->entry.len)
         state->entry_cursor = state->entry.len;
     }
+
+  state->action_state = STATE_NORMAL;
 }
 
 static int
@@ -274,6 +276,7 @@ entry_insert (struct state *state, int c)
   if (!rc)
     {
       ++state->entry_cursor;
+      state->action_state = STATE_NORMAL;
       state->insert_mode = false;
     }
 
@@ -287,6 +290,7 @@ entry_write (struct state *state, int c)
     return entry_insert (state, c);
 
   state->entry.data[state->entry_cursor++] = c;
+  state->action_state = STATE_NORMAL;
   return 0;
 }
 
