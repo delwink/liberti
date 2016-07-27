@@ -102,7 +102,7 @@ main (int argc, char *argv[])
               break;
 
             case 'f':
-              window_flags |= SDL_WINDOW_FULLSCREEN;
+              window_flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
               break;
 
             case 'h':
