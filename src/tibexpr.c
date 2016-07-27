@@ -206,11 +206,13 @@ tib_expr_insert (struct tib_expr *self, unsigned int i, int c)
   if (!self->bufsize)
     {
       struct tib_expr temp = { .bufsize = 0 };
+      --self->len;
       int rc = tib_exprcpy (&temp, self);
       if (rc)
         return rc;
 
       *self = temp;
+      ++self->len;
     }
   else if (self->len > self->bufsize)
     {

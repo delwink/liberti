@@ -18,6 +18,11 @@
 #ifndef DELWINK_LIBERTI_UTIL_H
 #define DELWINK_LIBERTI_UTIL_H
 
+#include "tibexpr.h"
+
+int
+load_expr (struct tib_expr *dest, const char *src);
+
 int
 max (int x, int y);
 

@@ -1,6 +1,6 @@
 /*
  *  libtib - Read, write, and evaluate TI BASIC programs
- *  Copyright (C) 2015 Delwink, LLC
+ *  Copyright (C) 2015-2016 Delwink, LLC
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as published by
@@ -32,7 +32,8 @@ enum tib_err
     TIB_EBADFILE = -10,
     TIB_EBADFUNC = -11,
     TIB_EARGNUM  = -12,
-    TIB_DBYZERO  = -13
+    TIB_DBYZERO  = -13,
+    TIB_EOVER    = -14
   };
 
 extern int tib_errno;

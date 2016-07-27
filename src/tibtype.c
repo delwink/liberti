@@ -24,6 +24,7 @@
 
 #include "tiberr.h"
 #include "tibtype.h"
+#include "util.h"
 
 TIB *
 tib_empty ()
@@ -286,36 +287,23 @@ tib_matrix_value (const TIB *t)
 static void
 format_double_str (char *buf, double value)
 {
-  int len = sprintf (buf, "%.09f", value);
-
-  while ('0' == buf[--len])
-    ;
-
-  if ('.' == buf[len])
-    --len;
-
-  buf[len + 1] = '\0';
+  snprintf (buf, 17, "%.*g", 10, value);
 }
 
-static int
-load_expr (struct tib_expr *dest, const char *src)
+static bool
+abs_too_big (double value)
 {
-  unsigned int len = strlen (src);
-  for (unsigned int i = 0; i < len; ++i)
-    {
-      int rc = tib_expr_push (dest, src[i]);
-      if (rc)
-        return rc;
-    }
-
-  return 0;
+  return fabs (value) > 10e100;
 }
 
 static int
 complex_toexpr (struct tib_expr *dest, gsl_complex value)
 {
   int rc;
-  char buf[500];
+  char buf[17];
+
+  if (abs_too_big (GSL_REAL (value)) || abs_too_big (GSL_IMAG (value)))
+    return TIB_EOVER;
 
   dest->len = 0;
 
@@ -330,8 +318,6 @@ complex_toexpr (struct tib_expr *dest, gsl_complex value)
 
   if (GSL_IMAG (value))
     {
-      format_double_str (buf, GSL_IMAG (value));
-
       if (GSL_IMAG (value) > 0 && GSL_REAL (value))
         {
           rc = tib_expr_push (dest, '+');
@@ -341,6 +327,7 @@ complex_toexpr (struct tib_expr *dest, gsl_complex value)
 
       if (GSL_IMAG (value) != 1.0)
         {
+          format_double_str (buf, GSL_IMAG (value));
           rc = load_expr (dest, buf);
           if (rc)
             return rc;

@@ -227,7 +227,7 @@ default_input (struct screen *screen, SDL_KeyboardEvent *key)
       return 0;
 
     case SDLK_RETURN:
-      if (mod & KMOD_SHIFT)
+      if (mod & KMOD_CTRL)
         return entry_recall (state);
       else
         return state_calc_entry (state);

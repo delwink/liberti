@@ -16,8 +16,23 @@
  */
 
 #include <stdarg.h>
+#include <string.h>
 
 #include "util.h"
+
+int
+load_expr (struct tib_expr *dest, const char *src)
+{
+  unsigned int len = strlen (src);
+  for (unsigned int i = 0; i < len; ++i)
+    {
+      int rc = tib_expr_push (dest, src[i]);
+      if (rc)
+        return rc;
+    }
+
+  return 0;
+}
 
 int
 max (int x, int y)

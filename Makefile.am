@@ -15,7 +15,8 @@ libtib_a_SOURCES = src/tibchar.c \
 	src/tiblst.c \
 	src/tibtranscode.c \
 	src/tibtype.c \
-	src/tibvar.c
+	src/tibvar.c \
+	src/util.c
 
 liberti_CFLAGS = $(COMMON_CFLAGS) $(sdl2_CFLAGS)
 liberti_LDADD = libtib.a $(gsl_LIBS) $(libconfig_LIBS) $(pfxtree_LIBS) \
@@ -28,8 +29,7 @@ liberti_SOURCES = src/colors.c \
 	src/mode_default.c \
 	src/screen.c \
 	src/skin.c \
-	src/state.c \
-	src/util.c
+	src/state.c
 
 tibencode_CFLAGS = $(COMMON_CFLAGS)
 tibencode_LDADD = libtib.a $(gsl_LIBS) $(pfxtree_LIBS)

@@ -22,6 +22,7 @@
 #include "tibchar.h"
 #include "tiberr.h"
 #include "tibeval.h"
+#include "util.h"
 
 static int
 load_line (struct tib_expr *expr, const char *s)
@@ -298,10 +299,19 @@ int
 entry_recall (struct state *state)
 {
   if (state->history_len)
-    return tib_exprcpy (&state->entry,
-                        &state->history[state->history_len - 1]);
+    {
+      int rc = tib_exprcpy (&state->entry,
+                            &state->history[state->history_len - 1]);
+      if (rc)
+        return rc;
 
-  state->entry.len = 0;
+      state->entry_cursor = state->entry.len;
+    }
+  else
+    {
+      state->entry.len = 0;
+    }
+
   return 0;
 }
 
@@ -351,9 +361,13 @@ state_add_history (struct state *state, const struct tib_expr *in,
   rc = tib_toexpr (&ans_s, ans_copy);
   if (rc)
     {
-      tib_expr_destroy (&in_copy);
-      tib_decref (ans_copy);
-      return rc;
+      rc = load_expr (&ans_s, "Error");
+      if (rc)
+        {
+          tib_expr_destroy (&in_copy);
+          tib_decref (ans_copy);
+          return rc;
+        }
     }
 
   add_history (state, &in_copy, &ans_s, ans_copy);
