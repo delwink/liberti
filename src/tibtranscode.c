@@ -402,8 +402,7 @@ tib_fread (struct tib_expr *out, FILE *program, unsigned long *parsed)
 int
 tib_fwrite (FILE *out, const struct tib_expr *program, unsigned long *written)
 {
-  int rc;
-  unsigned int i;
+  int rc, i;
 
   for (*written = 0; *written <= 71; ++(*written))
     {

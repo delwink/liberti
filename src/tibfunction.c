@@ -109,9 +109,9 @@ is_int (gsl_complex z)
 static TIB *
 func_randint (const struct tib_expr *expr)
 {
-  unsigned int len = expr->len, num_commas = 0;
+  int len = expr->len, num_commas = 0;
 
-  for (unsigned int i = 0; i < len; ++i)
+  for (int i = 0; i < len; ++i)
     {
       if (',' == expr->data[i])
         {
@@ -140,7 +140,7 @@ func_randint (const struct tib_expr *expr)
   len = (unsigned int) GSL_REAL (count);
   gsl_complex vals[len];
 
-  for (unsigned int i = 0; i < len; ++i)
+  for (int i = 0; i < len; ++i)
     {
       GSL_SET_COMPLEX (&vals[i], (double) gsl_rng_get (rng), 0);
 

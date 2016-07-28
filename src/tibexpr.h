@@ -25,8 +25,8 @@
 struct tib_expr
 {
   int *data;
-  unsigned int len;
-  unsigned int bufsize;
+  int len;
+  int bufsize;
 };
 
 int
@@ -48,16 +48,16 @@ int
 tib_expr_parse_complex (const struct tib_expr *self, gsl_complex *out);
 
 int
-tib_expr_delete (struct tib_expr *self, unsigned int i);
+tib_expr_delete (struct tib_expr *self, int i);
 
 int
-tib_expr_insert (struct tib_expr *self, unsigned int i, int c);
+tib_expr_insert (struct tib_expr *self, int i, int c);
 
 int
 tib_expr_push (struct tib_expr *self, int c);
 
 int
-tib_subexpr (struct tib_expr *dest, const struct tib_expr *src,
-	     unsigned int beg, unsigned int end);
+tib_subexpr (struct tib_expr *dest, const struct tib_expr *src, int beg,
+             int end);
 
 #endif

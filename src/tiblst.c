@@ -31,7 +31,7 @@ tib_new_lst ()
 }
 
 static struct tib_el *
-el_ref (const struct tib_lst *lst, size_t index)
+el_ref (const struct tib_lst *lst, int index)
 {
   for (struct tib_el *el = lst->beg; el != NULL; el = el->next, --index)
     if (0 == index)
@@ -50,9 +50,9 @@ tib_free_lst (struct tib_lst *lst)
 }
 
 int
-tib_lst_insert (struct tib_lst *lst, TIB *t, size_t index)
+tib_lst_insert (struct tib_lst *lst, TIB *t, int index)
 {
-  size_t len = tib_lst_len (lst);
+  int len = tib_lst_len (lst);
 
   if (index > len)
     return TIB_EINDEX;
@@ -100,7 +100,7 @@ tib_lst_push (struct tib_lst *lst, TIB *t)
 }
 
 void
-tib_lst_remove (struct tib_lst *lst, size_t index)
+tib_lst_remove (struct tib_lst *lst, int index)
 {
   struct tib_el *e = el_ref (lst, index);
   if (!e)
@@ -120,10 +120,10 @@ tib_lst_remove (struct tib_lst *lst, size_t index)
   free (e);
 }
 
-size_t
+int
 tib_lst_len (const struct tib_lst *lst)
 {
-  size_t i = 0;
+  int i = 0;
   struct tib_el *e = lst->beg;
 
   while (e != NULL)
@@ -136,10 +136,10 @@ tib_lst_len (const struct tib_lst *lst)
 }
 
 TIB *
-tib_lst_ref (const struct tib_lst *lst, size_t index)
+tib_lst_ref (const struct tib_lst *lst, int index)
 {
   struct tib_el *i;
-  size_t looped = 0;
+  int looped = 0;
 
   for (i = lst->beg; i != NULL; i = i->next)
     {

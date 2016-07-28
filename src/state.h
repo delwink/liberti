@@ -40,7 +40,7 @@ struct state
   struct tib_expr answer_strings[MAX_HISTORY];
 
   enum action_state action_state;
-  unsigned int entry_cursor;
+  int entry_cursor;
   unsigned int history_len;
 
   bool blink_state;

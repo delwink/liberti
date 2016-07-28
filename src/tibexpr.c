@@ -70,7 +70,7 @@ tib_exprcat (struct tib_expr *dest, const struct tib_expr *src)
         return rc;
     }
 
-  unsigned int i;
+  int i;
   tib_expr_foreach (src, i)
     {
       rc = tib_expr_push (dest, src->data[i]);
@@ -93,7 +93,7 @@ tib_expr_tostr (const struct tib_expr *self)
       return NULL;
     }
 
-  unsigned int i, len = 1;
+  int i, len = 1;
   tib_expr_foreach (self, i)
     {
       const char *special = tib_special_char_text (self->data[i]);
@@ -110,7 +110,7 @@ tib_expr_tostr (const struct tib_expr *self)
       return NULL;
     }
 
-  unsigned int bump = 0;
+  int bump = 0;
   tib_expr_foreach (self, i)
     {
       const char *special = tib_special_char_text (self->data[i]);
@@ -136,10 +136,10 @@ tib_expr_parse_complex (const struct tib_expr *self, gsl_complex *out)
   if (!tib_eval_isnum (self))
     return TIB_ESYNTAX;
 
-  const unsigned int len = self->len;
+  const int len = self->len;
   char s[len + 1];
 
-  for (unsigned int i = 0; i < len; ++i)
+  for (int i = 0; i < len; ++i)
     s[i] = self->data[i];
 
   s[len] = '\0';
@@ -147,8 +147,8 @@ tib_expr_parse_complex (const struct tib_expr *self, gsl_complex *out)
   char *i_start = NULL;
   if (contains_i (self))
     {
-      unsigned int num_operators = sign_count (self);
-      for (unsigned int i = 0; i < len; ++i)
+      int num_operators = sign_count (self);
+      for (int i = 0; i < len; ++i)
         {
           int c = self->data[i];
 
@@ -181,7 +181,7 @@ tib_expr_parse_complex (const struct tib_expr *self, gsl_complex *out)
 }
 
 int
-tib_expr_delete (struct tib_expr *self, unsigned int i)
+tib_expr_delete (struct tib_expr *self, int i)
 {
   if (i > self->len)
     return TIB_EINDEX;
@@ -195,7 +195,7 @@ tib_expr_delete (struct tib_expr *self, unsigned int i)
 }
 
 int
-tib_expr_insert (struct tib_expr *self, unsigned int i, int c)
+tib_expr_insert (struct tib_expr *self, int i, int c)
 {
   if (i > ++self->len)
     {
@@ -207,6 +207,7 @@ tib_expr_insert (struct tib_expr *self, unsigned int i, int c)
     {
       struct tib_expr temp = { .bufsize = 0 };
       --self->len;
+
       int rc = tib_exprcpy (&temp, self);
       if (rc)
         return rc;
@@ -216,20 +217,27 @@ tib_expr_insert (struct tib_expr *self, unsigned int i, int c)
     }
   else if (self->len > self->bufsize)
     {
-      int *old = self->data;
-      self->bufsize *= 2;
-
-      self->data = realloc (self->data, self->bufsize * sizeof (int));
-      if (!self->data)
+      if (16384 == self->bufsize)
         {
-          self->bufsize /= 2;
-          --self->len;
-          self->data = old;
           return TIB_EALLOC;
+        }
+      else
+        {
+          int *old = self->data;
+          self->bufsize *= 2;
+
+          self->data = realloc (self->data, self->bufsize * sizeof (int));
+          if (!self->data)
+            {
+              self->bufsize /= 2;
+              --self->len;
+              self->data = old;
+              return TIB_EALLOC;
+            }
         }
     }
 
-  for (unsigned int j = self->len - 1; j > i; --j)
+  for (int j = self->len - 1; j > i; --j)
     self->data[j] = self->data[j - 1];
 
   self->data[i] = c;
@@ -243,8 +251,8 @@ tib_expr_push (struct tib_expr *self, int c)
 }
 
 int
-tib_subexpr (struct tib_expr *dest, const struct tib_expr *src,
-             unsigned int beg, unsigned int end)
+tib_subexpr (struct tib_expr *dest, const struct tib_expr *src, int beg,
+             int end)
 {
   if (end > src->len || end < beg)
     return TIB_EINDEX;

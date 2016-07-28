@@ -60,7 +60,8 @@ is_math_operator (int c)
 unsigned int
 sign_count (const struct tib_expr *expr)
 {
-  unsigned int i, out = 0;
+  int i;
+  unsigned int out = 0;
 
   tib_expr_foreach (expr, i)
     if (is_sign_operator (expr->data[i]))
@@ -72,7 +73,7 @@ sign_count (const struct tib_expr *expr)
 bool
 contains_i (const struct tib_expr *expr)
 {
-  unsigned int i;
+  int i;
 
   tib_expr_foreach (expr, i)
     if ('i' == expr->data[i])
@@ -84,7 +85,7 @@ contains_i (const struct tib_expr *expr)
 static TIB *
 single_eval (const struct tib_expr *expr)
 {
-  unsigned int len = expr->len;
+  int len = expr->len;
 
   if (0 == len)
     return tib_empty ();
@@ -150,7 +151,7 @@ do_arith (struct tib_lst *resolved, size_t i, int operator, char arith1,
 TIB *
 tib_eval (const struct tib_expr *in)
 {
-  unsigned int i, len = in->len;
+  int i, len = in->len;
 
   if (0 == len)
     return tib_empty ();
@@ -168,7 +169,7 @@ tib_eval (const struct tib_expr *in)
           return NULL;
         }
 
-      unsigned int end = len - 3;
+      int end = len - 3;
       struct tib_expr e;
       tib_subexpr (&e, in, 0, end);
 
@@ -245,7 +246,7 @@ tib_eval (const struct tib_expr *in)
     }
 
   /* resolve operand expressions, and store the values for later */
-  unsigned int beg = 0, numpar = 0;
+  int beg = 0, numpar = 0;
   for (i = 0; i < len; ++i)
     {
       int c = expr.data[i];
@@ -352,7 +353,7 @@ tib_eval (const struct tib_expr *in)
         }
     }
 
-  unsigned int orig_len = tib_lst_len (resolved);
+  int orig_len = tib_lst_len (resolved);
   tib_expr_foreach (&calc, i)
     {
       do_arith (resolved, i - (orig_len - tib_lst_len (resolved)),
@@ -386,14 +387,13 @@ tib_eval (const struct tib_expr *in)
 int
 tib_eval_surrounded (const struct tib_expr *expr)
 {
-  int count = 0, opening = expr->data[0];
-  unsigned int len = expr->len;
+  int count = 0, opening = expr->data[0], len = expr->len;
 
   if (len > 2 && is_left_paren (opening) && ')' == expr->data[len - 1])
     {
       count = 1;
 
-      for (unsigned int i = 1; i < len-1; ++i)
+      for (int i = 1; i < len-1; ++i)
         {
           int c = expr->data[i];
 
@@ -409,10 +409,10 @@ tib_eval_surrounded (const struct tib_expr *expr)
   return 0;
 }
 
-static unsigned int
+static int
 char_count (const struct tib_expr *expr, int c)
 {
-  unsigned int i, count = 0;
+  int i, count = 0;
 
   tib_expr_foreach (expr, i)
     if (c == expr->data[i])
@@ -421,13 +421,13 @@ char_count (const struct tib_expr *expr, int c)
   return count;
 }
 
-unsigned int
+int
 i_count (const struct tib_expr *expr)
 {
   return char_count (expr, 'i');
 }
 
-static unsigned int
+static int
 dot_count (const struct tib_expr *expr)
 {
   return char_count (expr, '.');
@@ -439,34 +439,28 @@ is_number_char (int c)
   return (isdigit (c) || '.' == c || 'i' == c || is_sign_operator (c));
 }
 
-unsigned int
-get_char_pos (const struct tib_expr *expr, int c, unsigned int which)
+int
+get_char_pos (const struct tib_expr *expr, int c, int which)
 {
-  unsigned int i, found = 0;
+  int i, found = 0;
 
   tib_expr_foreach (expr, i)
     {
-      if (c == expr->data[i])
-        ++found;
-
-      if (found == which)
+      if (c == expr->data[i] && ++found == which)
         break;
     }
 
   return i;
 }
 
-static unsigned int
-get_sign_pos (const struct tib_expr *expr, unsigned int which)
+static int
+get_sign_pos (const struct tib_expr *expr, int which)
 {
-  unsigned int i, found = 0;
+  int i, found = 0;
 
   tib_expr_foreach (expr, i)
     {
-      if (is_sign_operator (expr->data[i]))
-        ++found;
-
-      if (found == which)
+      if (is_sign_operator (expr->data[i]) && ++found == which)
         break;
     }
 
@@ -474,8 +468,7 @@ get_sign_pos (const struct tib_expr *expr, unsigned int which)
 }
 
 static bool
-good_sign_pos (const struct tib_expr *expr, unsigned int numsign,
-               unsigned int numi)
+good_sign_pos (const struct tib_expr *expr, int numsign, int numi)
 {
   switch (numsign)
     {
@@ -503,9 +496,9 @@ good_sign_pos (const struct tib_expr *expr, unsigned int numsign,
 bool
 tib_eval_isnum (const struct tib_expr *expr)
 {
-  unsigned int signs = sign_count (expr);
-  unsigned int dots = dot_count (expr);
-  unsigned int is = i_count (expr);
+  int signs = sign_count (expr);
+  int dots = dot_count (expr);
+  int is = i_count (expr);
 
   if (signs > 2 || dots > 2 || is > 1)
     return false;
@@ -516,7 +509,7 @@ tib_eval_isnum (const struct tib_expr *expr)
   if (is && get_char_pos (expr, 'i', 1) < expr->len - 1)
     return false;
 
-  unsigned int i;
+  int i;
   tib_expr_foreach (expr, i)
     if (!is_number_char (expr->data[i]))
       return false;
@@ -527,11 +520,11 @@ tib_eval_isnum (const struct tib_expr *expr)
 bool
 tib_eval_isstr (const struct tib_expr *expr)
 {
-  unsigned int len = expr->len;
+  int len = expr->len;
 
   if (len > 1 && '"' == expr->data[0])
     {
-      for (unsigned int i = 1; i < len-1; ++i)
+      for (int i = 1; i < len-1; ++i)
         {
           int c = expr->data[i];
 
@@ -548,11 +541,11 @@ tib_eval_isstr (const struct tib_expr *expr)
 bool
 tib_eval_islist (const struct tib_expr *expr)
 {
-  unsigned int len = expr->len;
+  int len = expr->len;
 
   if (len > 2 && '{' == expr->data[0] && '}' == expr->data[len - 1])
     {
-      for (unsigned int i = 1; i < len-1; ++i)
+      for (int i = 1; i < len-1; ++i)
         {
           int c = expr->data[i];
 
@@ -567,7 +560,7 @@ tib_eval_islist (const struct tib_expr *expr)
 }
 
 static bool
-sub_isnum (const struct tib_expr *expr, unsigned int beg, unsigned int end)
+sub_isnum (const struct tib_expr *expr, int beg, int end)
 {
   if (end <= beg)
     return false;
@@ -583,13 +576,13 @@ sub_isnum (const struct tib_expr *expr, unsigned int beg, unsigned int end)
 bool
 tib_eval_ismatrix (const struct tib_expr *expr)
 {
-  unsigned int len = expr->len;
+  int len = expr->len;
 
   if (len > 4 && '[' == expr->data[0] && '[' == expr->data[1]
       && ']' == expr->data[len - 1])
     {
-      unsigned int i = 2;
-      unsigned int open_brackets = i, fdim = 1, dim = 1, beg = i, end = i;
+      int i = 2;
+      int open_brackets = i, fdim = 1, dim = 1, beg = i, end = i;
       bool first = true;
 
       for (; i < len; ++i)
@@ -643,10 +636,10 @@ tib_eval_ismatrix (const struct tib_expr *expr)
 int
 tib_eval_close_parens (struct tib_expr *expr)
 {
-  unsigned int count = 0, len = expr->len;
+  int count = 0, len = expr->len;
   bool str = false;
 
-  for (unsigned int i = 0; i < len; ++i)
+  for (int i = 0; i < len; ++i)
     {
       int c = expr->data[i];
 

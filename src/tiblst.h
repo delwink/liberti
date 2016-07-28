@@ -1,6 +1,6 @@
 /*
  *  libtib - Read, write, and evaluate TI BASIC programs
- *  Copyright (C) 2015 Delwink, LLC
+ *  Copyright (C) 2015-2016 Delwink, LLC
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as published by
@@ -42,18 +42,18 @@ void
 tib_free_lst (struct tib_lst *lst);
 
 int
-tib_lst_insert (struct tib_lst *lst, TIB *t, size_t index);
+tib_lst_insert (struct tib_lst *lst, TIB *t, int index);
 
 int
 tib_lst_push (struct tib_lst *lst, TIB *t);
 
 void
-tib_lst_remove (struct tib_lst *lst, size_t index);
+tib_lst_remove (struct tib_lst *lst, int index);
 
-size_t
+int
 tib_lst_len (const struct tib_lst *lst);
 
 TIB *
-tib_lst_ref (const struct tib_lst *lst, size_t index);
+tib_lst_ref (const struct tib_lst *lst, int index);
 
 #endif

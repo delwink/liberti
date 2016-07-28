@@ -254,7 +254,7 @@ entry_move_cursor (struct state *state, int distance)
     {
       distance *= -1;
 
-      if (state->entry_cursor > (unsigned int) distance)
+      if (state->entry_cursor > distance)
         state->entry_cursor -= distance;
       else
         state->entry_cursor = 0;
