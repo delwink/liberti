@@ -250,22 +250,12 @@ state_destroy (struct state *state)
 void
 entry_move_cursor (struct state *state, int distance)
 {
-  if (distance < 0)
-    {
-      distance *= -1;
+  state->entry_cursor += distance;
 
-      if (state->entry_cursor > distance)
-        state->entry_cursor -= distance;
-      else
-        state->entry_cursor = 0;
-    }
-  else
-    {
-      state->entry_cursor += distance;
-
-      if (state->entry_cursor > state->entry.len)
-        state->entry_cursor = state->entry.len;
-    }
+  if (state->entry_cursor > state->entry.len)
+    state->entry_cursor = state->entry.len;
+  else if (state->entry_cursor < 0)
+    state->entry_cursor = 0;
 
   state->action_state = STATE_NORMAL;
 }
