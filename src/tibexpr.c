@@ -251,6 +251,26 @@ tib_expr_push (struct tib_expr *self, int c)
 }
 
 int
+tib_expr_indexof (const struct tib_expr *self, int c)
+{
+  for (int i = 0; i < self->len; ++i)
+    if (c == self->data[i])
+      return i;
+
+  return -1;
+}
+
+int
+tib_expr_indexof_r (const struct tib_expr *self, int c)
+{
+  for (int i = self->len - 1; i >= 0; --i)
+    if (c == self->data[i])
+      return i;
+
+  return -1;
+}
+
+int
 tib_subexpr (struct tib_expr *dest, const struct tib_expr *src, int beg,
              int end)
 {

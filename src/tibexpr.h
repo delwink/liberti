@@ -57,6 +57,12 @@ int
 tib_expr_push (struct tib_expr *self, int c);
 
 int
+tib_expr_indexof (const struct tib_expr *self, int c);
+
+int
+tib_expr_indexof_r (const struct tib_expr *self, int c);
+
+int
 tib_subexpr (struct tib_expr *dest, const struct tib_expr *src, int beg,
              int end);
 
