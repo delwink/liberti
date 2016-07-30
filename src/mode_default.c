@@ -23,14 +23,13 @@
 #include "keys.h"
 #include "log.h"
 #include "mode_default.h"
-#include "tibchar.h"
 #include "util.h"
 
 static SDL_Surface *
-render_line (const struct tib_expr *line)
+render_line (const struct tib_expr *line, unsigned int *width)
 {
   int rc;
-  char *s = tib_expr_tostr (line);
+  char *s = get_expr_display_str (line);
   if (!s)
     {
       error ("Error converting expression to string");
@@ -47,7 +46,7 @@ render_line (const struct tib_expr *line)
 
   for (unsigned int i = 0; i < len; ++i)
     {
-      SDL_Surface *part = get_font_char (s[i]);
+      SDL_Surface *part = get_font_char ((unsigned char) s[i]);
 
       pos.x += 6;
       if (pos.x >= 96)
@@ -96,6 +95,8 @@ render_line (const struct tib_expr *line)
       pos.x += 6;
     }
 
+  *width = min (16, len) * 6;
+
  end:
   free (s);
   return final;
@@ -105,12 +106,14 @@ static void
 draw_line (const struct tib_expr *line, SDL_Surface *final,
            unsigned int *height, bool right_align)
 {
-  SDL_Surface *line_render = render_line (line);
+  unsigned int width;
+
+  SDL_Surface *line_render = render_line (line, &width);
   if (line_render)
     {
       SDL_Rect pos;
       if (right_align)
-        pos.x = 96 - (line->len * 6);
+        pos.x = 96 - width;
       else
         pos.x = 0;
 

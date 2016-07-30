@@ -85,7 +85,8 @@ tib_exprcat (struct tib_expr *dest, const struct tib_expr *src)
 }
 
 char *
-tib_expr_tostr (const struct tib_expr *self)
+tib_expr_tostr_f (const struct tib_expr *self,
+                  const char *(*get_special) (int))
 {
   if (!self->data)
     {
@@ -96,7 +97,7 @@ tib_expr_tostr (const struct tib_expr *self)
   int i, len = 1;
   tib_expr_foreach (self, i)
     {
-      const char *special = tib_special_char_text (self->data[i]);
+      const char *special = get_special (self->data[i]);
       if (special)
         len += strlen (special);
       else
@@ -113,7 +114,7 @@ tib_expr_tostr (const struct tib_expr *self)
   int bump = 0;
   tib_expr_foreach (self, i)
     {
-      const char *special = tib_special_char_text (self->data[i]);
+      const char *special = get_special (self->data[i]);
       if (special)
         {
           out[i + bump] = '\0';
@@ -128,6 +129,12 @@ tib_expr_tostr (const struct tib_expr *self)
 
   out[i + bump] = '\0';
   return out;
+}
+
+char *
+tib_expr_tostr (const struct tib_expr *self)
+{
+  return tib_expr_tostr_f (self, tib_special_char_text);
 }
 
 int

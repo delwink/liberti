@@ -42,6 +42,10 @@ int
 tib_exprcat (struct tib_expr *dest, const struct tib_expr *src);
 
 char *
+tib_expr_tostr_f (const struct tib_expr *self,
+                  const char *(*get_special) (int));
+
+char *
 tib_expr_tostr (const struct tib_expr *self);
 
 int

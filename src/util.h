@@ -24,6 +24,15 @@ int
 load_expr (struct tib_expr *dest, const char *src);
 
 int
+load_expr_num (struct tib_expr *dest, const char *src);
+
+char *
+get_expr_display_str (const struct tib_expr *expr);
+
+int
 max (int x, int y);
+
+int
+min (int x, int y);
 
 #endif

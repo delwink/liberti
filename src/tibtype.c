@@ -311,7 +311,7 @@ complex_toexpr (struct tib_expr *dest, gsl_complex value)
     {
       format_double_str (buf, GSL_REAL (value));
 
-      rc = load_expr (dest, buf);
+      rc = load_expr_num (dest, buf);
       if (rc)
         return rc;
     }
@@ -328,7 +328,7 @@ complex_toexpr (struct tib_expr *dest, gsl_complex value)
       if (GSL_IMAG (value) != 1.0)
         {
           format_double_str (buf, GSL_IMAG (value));
-          rc = load_expr (dest, buf);
+          rc = load_expr_num (dest, buf);
           if (rc)
             return rc;
         }
