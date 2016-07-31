@@ -57,13 +57,18 @@ func_paren (const struct tib_expr *expr)
 static TIB *
 func_sin (const struct tib_expr *expr)
 {
-  gsl_complex num;
-
-  tib_errno = tib_expr_parse_complex (expr, &num);
-  if (tib_errno)
+  TIB *val = tib_eval (expr);
+  if (!val)
     return NULL;
 
-  num = gsl_complex_sin (num);
+  if (tib_type (val) != TIB_TYPE_COMPLEX)
+    {
+      tib_errno = TIB_ETYPE;
+      tib_decref (val);
+    }
+
+  gsl_complex num = gsl_complex_sin (tib_complex_value (val));
+  tib_decref (val);
 
   return tib_new_complex (GSL_REAL (num), GSL_IMAG (num));
 }

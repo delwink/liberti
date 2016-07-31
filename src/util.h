@@ -26,6 +26,9 @@ load_expr (struct tib_expr *dest, const char *src);
 int
 load_expr_num (struct tib_expr *dest, const char *src);
 
+const char *
+display_special_char (int c);
+
 char *
 get_expr_display_str (const struct tib_expr *expr);
 

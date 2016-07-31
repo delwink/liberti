@@ -16,6 +16,7 @@
  */
 
 #include "keys.h"
+#include "tibchar.h"
 
 static const SDL_Keycode UNCHANGED[] =
   {
@@ -58,6 +59,14 @@ normalize_keycode (SDL_Keycode code, SDL_Keymod mod)
 
         case SDLK_0:
           return ')';
+        }
+    }
+  else
+    {
+      switch (code)
+        {
+        case SDLK_s:
+          return TIB_CHAR_SIN;
         }
     }
 

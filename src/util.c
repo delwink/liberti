@@ -52,8 +52,8 @@ load_expr_num (struct tib_expr *dest, const char *src)
   return 0;
 }
 
-static const char *
-display_special (int c)
+const char *
+display_special_char (int c)
 {
   static const int SKIPS[] =
     {
@@ -95,7 +95,7 @@ display_special (int c)
 char *
 get_expr_display_str (const struct tib_expr *expr)
 {
-  return tib_expr_tostr_f (expr, display_special);
+  return tib_expr_tostr_f (expr, display_special_char);
 }
 
 int

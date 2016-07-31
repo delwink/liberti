@@ -145,7 +145,20 @@ draw_cursor (const struct state *state, SDL_Surface *frame)
   else if (STATE_ALPHA == state->action_state || mod & KMOD_SHIFT)
     c += 2;
 
-  SDL_Rect pos = { .x = (6 * (state->entry_cursor % 16)), .y = (64 - 8) };
+  int x = 0;
+  for (int i = 0; i < state->entry_cursor; ++i)
+    {
+      const char *special = display_special_char (state->entry.data[i]);
+      if (special)
+        x += strlen (special);
+      else
+        ++x;
+
+      if (x >= 16)
+        x %= 16;
+    }
+
+  SDL_Rect pos = { .x = (6 * x), .y = (64 - 8) };
   SDL_Surface *tile = get_font_char (c);
 
   int rc = SDL_BlitSurface (tile, NULL, frame, &pos);
