@@ -85,17 +85,30 @@ split_number_args (const struct tib_expr *expr, ...)
     {
       if (',' == *end || end + 1 == expr->data + expr->len)
         {
-          unsigned int start = beg - expr->data, stop = end - expr->data - 1;
+          int start = beg - expr->data, stop = end - expr->data - 1;
           if (end + 1 == expr->data + expr->len)
             ++stop;
 
           struct tib_expr arg;
           tib_subexpr (&arg, expr, start, stop);
 
+          TIB *t = tib_eval (&arg);
+          if (!t)
+            {
+              rc = tib_errno;
+              break;
+            }
+
+          if (tib_type (t) != TIB_TYPE_COMPLEX)
+            {
+              tib_decref (t);
+              tib_errno = TIB_ETYPE;
+              break;
+            }
+
           gsl_complex *out = va_arg (ap, gsl_complex *);
-          rc = tib_expr_parse_complex (&arg, out);
-          if (rc)
-            break;
+          *out = tib_complex_value (t);
+          tib_decref (t);
 
           beg = end + 1;
         }
