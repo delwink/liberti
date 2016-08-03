@@ -78,13 +78,26 @@ static int
 split_number_args (const struct tib_expr *expr, ...)
 {
   const int *beg, *end;
-  int rc = 0;
+  int rc = 0, numpar = 0;
   va_list ap;
 
   va_start (ap, expr);
   for (beg = expr->data, end = beg; end < expr->data + expr->len; ++end)
     {
-      if (',' == *end || end + 1 == expr->data + expr->len)
+      if (tib_is_func (*end))
+        {
+          ++numpar;
+        }
+      else if (')' == *end)
+        {
+          if (--numpar < 0)
+            {
+              rc = TIB_ESYNTAX;
+              break;
+            }
+        }
+      else if (0 == numpar &&
+               (',' == *end || end + 1 == expr->data + expr->len))
         {
           int start = beg - expr->data, stop = end - expr->data - 1;
           if (end + 1 == expr->data + expr->len)
