@@ -157,16 +157,16 @@ tib_eval (const struct tib_expr *in)
     return tib_empty ();
 
   /* check for store operator */
-  int sto_index = tib_expr_indexof (in, TIB_CHAR_STO);
-  if (sto_index >= 0)
+  i = tib_expr_indexof (in, TIB_CHAR_STO);
+  if (i >= 0)
     {
-      if (sto_index != in->len - 2 || 0 == sto_index)
+      if (i != in->len - 2 || 0 == i)
         {
           tib_errno = TIB_ESYNTAX;
           return NULL;
         }
 
-      int c = in->data[sto_index + 1];
+      int c = in->data[i + 1];
       if ((c < 'A' || c > 'Z') && c != TIB_CHAR_THETA)
         {
           tib_errno = TIB_ESYNTAX;
@@ -174,7 +174,7 @@ tib_eval (const struct tib_expr *in)
         }
 
       struct tib_expr e;
-      tib_subexpr (&e, in, 0, sto_index);
+      tib_subexpr (&e, in, 0, i);
 
       TIB *stoval = tib_eval (&e);
       if (NULL == stoval)
