@@ -151,9 +151,9 @@ do_arith (struct tib_lst *resolved, size_t i, int operator, char arith1,
 TIB *
 tib_eval (const struct tib_expr *in)
 {
-  int i, len = in->len;
+  int i;
 
-  if (0 == len)
+  if (0 == in->len)
     return tib_empty ();
 
   /* check for store operator */
@@ -163,15 +163,14 @@ tib_eval (const struct tib_expr *in)
         continue;
 
       int c = in->data[++i];
-      if ((i != len - 1) || ((c < 'A' || c > 'Z') && c != TIB_CHAR_THETA))
+      if ((i != in->len - 1) || ((c < 'A' || c > 'Z') && c != TIB_CHAR_THETA))
         {
           tib_errno = TIB_ESYNTAX;
           return NULL;
         }
 
-      int end = len - 3;
       struct tib_expr e;
-      tib_subexpr (&e, in, 0, end);
+      tib_subexpr (&e, in, 0, in->len - 2);
 
       TIB *stoval = tib_eval (&e);
       if (NULL == stoval)
@@ -195,12 +194,14 @@ tib_eval (const struct tib_expr *in)
   /* check for implicit closing parentheses and close them */
   tib_errno = tib_eval_close_parens (&expr);
   if (tib_errno)
-    return NULL;
+    {
+      tib_expr_destroy (&expr);
+      return NULL;
+    }
 
   /* add multiplication operators between implicit multiplications */
-  len = expr.len;
   bool add = expr.data[0] != '"';
-  for (i = 1; i < len - 1; ++i)
+  for (i = 0; i < expr.len; ++i)
     {
       int c = expr.data[i];
 
@@ -210,19 +211,28 @@ tib_eval (const struct tib_expr *in)
         }
       else if (add)
         {
-          if (is_left_paren (c) && needs_mult_left (expr.data[i - 1]))
+          if (tib_is_var (c))
             {
-              tib_errno = tib_expr_insert (&expr, i++, '*');
-              ++len;
+              if (i > 0 && needs_mult_left (expr.data[i - 1]))
+                tib_errno = tib_expr_insert (&expr, i++, '*');
+
+              if (!tib_errno && i < expr.len - 1
+                  && needs_mult_right (expr.data[i + 1]))
+                tib_errno = tib_expr_insert (&expr, ++i, '*');
             }
-          else if (')' == c && needs_mult_right (expr.data[i + 1]))
+          else if (i > 0 && i < expr.len - 1)
             {
-              tib_errno = tib_expr_insert (&expr, ++i, '*');
-              ++len;
+              if (is_left_paren (c) && needs_mult_left (expr.data[i - 1]))
+                tib_errno = tib_expr_insert (&expr, i++, '*');
+              else if (')' == c && needs_mult_right (expr.data[i + 1]))
+                tib_errno = tib_expr_insert (&expr, ++i, '*');
             }
 
           if (tib_errno)
-            return NULL;
+            {
+              tib_expr_destroy (&expr);
+              return NULL;
+            }
         }
     }
 
@@ -247,7 +257,7 @@ tib_eval (const struct tib_expr *in)
 
   /* resolve operand expressions, and store the values for later */
   int beg = 0, numpar = 0;
-  for (i = 0; i < len; ++i)
+  tib_expr_foreach (&expr, i)
     {
       int c = expr.data[i];
 
