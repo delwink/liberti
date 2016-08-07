@@ -28,9 +28,15 @@
 #define is_left_paren tib_is_func
 
 static bool
+is_var_char (int c)
+{
+  return isupper (c) || TIB_CHAR_THETA == c;
+}
+
+static bool
 needs_mult_common (int c)
 {
-  return (isdigit (c) || tib_is_var (c));
+  return (isdigit (c) || is_var_char (c));
 }
 
 static bool
@@ -90,7 +96,7 @@ single_eval (const struct tib_expr *expr)
   if (0 == len)
     return tib_empty ();
 
-  if (1 == len && tib_is_var (expr->data[0]))
+  if (1 == len && is_var_char (expr->data[0]))
     return tib_var_get (expr->data[0]);
 
   int func = tib_eval_surrounded (expr);
@@ -167,7 +173,7 @@ tib_eval (const struct tib_expr *in)
         }
 
       int c = in->data[i + 1];
-      if ((c < 'A' || c > 'Z') && c != TIB_CHAR_THETA)
+      if (!is_var_char (c))
         {
           tib_errno = TIB_ESYNTAX;
           return NULL;
@@ -215,7 +221,7 @@ tib_eval (const struct tib_expr *in)
         }
       else if (add)
         {
-          if (tib_is_var (c))
+          if (is_var_char (c))
             {
               if (i > 0 && needs_mult_left (expr.data[i - 1]))
                 tib_errno = tib_expr_insert (&expr, i++, '*');
