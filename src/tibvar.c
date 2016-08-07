@@ -22,8 +22,8 @@
 
 struct varlist
 {
-  size_t len;
   tib_Variable *vars;
+  int len;
 };
 
 static struct varlist varlist =
@@ -71,8 +71,7 @@ tib_var_set (int key, const TIB *value)
   if (!tib_is_var (key))
     return add_var (key, value);
 
-  size_t i;
-  for (i = 0; i < varlist.len; ++i)
+  for (int i = 0; i < varlist.len; ++i)
     {
       if (key == varlist.vars[i].key)
         {
@@ -101,8 +100,7 @@ tib_var_get (int key)
       .value.number = { .dat = {0, 0} }
     };
 
-  size_t i;
-  for (i = 0; i < varlist.len; ++i)
+  for (int i = 0; i < varlist.len; ++i)
     if (key == varlist.vars[i].key)
       return tib_copy (varlist.vars[i].value);
 
@@ -112,8 +110,7 @@ tib_var_get (int key)
 bool
 tib_is_var (int key)
 {
-  size_t i;
-  for (i = 0; i < varlist.len; ++i)
+  for (int i = 0; i < varlist.len; ++i)
     if (key == varlist.vars[i].key)
       return true;
 
