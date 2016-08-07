@@ -26,6 +26,7 @@
 #include "skin.h"
 #include "tibchar.h"
 #include "tibfunction.h"
+#include "tibvar.h"
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -270,6 +271,7 @@ main (int argc, char *argv[])
   font_free ();
   tib_keyword_free ();
   tib_registry_free ();
+  tib_var_free ();
 
   if (state_init)
     state_destroy (&state);
