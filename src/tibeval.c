@@ -25,8 +25,6 @@
 #include "tiblst.h"
 #include "tibvar.h"
 
-#define is_left_paren tib_is_func
-
 static bool
 is_var_char (int c)
 {
@@ -42,7 +40,7 @@ needs_mult_common (int c)
 static bool
 needs_mult_right (int c)
 {
-  return (needs_mult_common (c) || is_left_paren (c));
+  return (needs_mult_common (c) || tib_is_func (c));
 }
 
 static bool
@@ -232,7 +230,7 @@ tib_eval (const struct tib_expr *in)
             }
           else if (i > 0 && i < expr.len - 1)
             {
-              if (is_left_paren (c) && needs_mult_left (expr.data[i - 1]))
+              if (tib_is_func (c) && needs_mult_left (expr.data[i - 1]))
                 tib_errno = tib_expr_insert (&expr, i++, '*');
               else if (')' == c && needs_mult_right (expr.data[i + 1]))
                 tib_errno = tib_expr_insert (&expr, ++i, '*');
@@ -271,7 +269,7 @@ tib_eval (const struct tib_expr *in)
     {
       int c = expr.data[i];
 
-      if (is_left_paren (c))
+      if (tib_is_func (c))
         {
           ++numpar;
         }
@@ -409,7 +407,7 @@ tib_eval_surrounded (const struct tib_expr *expr)
 {
   int count = 0, opening = expr->data[0], len = expr->len;
 
-  if (len > 2 && is_left_paren (opening) && ')' == expr->data[len - 1])
+  if (len > 2 && tib_is_func (opening) && ')' == expr->data[len - 1])
     {
       count = 1;
 
@@ -417,7 +415,7 @@ tib_eval_surrounded (const struct tib_expr *expr)
         {
           int c = expr->data[i];
 
-          if (is_left_paren (c))
+          if (tib_is_func (c))
             ++count;
           else if (')' == c && --count == 0)
             return 0;
@@ -668,7 +666,7 @@ tib_eval_close_parens (struct tib_expr *expr)
 
       if (!str)
         {
-          if (is_left_paren (c))
+          if (tib_is_func (c))
             ++count;
 
           if (')' == c)
