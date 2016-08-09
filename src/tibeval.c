@@ -208,7 +208,7 @@ tib_eval (const struct tib_expr *in)
     }
 
   /* add multiplication operators between implicit multiplications */
-  bool add = expr.data[0] != '"';
+  bool add = true;
   for (i = 0; i < expr.len; ++i)
     {
       int c = expr.data[i];
