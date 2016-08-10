@@ -94,17 +94,11 @@ tib_var_set (int key, const TIB *value)
 TIB *
 tib_var_get (int key)
 {
-  static const TIB zero =
-    {
-      .type = TIB_TYPE_COMPLEX,
-      .value.number = { .dat = {0, 0} }
-    };
-
   for (int i = 0; i < varlist.len; ++i)
     if (key == varlist.vars[i].key)
       return tib_copy (varlist.vars[i].value);
 
-  return tib_copy (&zero);
+  return tib_new_complex (0, 0);
 }
 
 bool
