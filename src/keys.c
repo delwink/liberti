@@ -18,19 +18,13 @@
 #include "keys.h"
 #include "tibchar.h"
 
+static const SDL_Keycode UNCHANGED_RANGES[] =
+  {
+    SDLK_0, SDLK_9
+  };
+
 static const SDL_Keycode UNCHANGED[] =
   {
-    SDLK_0,
-    SDLK_1,
-    SDLK_2,
-    SDLK_3,
-    SDLK_4,
-    SDLK_5,
-    SDLK_6,
-    SDLK_7,
-    SDLK_8,
-    SDLK_9,
-
     SDLK_PERIOD,
     SDLK_MINUS,
     SDLK_SLASH,
@@ -68,14 +62,24 @@ normalize_keycode (SDL_Keycode code, SDL_Keymod mod)
     {
       switch (code)
         {
+        case SDLK_KP_0:
+          return '0';
+
         case SDLK_s:
           return TIB_CHAR_SIN;
         }
     }
 
+  for (unsigned int i = 0; i < (sizeof UNCHANGED_RANGES / sizeof (int)); ++i)
+    if (code >= UNCHANGED_RANGES[i++] && code <= UNCHANGED_RANGES[i])
+      return code;
+
   for (unsigned int i = 0; i < (sizeof UNCHANGED / sizeof (int)); ++i)
     if (code == UNCHANGED[i])
       return code;
+
+  if (code >= SDLK_KP_1 && code <= SDLK_KP_9)
+    return code - SDLK_KP_1 + '1';
 
   if (code >= SDLK_a && code <= SDLK_z)
     return code - SDLK_a + 'A';
