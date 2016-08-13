@@ -65,6 +65,21 @@ normalize_keycode (SDL_Keycode code, SDL_Keymod mod)
         case SDLK_KP_0:
           return '0';
 
+        case SDLK_KP_PERIOD:
+          return '.';
+
+        case SDLK_KP_PLUS:
+          return '+';
+
+        case SDLK_KP_MINUS:
+          return '-';
+
+        case SDLK_KP_MULTIPLY:
+          return '*';
+
+        case SDLK_KP_DIVIDE:
+          return '/';
+
         case SDLK_s:
           return TIB_CHAR_SIN;
         }
