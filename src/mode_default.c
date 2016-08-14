@@ -234,6 +234,14 @@ default_input (struct screen *screen, SDL_KeyboardEvent *key)
         tib_expr_delete (&state->entry, state->entry_cursor);
       return 0;
 
+    case SDLK_END:
+      state->entry_cursor = state->entry.len;
+      break;
+
+    case SDLK_HOME:
+      state->entry_cursor = 0;
+      break;
+
     case SDLK_INSERT:
       state->insert_mode = !state->insert_mode;
       return 0;
