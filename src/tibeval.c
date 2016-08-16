@@ -58,7 +58,7 @@ is_sign_operator (int c)
 static bool
 is_math_operator (int c)
 {
-  return is_sign_operator (c) || '*' == c || '/' == c || '^' == c;
+  return is_sign_operator (c) || '*' == c || '/' == c || '^' == c || '!' == c;
 }
 
 unsigned int
@@ -286,10 +286,6 @@ tib_eval (const struct tib_expr *in)
 
       if (0 == numpar && is_math_operator (c))
         {
-          tib_errno = tib_expr_push (&calc, c);
-          if (tib_errno)
-            break;
-
           struct tib_expr sub;
           tib_subexpr (&sub, &expr, beg, i);
 
@@ -297,12 +293,62 @@ tib_eval (const struct tib_expr *in)
           if (!temp)
             break;
 
-          tib_errno = tib_lst_push (resolved, temp);
-          tib_decref (temp);
-          if (tib_errno)
-            break;
+          if ('!' == c)
+            {
+              do
+                {
+                  TIB *fact = tib_factorial (temp);
+                  tib_decref (temp);
+                  if (!fact)
+                    break;
 
-          beg = i + 1;
+                  temp = fact;
+                }
+              while (++i < expr.len && '!' == (c = expr.data[i]));
+
+              if (tib_errno)
+                break;
+
+              tib_errno = tib_lst_push (resolved, temp);
+              tib_decref (temp);
+              if (tib_errno)
+                break;
+
+              if (i < expr.len)
+                {
+                  c = expr.data[i];
+
+                  if (is_math_operator (c))
+                    {
+                      tib_errno = tib_expr_push (&calc, c);
+                      if (tib_errno)
+                        break;
+
+                      ++i;
+                    }
+                  else
+                    {
+                      tib_errno = tib_expr_push (&calc, '*');
+                      if (tib_errno)
+                        break;
+                    }
+
+                  beg = i;
+                }
+            }
+          else
+            {
+              tib_errno = tib_lst_push (resolved, temp);
+              tib_decref (temp);
+              if (tib_errno)
+                break;
+
+              tib_errno = tib_expr_push (&calc, c);
+              if (tib_errno)
+                break;
+
+              beg = i + 1;
+            }
         }
     }
 
@@ -319,7 +365,7 @@ tib_eval (const struct tib_expr *in)
           if (tib_errno)
             goto end;
         }
-      else
+      else if (expr.data[expr.len - 1] != '!')
         {
           struct tib_expr sub;
           tib_subexpr (&sub, &expr, beg, i);

@@ -42,6 +42,9 @@ normalize_keycode (SDL_Keycode code, SDL_Keymod mod)
         case SDLK_EQUALS:
           return '+';
 
+        case SDLK_1:
+          return '!';
+
         case SDLK_4:
           return TIB_CHAR_STO;
 

@@ -111,6 +111,9 @@ TIB *
 tib_root (const TIB *t, gsl_complex root);
 
 TIB *
+tib_factorial (const TIB *t);
+
+TIB *
 tib_log (const TIB *t);
 
 #endif

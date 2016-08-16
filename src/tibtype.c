@@ -21,6 +21,7 @@
 #include <gsl/gsl_complex_math.h>
 #include <gsl/gsl_blas.h>
 #include <gsl/gsl_linalg.h>
+#include <gsl/gsl_sf_gamma.h>
 
 #include "tiberr.h"
 #include "tibtype.h"
@@ -1098,4 +1099,16 @@ tib_pow (const TIB *t, gsl_complex exp)
       tib_errno = TIB_ETYPE;
       return NULL;
     }
+}
+
+TIB *
+tib_factorial (const TIB *t)
+{
+  if (t->type != TIB_TYPE_COMPLEX || GSL_IMAG (t->value.number))
+    {
+      tib_errno = TIB_ETYPE;
+      return NULL;
+    }
+
+  return tib_new_complex (gsl_sf_gamma (GSL_REAL (t->value.number) + 1), 0);
 }
