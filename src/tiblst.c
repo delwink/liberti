@@ -65,30 +65,24 @@ tib_lst_insert (struct tib_lst *lst, TIB *t, int index)
   new->val = t;
 
   if (0 == index)
-    {
-      lst->beg = new;
-      new->prev = NULL;
-    }
+    new->prev = NULL;
   else
-    {
-      new->prev = el_ref (lst, index - 1);
-    }
+    new->prev = el_ref (lst, index - 1);
 
   if (index == len)
-    {
-      lst->end = new;
-      new->next = NULL;
-    }
+    new->next = NULL;
   else
-    {
-      new->next = el_ref (lst, index + 1);
-    }
+    new->next = el_ref (lst, index);
 
   if (new->next)
     new->next->prev = new;
+  else
+    lst->end = new;
 
   if (new->prev)
     new->prev->next = new;
+  else
+    lst->beg = new;
 
   return 0;
 }

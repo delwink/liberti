@@ -35,7 +35,15 @@ static const SDL_Keycode UNCHANGED[] =
 int
 normalize_keycode (SDL_Keycode code, SDL_Keymod mod)
 {
-  if (mod & KMOD_SHIFT)
+  if (mod & KMOD_CTRL)
+    {
+      switch (code)
+        {
+        case SDLK_e:
+          return TIB_CHAR_EPOW10;
+        }
+    }
+  else if (mod & KMOD_SHIFT)
     {
       switch (code)
         {

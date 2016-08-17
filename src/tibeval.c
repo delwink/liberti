@@ -86,6 +86,30 @@ contains_i (const struct tib_expr *expr)
   return false;
 }
 
+static int
+replace_epow10 (struct tib_expr *expr)
+{
+  int i;
+
+  tib_expr_foreach (expr, i)
+    {
+      if (TIB_CHAR_EPOW10 == expr->data[i])
+        {
+          expr->data[i++] = '*';
+
+          const char *s = "10^";
+          for (; *s != '\0'; ++s, ++i)
+            {
+              int rc = tib_expr_insert (expr, i, *s);
+              if (rc)
+                return rc;
+            }
+        }
+    }
+
+  return 0;
+}
+
 static TIB *
 single_eval (const struct tib_expr *expr)
 {
@@ -201,6 +225,14 @@ tib_eval (const struct tib_expr *in)
 
   /* check for implicit closing parentheses and close them */
   tib_errno = tib_eval_close_parens (&expr);
+  if (tib_errno)
+    {
+      tib_expr_destroy (&expr);
+      return NULL;
+    }
+
+  /* replace power of 10 E character with "*10^" */
+  tib_errno = replace_epow10 (&expr);
   if (tib_errno)
     {
       tib_expr_destroy (&expr);
