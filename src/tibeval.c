@@ -241,7 +241,7 @@ tib_eval (const struct tib_expr *in)
 
   /* add multiplication operators between implicit multiplications */
   bool add = true;
-  for (i = 0; i < expr.len; ++i)
+  tib_expr_foreach (&expr, i)
     {
       int c = expr.data[i];
 
@@ -297,9 +297,19 @@ tib_eval (const struct tib_expr *in)
 
   /* resolve operand expressions, and store the values for later */
   int beg = 0, numpar = 0;
+  add = true;
   tib_expr_foreach (&expr, i)
     {
       int c = expr.data[i];
+
+      if ('"' == c)
+        {
+          add = !add;
+          continue;
+        }
+
+      if (!add)
+        continue;
 
       if (tib_is_func (c))
         {
