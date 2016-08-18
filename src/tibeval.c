@@ -25,6 +25,41 @@
 #include "tiblst.h"
 #include "tibvar.h"
 
+enum math_operator_function_type
+  {
+    T,
+    TC,
+    TT
+  };
+
+struct math_operator
+{
+  union
+  {
+    TIB *(*t) (const TIB *);
+    TIB *(*tc) (const TIB *, gsl_complex);
+    TIB *(*tt) (const TIB *, const TIB *);
+  } func;
+
+  enum math_operator_function_type function_type;
+
+  int c;
+  int priority;
+};
+
+static const struct math_operator OPERATORS[] =
+  {
+    { { .t = tib_factorial }, T,  '!', 0 },
+    { { .tc = tib_pow },      TC, '^', 1 },
+    { { .tt = tib_mul },      TT, '*', 2 },
+    { { .tt = tib_div },      TT, '/', 2 },
+    { { .tt = tib_add },      TT, '+', 3 },
+    { { .tt = tib_sub },      TT, '-', 3 }
+  };
+
+#define NUM_MATH_OPERATORS (sizeof OPERATORS / sizeof (struct math_operator))
+#define LAST_PRIORITY 3
+
 static bool
 is_var_char (int c)
 {
@@ -55,10 +90,20 @@ is_sign_operator (int c)
   return ('+' == c || '-' == c);
 }
 
+static const struct math_operator *
+get_math_operator (int c)
+{
+  for (unsigned int i = 0; i < NUM_MATH_OPERATORS; ++i)
+    if (OPERATORS[i].c == c)
+      return &OPERATORS[i];
+
+  return NULL;
+}
+
 static bool
 is_math_operator (int c)
 {
-  return is_sign_operator (c) || '*' == c || '/' == c || '^' == c || '!' == c;
+  return get_math_operator (c) != NULL;
 }
 
 unsigned int
@@ -150,30 +195,6 @@ single_eval (const struct tib_expr *expr)
 
   tib_errno = TIB_ESYNTAX;
   return NULL;
-}
-
-static void
-do_arith (struct tib_lst *resolved, size_t i, int operator, char arith1,
-          TIB *(*func1) (const TIB *t1, const TIB *t2), char arith2,
-          TIB *(*func2) (const TIB *t1, const TIB *t2))
-{
-  TIB *temp;
-
-  if (arith1 == operator)
-    temp = func1 (tib_lst_ref (resolved, i), tib_lst_ref (resolved, i + 1));
-  else if (arith2 == operator)
-    temp = func2 (tib_lst_ref (resolved, i), tib_lst_ref (resolved, i + 1));
-  else
-    return;
-
-  if (NULL == temp)
-    return;
-
-  tib_lst_remove (resolved, i);
-  tib_lst_remove (resolved, i);
-
-  tib_errno = tib_lst_insert (resolved, temp, i);
-  tib_decref (temp);
 }
 
 TIB *
@@ -326,33 +347,36 @@ tib_eval (const struct tib_expr *in)
           --numpar;
         }
 
-      if (0 == numpar && is_math_operator (c))
+      const struct math_operator *oper;
+      if (0 == numpar && (oper = get_math_operator (c)) != NULL)
         {
           struct tib_expr sub;
           tib_subexpr (&sub, &expr, beg, i);
 
-          TIB *temp = single_eval (&sub);
-          if (!temp)
+          TIB *part = single_eval (&sub);
+          if (!part)
             break;
 
-          if ('!' == c)
+          if (T == oper->function_type)
             {
               do
                 {
-                  TIB *fact = tib_factorial (temp);
-                  tib_decref (temp);
-                  if (!fact)
+                  TIB *temp = oper->func.t (part);
+                  tib_decref (part);
+                  if (!temp)
                     break;
 
-                  temp = fact;
+                  part = temp;
                 }
-              while (++i < expr.len && '!' == (c = expr.data[i]));
+              while (++i < expr.len
+                     && (oper = get_math_operator (expr.data[i])) != NULL
+                     && T == oper->function_type);
 
               if (tib_errno)
                 break;
 
-              tib_errno = tib_lst_push (resolved, temp);
-              tib_decref (temp);
+              tib_errno = tib_lst_push (resolved, part);
+              tib_decref (part);
               if (tib_errno)
                 break;
 
@@ -380,8 +404,8 @@ tib_eval (const struct tib_expr *in)
             }
           else
             {
-              tib_errno = tib_lst_push (resolved, temp);
-              tib_decref (temp);
+              tib_errno = tib_lst_push (resolved, part);
+              tib_decref (part);
               if (tib_errno)
                 break;
 
@@ -396,6 +420,8 @@ tib_eval (const struct tib_expr *in)
 
   if (!tib_errno)
     {
+      const struct math_operator *oper;
+
       if (tib_lst_len (resolved) == 0)
         {
           TIB *temp = single_eval (&expr);
@@ -407,7 +433,8 @@ tib_eval (const struct tib_expr *in)
           if (tib_errno)
             goto end;
         }
-      else if (expr.data[expr.len - 1] != '!')
+      else if (NULL == (oper = get_math_operator (expr.data[expr.len - 1]))
+               || oper->function_type != T)
         {
           struct tib_expr sub;
           tib_subexpr (&sub, &expr, beg, i);
@@ -431,48 +458,59 @@ tib_eval (const struct tib_expr *in)
   if (tib_errno)
     goto end;
 
-  tib_expr_foreach (&calc, i)
+  for (int priority = 0; priority <= LAST_PRIORITY; ++priority)
     {
-      if ('^' == calc.data[i])
+      for (i = 0; i < calc.len; ++i)
         {
-          TIB *power = tib_lst_ref (resolved, i + 1);
-          if (TIB_TYPE_COMPLEX != tib_type (power))
+          const struct math_operator *oper = get_math_operator (calc.data[i]);
+          if (oper->priority != priority)
+            continue;
+
+          TIB *t;
+          unsigned int num_operands;
+          switch (oper->function_type)
             {
-              tib_errno = TIB_ETYPE;
+            case TC:
+              t = tib_lst_ref (resolved, i + 1);
+              if (tib_type (t) != TIB_TYPE_COMPLEX)
+                {
+                  tib_errno = TIB_ETYPE;
+                  goto end;
+                }
+
+              t = oper->func.tc (tib_lst_ref (resolved, i),
+                                 tib_complex_value (t));
+              if (!t)
+                goto end;
+
+              num_operands = 2;
+              break;
+
+            case TT:
+              t = oper->func.tt (tib_lst_ref (resolved, i),
+                                 tib_lst_ref (resolved, i + 1));
+              if (!t)
+                goto end;
+
+              num_operands = 2;
+              break;
+
+            default:
+              tib_errno = TIB_ESYNTAX;
               goto end;
             }
 
-          TIB *temp = tib_pow (tib_lst_ref (resolved, i),
-                               tib_complex_value (power));
-          if (!temp)
-            goto end;
+          for (unsigned int _ = 0; _ < num_operands; ++_)
+            tib_lst_remove (resolved, i);
 
-          tib_lst_remove (resolved, i);
-          tib_lst_remove (resolved, i);
+          tib_errno = tib_lst_insert (resolved, t, i);
+          tib_decref (t);
 
-          tib_errno = tib_lst_insert (resolved, temp, i);
-          tib_decref (temp);
           if (tib_errno)
             goto end;
 
           tib_expr_delete (&calc, i--);
         }
-    }
-
-  int orig_len = tib_lst_len (resolved);
-  tib_expr_foreach (&calc, i)
-    {
-      do_arith (resolved, i - (orig_len - tib_lst_len (resolved)),
-                calc.data[i], '*', tib_mul, '/', tib_div);
-      if (tib_errno)
-        goto end;
-    }
-
-  tib_expr_foreach (&calc, i)
-    {
-      do_arith (resolved, 0, calc.data[i], '+', tib_add, '-', tib_sub);
-      if (tib_errno)
-        goto end;
     }
 
  end:
