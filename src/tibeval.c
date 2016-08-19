@@ -458,7 +458,7 @@ tib_eval (const struct tib_expr *in)
   if (tib_errno)
     goto end;
 
-  for (int priority = 0; priority <= LAST_PRIORITY; ++priority)
+  for (int priority = 1; priority <= LAST_PRIORITY; ++priority)
     {
       for (i = 0; i < calc.len; ++i)
         {
