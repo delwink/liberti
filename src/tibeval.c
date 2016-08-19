@@ -519,8 +519,15 @@ tib_eval (const struct tib_expr *in)
   TIB *out = NULL;
   if (!tib_errno)
     {
-      out = tib_lst_ref (resolved, 0);
-      tib_incref (out);
+      if (tib_lst_len (resolved) != 1)
+        {
+          tib_errno = TIB_ESYNTAX;
+        }
+      else
+        {
+          out = tib_lst_ref (resolved, 0);
+          tib_incref (out);
+        }
     }
 
   tib_free_lst (resolved);
