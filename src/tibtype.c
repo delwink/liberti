@@ -1007,9 +1007,17 @@ is_int (gsl_complex z)
 }
 
 TIB *
-tib_pow (const TIB *t, gsl_complex exp)
+tib_pow (const TIB *t, const TIB *power)
 {
   TIB *temp;
+
+  if (TIB_TYPE_COMPLEX != power->type)
+    {
+      tib_errno = TIB_ETYPE;
+      return NULL;
+    }
+
+  gsl_complex exp = tib_complex_value (power);
 
   if (less_than_0 (exp))
     {

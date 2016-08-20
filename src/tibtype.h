@@ -105,7 +105,7 @@ TIB *
 tib_div (const TIB *t1, const TIB *t2);
 
 TIB *
-tib_pow (const TIB *t, gsl_complex exp);
+tib_pow (const TIB *t, const TIB *power);
 
 TIB *
 tib_root (const TIB *t, gsl_complex root);

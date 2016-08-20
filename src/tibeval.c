@@ -28,7 +28,6 @@
 enum math_operator_function_type
   {
     T,
-    TC,
     TT
   };
 
@@ -37,7 +36,6 @@ struct math_operator
   union
   {
     TIB *(*t) (const TIB *);
-    TIB *(*tc) (const TIB *, gsl_complex);
     TIB *(*tt) (const TIB *, const TIB *);
   } func;
 
@@ -50,7 +48,7 @@ struct math_operator
 static const struct math_operator OPERATORS[] =
   {
     { { .t = tib_factorial }, T,  '!', 0 },
-    { { .tc = tib_pow },      TC, '^', 1 },
+    { { .tt = tib_pow },      TT, '^', 1 },
     { { .tt = tib_mul },      TT, '*', 2 },
     { { .tt = tib_div },      TT, '/', 2 },
     { { .tt = tib_add },      TT, '+', 3 },
@@ -470,22 +468,6 @@ tib_eval (const struct tib_expr *in)
           unsigned int num_operands;
           switch (oper->function_type)
             {
-            case TC:
-              t = tib_lst_ref (resolved, i + 1);
-              if (tib_type (t) != TIB_TYPE_COMPLEX)
-                {
-                  tib_errno = TIB_ETYPE;
-                  goto end;
-                }
-
-              t = oper->func.tc (tib_lst_ref (resolved, i),
-                                 tib_complex_value (t));
-              if (!t)
-                goto end;
-
-              num_operands = 2;
-              break;
-
             case TT:
               t = oper->func.tt (tib_lst_ref (resolved, i),
                                  tib_lst_ref (resolved, i + 1));
