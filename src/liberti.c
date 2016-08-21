@@ -158,6 +158,13 @@ main (int argc, char *argv[])
       goto end;
     }
 
+  rc = tib_var_init ();
+  if (rc)
+    {
+      critical ("Could not initialize default variables: Error %d", rc);
+      goto end;
+    }
+
   rc = tib_registry_init ();
   if (rc)
     {

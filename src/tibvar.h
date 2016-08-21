@@ -28,6 +28,9 @@ typedef struct
   TIB *value;
 } tib_Variable;
 
+int
+tib_var_init (void);
+
 void
 tib_var_free (void);
 

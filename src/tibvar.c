@@ -15,6 +15,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <math.h>
 #include <stdlib.h>
 
 #include "tiberr.h"
@@ -31,6 +32,37 @@ static struct varlist varlist =
     .len = 0,
     .vars = NULL
   };
+
+int
+tib_var_init ()
+{
+  int rc;
+  TIB *t;
+
+#define ADD(K,V)                                \
+  {                                             \
+    t = (V);                                    \
+    if (t)                                      \
+      {                                         \
+        rc = tib_var_set ((K), t);              \
+        tib_decref (t);                         \
+      }                                         \
+    else                                        \
+      {                                         \
+        rc = tib_errno;                         \
+      }                                         \
+                                                \
+    if (rc)                                     \
+      goto end;                                 \
+  }
+
+  ADD ('e', tib_new_complex (2.718281828459045235360287471352662498, 0));
+
+#undef ADD
+
+ end:
+  return rc;
+}
 
 void
 tib_var_free ()
