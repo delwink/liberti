@@ -48,6 +48,9 @@ tib_special_char_text (int c)
     case TIB_CHAR_CLRLIST:
       return "ClrList";
 
+    case TIB_CHAR_COS:
+      return "cos(";
+
     case TIB_CHAR_DELVAR:
       return "DelVar";
 
@@ -200,6 +203,9 @@ tib_special_char_text (int c)
 
     case TIB_CHAR_STOREPIC:
       return "StorePic ";
+
+    case TIB_CHAR_TAN:
+      return "tan(";
 
     case TIB_CHAR_TEXT:
       return "Text(";

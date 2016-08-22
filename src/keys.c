@@ -92,8 +92,14 @@ normalize_keycode (SDL_Keycode code, SDL_Keymod mod)
         case SDLK_KP_DIVIDE:
           return '/';
 
+        case SDLK_c:
+          return TIB_CHAR_COS;
+
         case SDLK_s:
           return TIB_CHAR_SIN;
+
+        case SDLK_t:
+          return TIB_CHAR_TAN;
         }
     }
 

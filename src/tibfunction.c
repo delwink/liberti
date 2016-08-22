@@ -54,34 +54,14 @@ func_paren (const struct tib_expr *expr)
   return tib_eval (expr);
 }
 
-static TIB *
-func_sin (const struct tib_expr *expr)
-{
-  TIB *t = tib_eval (expr);
-  if (!t)
-    return NULL;
-
-  if (tib_type (t) != TIB_TYPE_COMPLEX)
-    {
-      tib_errno = TIB_ETYPE;
-      tib_decref (t);
-      return NULL;
-    }
-
-  gsl_complex num = gsl_complex_sin (tib_complex_value (t));
-  tib_decref (t);
-
-  return tib_new_complex (GSL_REAL (num), GSL_IMAG (num));
-}
-
 static int
-split_number_args (const struct tib_expr *expr, ...)
+split_number_args (const struct tib_expr *expr, int num_params, ...)
 {
   const int *beg, *end;
   int rc = 0, numpar = 0;
   va_list ap;
 
-  va_start (ap, expr);
+  va_start (ap, num_params);
   for (beg = expr->data, end = beg; end < expr->data + expr->len; ++end)
     {
       if (tib_is_func (*end))
@@ -99,7 +79,13 @@ split_number_args (const struct tib_expr *expr, ...)
       else if (0 == numpar &&
                (',' == *end || end + 1 == expr->data + expr->len))
         {
-          int start = beg - expr->data, stop = end - expr->data - 1;
+          if (num_params-- == 0)
+            {
+              rc = TIB_EARGNUM;
+              break;
+            }
+
+          int start = beg - expr->data, stop = end - expr->data;
           if (end + 1 == expr->data + expr->len)
             ++stop;
 
@@ -132,6 +118,38 @@ split_number_args (const struct tib_expr *expr, ...)
   return rc;
 }
 
+static TIB *
+single_parameter_function (const struct tib_expr *expr,
+                           gsl_complex (*f) (gsl_complex))
+{
+  gsl_complex z;
+
+  tib_errno = split_number_args (expr, 1, &z);
+  if (tib_errno)
+    return NULL;
+
+  z = f (z);
+  return tib_new_complex (GSL_REAL (z), GSL_IMAG (z));
+}
+
+static TIB *
+func_sin (const struct tib_expr *expr)
+{
+  return single_parameter_function (expr, gsl_complex_sin);
+}
+
+static TIB *
+func_cos (const struct tib_expr *expr)
+{
+  return single_parameter_function (expr, gsl_complex_cos);
+}
+
+static TIB *
+func_tan (const struct tib_expr *expr)
+{
+  return single_parameter_function (expr, gsl_complex_tan);
+}
+
 static int
 is_int (gsl_complex z)
 {
@@ -159,7 +177,7 @@ func_randint (const struct tib_expr *expr)
     }
 
   gsl_complex min, max, count;
-  tib_errno = split_number_args (expr, &min, &max, &count);
+  tib_errno = split_number_args (expr, 3, &min, &max, &count);
   if (tib_errno)
     return NULL;
 
@@ -203,6 +221,8 @@ tib_registry_init ()
 
   ADD ('(', func_paren);
   ADD (TIB_CHAR_SIN, func_sin);
+  ADD (TIB_CHAR_COS, func_cos);
+  ADD (TIB_CHAR_TAN, func_tan);
   ADD (TIB_CHAR_RANDINT, func_randint);
 
 #undef ADD
