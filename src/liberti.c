@@ -15,11 +15,15 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <errno.h>
 #include <SDL.h>
 #include <SDL_image.h>
 #include <stdbool.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <unistd.h>
 #include <getopt.h>
+#include <wordexp.h>
 
 #include "font.h"
 #include "log.h"
@@ -50,6 +54,14 @@ This is libre software: you are free to change and redistribute it.\n\
 There is NO WARRANTY, to the extent permitted by law.\n\n\
 Written by David McMackins II."
 
+#ifdef RUN_IN_PLACE
+# define USER_DIR "."
+#else
+# define USER_DIR "~/.liberti"
+#endif
+
+#define USER_STATE_PATH "state.conf"
+
 static Uint32
 timer (Uint32 interval, void *data)
 {
@@ -67,16 +79,33 @@ timer (Uint32 interval, void *data)
   return interval;
 }
 
+static char *
+get_conf_path (const char *path)
+{
+  wordexp_t w;
+  int rc = wordexp (USER_DIR, &w, 0);
+  if (rc)
+    return NULL;
+
+  size_t len = strlen (w.we_wordv[0]) + strlen (path) + 2;
+  char *out = malloc (len * sizeof (char));
+  if (out)
+    snprintf (out, len, "%s/%s", w.we_wordv[0], path);
+
+  wordfree (&w);
+  return out;
+}
+
 int
 main (int argc, char *argv[])
 {
-  bool state_init = false;
+  bool user_dir_exists = false, state_file_exists = false, state_init = false;
   int rc = 0;
   SDL_TimerID timer_id = 0;
   SDL_Window *window = NULL;
   Skin *skin = NULL;
 
-  const char *skin_path = NULL;
+  char *skin_path = NULL, *state_path = NULL;
   Uint32 window_flags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE;
 
   struct option longopts[] = 
@@ -182,8 +211,45 @@ main (int argc, char *argv[])
 
   debug ("Screen resolution: %dx%d", display_mode.w, display_mode.h);
 
+  {
+    char *user_dir_path = get_conf_path ("");
+    if (user_dir_path)
+      {
+        rc = mkdir (user_dir_path, 0755);
+        free (user_dir_path);
+        if (rc && EEXIST != errno)
+          {
+            warn ("Failed to create config directory: %s", strerror (errno));
+          }
+        else
+          {
+            user_dir_exists = true;
+
+            state_path = get_conf_path (USER_STATE_PATH);
+            if (state_path)
+              {
+                rc = access (state_path, F_OK);
+                if (rc)
+                  {
+                    debug ("Can't open state file: %s", strerror (errno));
+                    info ("Loading empty state");
+                  }
+                else
+                  {
+                    state_file_exists = true;
+                    info ("Loading state from %s", state_path);
+                  }
+              }
+          }
+      }
+    else
+      {
+        warn ("Could not determine config path");
+      }
+  }
+
   struct state state;
-  rc = load_state (&state, NULL);
+  rc = load_state (&state, state_file_exists ? state_path : NULL);
   if (rc)
     {
       critical ("Could not initialize calculator state. Error %d", rc);
@@ -281,7 +347,19 @@ main (int argc, char *argv[])
   tib_var_free ();
 
   if (state_init)
-    state_destroy (&state);
+    {
+      if (user_dir_exists && state_path)
+        {
+          errno = save_state (&state, state_path);
+          if (errno)
+            warn ("Failed to save state");
+        }
+
+      state_destroy (&state);
+    }
+
+  if (state_path)
+    free (state_path);
 
   if (skin)
     free_skin (skin);
