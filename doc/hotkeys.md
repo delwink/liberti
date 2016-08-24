@@ -22,4 +22,10 @@ normally will insert `sin(`, holding shift while typing `s` will insert `S`.
 Hotkey List
 -----------
 
+- `c`: `cos(`
+- `e`: `e` (constant)
+- `C-e`: `E (*10^)`
+- `i`: `i` (constant)
 - `s`: `sin(`
+- `t`: `tan(`
+- `$`: `→` (stores value to left into variable to right)
