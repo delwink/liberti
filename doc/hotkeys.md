@@ -12,6 +12,9 @@ various hotkeys in LiberTI, and you can assume most other keys work as
 expected, while some keys are completely ignored (such as function keys not
 bound to a mode).
 
+Modifier keys are written in Emacs documentation style. `C-e` means
+`Ctrl+E`. `C-E` means `Ctrl+Shift+E`.
+
 Alpha Mode
 ----------
 
