@@ -191,10 +191,10 @@ default_draw (const struct screen *screen)
 
   for (int i = state->history_len - 1; i >= 0 && height < 64; --i)
     {
-      draw_line (&state->answer_strings[i], final, &height, true);
+      draw_line (&state->history[i].answer_string, final, &height, true);
 
       if (height < 64)
-        draw_line (&state->history[i], final, &height, false);
+        draw_line (&state->history[i].entry, final, &height, false);
     }
 
   return final;

@@ -31,13 +31,18 @@ enum action_state
     NUM_ACTION_STATES
   };
 
+struct history
+{
+  struct tib_expr entry;
+  struct tib_expr answer_string;
+
+  TIB *answer;
+};
+
 struct state
 {
-  TIB *answers[MAX_HISTORY];
-
+  struct history history[MAX_HISTORY];
   struct tib_expr entry;
-  struct tib_expr history[MAX_HISTORY];
-  struct tib_expr answer_strings[MAX_HISTORY];
 
   enum action_state action_state;
   int entry_cursor;

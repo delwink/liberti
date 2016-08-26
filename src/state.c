@@ -41,16 +41,12 @@ add_history (struct state *state, struct tib_expr *in, struct tib_expr *ans_s,
 {
   if (MAX_HISTORY == state->history_len)
     {
-      tib_expr_destroy (&state->history[0]);
-      tib_expr_destroy (&state->answer_strings[0]);
-      tib_decref (state->answers[0]);
+      tib_expr_destroy (&state->history[0].entry);
+      tib_expr_destroy (&state->history[0].answer_string);
+      tib_decref (state->history[0].answer);
 
       for (unsigned int i = 0; i < MAX_HISTORY - 1; ++i)
-        {
-          state->history[i] = state->history[i + 1];
-          state->answer_strings[i] = state->answer_strings[i + 1];
-          state->answers[i] = state->answers[i + 1];
-        }
+        state->history[i] = state->history[i + 1];
     }
   else
     {
@@ -58,9 +54,9 @@ add_history (struct state *state, struct tib_expr *in, struct tib_expr *ans_s,
     }
 
   unsigned int i = state->history_len - 1;
-  state->history[i] = *in;
-  state->answer_strings[i] = *ans_s;
-  state->answers[i] = ans;
+  state->history[i].entry = *in;
+  state->history[i].answer_string = *ans_s;
+  state->history[i].answer = ans;
 }
 
 int
@@ -195,7 +191,7 @@ save_state (const struct state *state, const char *path)
                                                      CONFIG_TYPE_STRING);
         CHECK_NULL (info);
 
-        char *s = tib_expr_tostr (&state->history[i]);
+        char *s = tib_expr_tostr (&state->history[i].entry);
         if (!s)
           {
             rc = tib_errno;
@@ -213,7 +209,7 @@ save_state (const struct state *state, const char *path)
         info = config_setting_add (line, "output", CONFIG_TYPE_STRING);
         CHECK_NULL (info);
 
-        s = tib_expr_tostr (&state->answer_strings[i]);
+        s = tib_expr_tostr (&state->history[i].answer_string);
         if (!s)
           {
             rc = tib_errno;
@@ -291,7 +287,7 @@ entry_recall (struct state *state)
   if (state->history_len)
     {
       int rc = tib_exprcpy (&state->entry,
-                            &state->history[state->history_len - 1]);
+                            &state->history[state->history_len - 1].entry);
       if (rc)
         return rc;
 
@@ -369,9 +365,9 @@ state_clear_history (struct state *state)
 {
   for (unsigned int i = 0; i < state->history_len; ++i)
     {
-      tib_expr_destroy (&state->history[i]);
-      tib_expr_destroy (&state->answer_strings[i]);
-      tib_decref (state->answers[i]);
+      tib_expr_destroy (&state->history[i].entry);
+      tib_expr_destroy (&state->history[i].answer_string);
+      tib_decref (state->history[i].answer);
     }
 
   state->history_len = 0;
