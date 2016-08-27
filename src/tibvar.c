@@ -67,6 +67,9 @@ tib_var_init ()
 void
 tib_var_free ()
 {
+  for (int i = 0; i < varlist.len; ++i)
+    tib_decref (varlist.vars[i].value);
+
   free (varlist.vars);
 
   varlist.len = 0;
