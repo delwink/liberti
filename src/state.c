@@ -24,17 +24,6 @@
 #include "tibeval.h"
 #include "util.h"
 
-static int
-load_line (struct tib_expr *expr, const char *s)
-{
-  int rc = tib_expr_init (expr);
-  if (rc)
-    return rc;
-
-  rc = tib_encode_str (expr, s);
-  return rc;
-}
-
 static void
 add_history (struct state *state, struct tib_expr *in, struct tib_expr *ans_s,
              TIB *ans)
@@ -118,37 +107,13 @@ load_state (struct state *dest, const char *path)
             }
 
           const char *s = config_setting_get_string (e);
-          struct tib_expr hist;
-          rc = load_line (&hist, s);
+          rc = tib_encode_str (&dest->entry, s);
           if (rc)
             goto fail;
 
-          e = config_setting_get_member (line, "output");
-          if (!e || config_setting_type (e) != CONFIG_TYPE_STRING)
-            {
-              rc = TIB_EBADFILE;
-              goto fail;
-            }
-
-          s = config_setting_get_string (e);
-          struct tib_expr ans_s;
-          rc = load_line (&ans_s, s);
+          rc = state_calc_entry (dest);
           if (rc)
-            {
-              tib_expr_destroy (&hist);
-              goto fail;
-            }
-
-          TIB *ans = tib_eval (&ans_s);
-          if (!ans)
-            {
-              rc = tib_errno;
-              tib_expr_destroy (&hist);
-              tib_expr_destroy (&ans_s);
-              goto fail;
-            }
-
-          add_history (dest, &hist, &ans_s, ans);
+            goto fail;
         }
     }
 
@@ -192,24 +157,6 @@ save_state (const struct state *state, const char *path)
         CHECK_NULL (info);
 
         char *s = tib_expr_tostr (&state->history[i].entry);
-        if (!s)
-          {
-            rc = tib_errno;
-            goto end;
-          }
-
-        rc = config_setting_set_string (info, s);
-        free (s);
-        if (CONFIG_FALSE == rc)
-          {
-            rc = TIB_EALLOC;
-            goto end;
-          }
-
-        info = config_setting_add (line, "output", CONFIG_TYPE_STRING);
-        CHECK_NULL (info);
-
-        s = tib_expr_tostr (&state->history[i].answer_string);
         if (!s)
           {
             rc = tib_errno;
