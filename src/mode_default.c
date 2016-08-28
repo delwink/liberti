@@ -236,11 +236,11 @@ default_input (struct screen *screen, SDL_KeyboardEvent *key)
 
     case SDLK_END:
       state->entry_cursor = state->entry.len;
-      break;
+      return 0;
 
     case SDLK_HOME:
       state->entry_cursor = 0;
-      break;
+      return 0;
 
     case SDLK_INSERT:
       state->insert_mode = !state->insert_mode;
