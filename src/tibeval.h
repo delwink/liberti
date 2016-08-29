@@ -26,6 +26,9 @@
 bool
 is_sign_operator (int c);
 
+bool
+is_math_operator (int c);
+
 unsigned int
 sign_count (const struct tib_expr *expr);
 

@@ -98,7 +98,7 @@ get_math_operator (int c)
   return NULL;
 }
 
-static bool
+bool
 is_math_operator (int c)
 {
   return get_math_operator (c) != NULL;

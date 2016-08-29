@@ -40,6 +40,9 @@ normalize_keycode (SDL_Keycode code, SDL_Keymod mod)
     {
       switch (code)
         {
+        case SDLK_a:
+          return TIB_CHAR_ANS;
+
         case SDLK_e:
           return TIB_CHAR_EPOW10;
         }

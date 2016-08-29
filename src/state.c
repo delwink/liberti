@@ -22,6 +22,7 @@
 #include "tibchar.h"
 #include "tiberr.h"
 #include "tibeval.h"
+#include "tibvar.h"
 #include "util.h"
 
 static void
@@ -265,13 +266,18 @@ state_calc_entry (struct state *state)
     return tib_errno;
 
   int rc = state_add_history (state, &state->entry, ans);
-  tib_decref (ans);
   if (rc)
-    return rc;
+    {
+      tib_decref (ans);
+      return rc;
+    }
 
   state->entry_cursor = 0;
   state->entry.len = 0;
-  return 0;
+
+  rc = tib_var_set (TIB_CHAR_ANS, ans);
+  tib_decref (ans);
+  return rc;
 }
 
 int

@@ -23,6 +23,8 @@
 #include "keys.h"
 #include "log.h"
 #include "mode_default.h"
+#include "tibchar.h"
+#include "tibeval.h"
 #include "util.h"
 
 static SDL_Surface *
@@ -253,9 +255,20 @@ default_input (struct screen *screen, SDL_KeyboardEvent *key)
     case SDLK_RETURN:
     case SDLK_KP_ENTER:
       if (mod & KMOD_CTRL)
-        return entry_recall (state);
+        {
+          return entry_recall (state);
+        }
       else
-        return state_calc_entry (state);
+        {
+          if (0 == state->entry.len)
+            {
+              int rc = entry_write (state, TIB_CHAR_ANS);
+              if (rc)
+                return rc;
+            }
+
+          return state_calc_entry (state);
+        }
 
     case SDLK_RIGHT:
       entry_move_cursor (state, RIGHT);
@@ -264,7 +277,16 @@ default_input (struct screen *screen, SDL_KeyboardEvent *key)
 
   int normal = normalize_keycode (code, mod);
   if (normal)
-    return entry_write (state, normal);
+    {
+      if (is_math_operator (normal) && 0 == state->entry.len)
+        {
+          int rc = entry_write (state, TIB_CHAR_ANS);
+          if (rc)
+            return rc;
+        }
+
+      return entry_write (state, normal);
+    }
 
   return 0;
 }
