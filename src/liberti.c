@@ -16,6 +16,7 @@
  */
 
 #include <errno.h>
+#include <gsl/gsl_errno.h>
 #include <SDL.h>
 #include <SDL_image.h>
 #include <stdbool.h>
@@ -152,6 +153,8 @@ main (int argc, char *argv[])
             }
         }
     }
+
+  gsl_set_error_handler_off ();
 
   rc = SDL_Init (SDL_INIT_TIMER);
   if (rc)
