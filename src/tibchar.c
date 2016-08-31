@@ -51,6 +51,9 @@ tib_special_char_text (int c)
     case TIB_CHAR_COS:
       return "cos(";
 
+    case TIB_CHAR_DEGREE:
+      return "*(180/pi)";
+
     case TIB_CHAR_DELVAR:
       return "DelVar";
 
@@ -167,6 +170,9 @@ tib_special_char_text (int c)
 
     case TIB_CHAR_PAUSE:
       return "Pause ";
+
+    case TIB_CHAR_PI:
+      return "pi";
 
     case TIB_CHAR_PIC1:
       return "Pic1";
