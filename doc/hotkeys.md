@@ -26,9 +26,11 @@ Hotkey List
 -----------
 
 - `c`: `cos(`
+- `C-d`: `°`
 - `e`: `e` (constant)
 - `C-e`: `E (*10^)`
 - `i`: `i` (constant)
+- `C-p`: `π` (constant)
 - `s`: `sin(`
 - `t`: `tan(`
 - `$`: `→` (stores value to left into variable to right)

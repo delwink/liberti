@@ -23,8 +23,10 @@
 #include <gsl/gsl_linalg.h>
 #include <gsl/gsl_sf_gamma.h>
 
+#include "tibchar.h"
 #include "tiberr.h"
 #include "tibtype.h"
+#include "tibvar.h"
 #include "util.h"
 
 TIB *
@@ -1096,4 +1098,31 @@ tib_factorial (const TIB *t)
     }
 
   return tib_new_complex (gsl_sf_gamma (GSL_REAL (t->value.number) + 1), 0);
+}
+
+TIB *
+tib_toradians (const TIB *t)
+{
+  TIB *pi = tib_var_get (TIB_CHAR_PI);
+  if (!pi)
+    return NULL;
+
+  TIB *factor = tib_new_complex (180, 0);
+  if (!factor)
+    {
+      tib_decref (pi);
+      return NULL;
+    }
+
+  TIB *temp = tib_div (pi, factor);
+  tib_decref (pi);
+  tib_decref (factor);
+  if (!temp)
+    return NULL;
+
+  factor = temp;
+  temp = tib_mul (t, factor);
+  tib_decref (factor);
+
+  return temp;
 }

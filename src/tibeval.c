@@ -47,12 +47,13 @@ struct math_operator
 
 static const struct math_operator OPERATORS[] =
   {
-    { { .t = tib_factorial }, T,  '!', 0 },
-    { { .tt = tib_pow },      TT, '^', 1 },
-    { { .tt = tib_mul },      TT, '*', 2 },
-    { { .tt = tib_div },      TT, '/', 2 },
-    { { .tt = tib_add },      TT, '+', 3 },
-    { { .tt = tib_sub },      TT, '-', 3 }
+    { { .t = tib_factorial }, T,  '!',             0 },
+    { { .t = tib_toradians }, T,  TIB_CHAR_DEGREE, 0 },
+    { { .tt = tib_pow },      TT, '^',             1 },
+    { { .tt = tib_mul },      TT, '*',             2 },
+    { { .tt = tib_div },      TT, '/',             2 },
+    { { .tt = tib_add },      TT, '+',             3 },
+    { { .tt = tib_sub },      TT, '-',             3 }
   };
 
 #define NUM_MATH_OPERATORS (sizeof OPERATORS / sizeof (struct math_operator))

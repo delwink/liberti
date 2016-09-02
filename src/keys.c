@@ -43,6 +43,9 @@ normalize_keycode (SDL_Keycode code, SDL_Keymod mod)
         case SDLK_a:
           return TIB_CHAR_ANS;
 
+        case SDLK_d:
+          return TIB_CHAR_DEGREE;
+
         case SDLK_e:
           return TIB_CHAR_EPOW10;
 

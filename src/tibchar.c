@@ -52,7 +52,7 @@ tib_special_char_text (int c)
       return "cos(";
 
     case TIB_CHAR_DEGREE:
-      return "*(180/pi)";
+      return "*(pi/180)";
 
     case TIB_CHAR_DELVAR:
       return "DelVar";

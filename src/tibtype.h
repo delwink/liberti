@@ -116,4 +116,7 @@ tib_factorial (const TIB *t);
 TIB *
 tib_log (const TIB *t);
 
+TIB *
+tib_toradians (const TIB *t);
+
 #endif
