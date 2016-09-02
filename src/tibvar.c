@@ -18,6 +18,7 @@
 #include <math.h>
 #include <stdlib.h>
 
+#include "tibchar.h"
 #include "tiberr.h"
 #include "tibvar.h"
 
@@ -57,6 +58,8 @@ tib_var_init ()
   }
 
   ADD ('e', tib_new_complex (2.718281828459045235360287471352662498, 0));
+  ADD (TIB_CHAR_PI,
+       tib_new_complex (3.141592653589793238462643383279502884, 0));
 
 #undef ADD
 
