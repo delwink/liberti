@@ -1103,25 +1103,12 @@ tib_factorial (const TIB *t)
 TIB *
 tib_toradians (const TIB *t)
 {
-  TIB *pi = tib_var_get (TIB_CHAR_PI);
-  if (!pi)
-    return NULL;
-
-  TIB *factor = tib_new_complex (180, 0);
+  TIB *factor = tib_new_complex (3.141592653589793238462643383279502884 / 180,
+                                 0);
   if (!factor)
-    {
-      tib_decref (pi);
-      return NULL;
-    }
-
-  TIB *temp = tib_div (pi, factor);
-  tib_decref (pi);
-  tib_decref (factor);
-  if (!temp)
     return NULL;
 
-  factor = temp;
-  temp = tib_mul (t, factor);
+  TIB *temp = tib_mul (t, factor);
   tib_decref (factor);
 
   return temp;
