@@ -26,7 +26,7 @@ Hotkey List
 -----------
 
 - `c`: `cos(`
-- `C-d`: `°`
+- `C-d`: `° (*(π/180))`
 - `e`: `e` (constant)
 - `C-e`: `E (*10^)`
 - `i`: `i` (constant)
