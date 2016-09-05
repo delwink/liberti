@@ -34,3 +34,4 @@ Hotkey List
 - `s`: `sin(`
 - `t`: `tan(`
 - `$`: `→` (stores value to left into variable to right)
+- `C--`: `-` (inserts minus at the beginning without inserting `Ans`)

@@ -243,6 +243,17 @@ tib_eval (const struct tib_expr *in)
   if (tib_errno)
     return NULL;
 
+  /* check for sign operator at the beginning of number */
+  if (expr.len > 0 && ('-' == expr.data[0] || '+' == expr.data[0]))
+    {
+      tib_errno = tib_expr_insert (&expr, 0, '0');
+      if (tib_errno)
+        {
+          tib_expr_destroy (&expr);
+          return NULL;
+        }
+    }
+
   /* check for implicit closing parentheses and close them */
   tib_errno = tib_eval_close_parens (&expr);
   if (tib_errno)

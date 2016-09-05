@@ -278,7 +278,8 @@ default_input (struct screen *screen, SDL_KeyboardEvent *key)
   int normal = normalize_keycode (code, mod);
   if (normal)
     {
-      if (is_math_operator (normal) && 0 == state->entry.len)
+      if (is_math_operator (normal) && 0 == state->entry.len
+          && !(mod & KMOD_CTRL))
         {
           int rc = entry_write (state, TIB_CHAR_ANS);
           if (rc)
