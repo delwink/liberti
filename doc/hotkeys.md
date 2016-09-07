@@ -25,6 +25,7 @@ normally will insert `sin(`, holding shift while typing `s` will insert `S`.
 Hotkey List
 -----------
 
+- `C-a`: `Ans` (the answer to the last entry)
 - `c`: `cos(`
 - `C-d`: `° (*(π/180))`
 - `e`: `e` (constant)
