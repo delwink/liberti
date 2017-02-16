@@ -1,6 +1,6 @@
 /*
  *  LiberTI - TI-like calculator designed for LibreCalc
- *  Copyright (C) 2016 Delwink, LLC
+ *  Copyright (C) 2016-2017 Delwink, LLC
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as published by
@@ -46,10 +46,14 @@ load_expr_num (struct tib_expr *dest, const char *src)
   if (e >= 0)
     {
       tib_expr_delete (dest, e);
-      dest->data[e] = TIB_CHAR_EPOW10;
+
+      if ('+' == dest->data[e])
+        dest->data[e] = TIB_CHAR_EPOW10;
+      else
+        rc = tib_expr_insert (dest, e, TIB_CHAR_EPOW10);
     }
 
-  return 0;
+  return rc;
 }
 
 const char *
