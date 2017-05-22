@@ -10,8 +10,8 @@ You must first satisfy the build dependencies of LiberTI.
 
 | Library/Tool               | Purpose                                       |
 |----------------------------|-----------------------------------------------|
-| GNU Autotools              | Automatic build scripts                       |
-| C11 Compiler               | (Prefer GCC or Clang) Source compilation      |
+| POSIX Make                 | Build scripts                                 |
+| C99 Compiler               | (Prefer GCC or Clang) Source compilation      |
 | GNU Scientific Library     | Complex math calculations and data structures |
 | Simple DirectMedia Layer 2 | Graphics and threading                        |
 | SDL2 Image                 | Image loading support                         |
@@ -21,16 +21,14 @@ You must first satisfy the build dependencies of LiberTI.
 On Debian GNU/Linux and derivatives, you can install these with the following
 command:
 
-    # apt-get install build-essential autoconf automake libgsl0-dev \
-    libsdl2-dev libsdl2-image-dev libconfig-dev
+    # apt-get install build-essential libgsl0-dev  libsdl2-dev \
+    libsdl2-image-dev libconfig-dev
 
 For libpfxtree, download the latest stable source from [Delwink's site][3], and
 build/install according to the README inside.
 
 After the dependencies are installed, you can build LiberTI as follows:
 
-    $ ./autogen.sh
-    $ ./configure
     $ make
 
 If you wish to install LiberTI to the system, you can run the following:
@@ -74,9 +72,7 @@ officially endorsed or supported by LibreCalc.
 Hacking
 -------
 
-We prefer the GNU coding style for C with a strict limit of 79 columns in the
-source code. Indentations are two spaces, and tab characters are eight
-spaces.
+Copy the style you see in the code. Do not use spaces for indentation.
 
 To submit a patch, [submit your diff to Delwink][2], or use GitHub's pull
 request system.

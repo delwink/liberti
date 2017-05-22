@@ -1,6 +1,6 @@
 /*
  *  LiberTI - TI-like calculator designed for LibreCalc
- *  Copyright (C) 2016 Delwink, LLC
+ *  Copyright (C) 2016-2017 Delwink, LLC
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as published by
@@ -24,25 +24,25 @@
 #include "state.h"
 
 enum screen_mode
-  {
-    DEFAULT_SCREEN_MODE,
-    NUM_SCREEN_MODES
-  };
+{
+	DEFAULT_SCREEN_MODE,
+	NUM_SCREEN_MODES
+};
 
 struct screen
 {
-  struct state *state;
+	struct state *state;
 
-  struct point2d pos;
-  struct point2d size;
+	struct point2d pos;
+	struct point2d size;
 
-  enum screen_mode mode;
+	enum screen_mode mode;
 };
 
 SDL_Surface *
-screen_draw (const struct screen *screen);
+screen_draw(const struct screen *screen);
 
 int
-screen_input (struct screen *screen, SDL_KeyboardEvent *event);
+screen_input(struct screen *screen, SDL_KeyboardEvent *event);
 
 #endif

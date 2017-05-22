@@ -1,6 +1,6 @@
 /*
  *  libtib - Read, write, and evaluate TI BASIC programs
- *  Copyright (C) 2015-2016 Delwink, LLC
+ *  Copyright (C) 2015-2017 Delwink, LLC
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as published by
@@ -30,267 +30,266 @@
 
 struct registry_node
 {
-  int key;
-  tib_Function f;
+	int key;
+	tib_Function f;
 };
 
 struct registry
 {
-  size_t len;
-  struct registry_node *nodes;
+	size_t len;
+	struct registry_node *nodes;
 };
 
 static gsl_rng *rng = NULL;
 
-static struct registry registry =
-  {
-    .len = 0,
-    .nodes = NULL
-  };
+static struct registry registry = {
+	.len = 0,
+	.nodes = NULL
+};
 
 static TIB *
-func_paren (const struct tib_expr *expr)
+func_paren(const struct tib_expr *expr)
 {
-  return tib_eval (expr);
+	return tib_eval(expr);
 }
 
 static int
-split_number_args (const struct tib_expr *expr, int num_params, ...)
+split_number_args(const struct tib_expr *expr, int num_params, ...)
 {
-  const int *beg, *end;
-  int rc = 0, numpar = 0;
-  va_list ap;
+	const int *beg, *end;
+	int rc = 0, numpar = 0;
+	va_list ap;
 
-  va_start (ap, num_params);
-  for (beg = expr->data, end = beg; end < expr->data + expr->len; ++end)
-    {
-      if (tib_is_func (*end))
-        {
-          ++numpar;
-        }
-      else if (')' == *end)
-        {
-          if (--numpar < 0)
-            {
-              rc = TIB_ESYNTAX;
-              break;
-            }
-        }
-      else if (0 == numpar &&
-               (',' == *end || end + 1 == expr->data + expr->len))
-        {
-          if (num_params-- == 0)
-            {
-              rc = TIB_EARGNUM;
-              break;
-            }
+	va_start(ap, num_params);
+	for (beg = expr->data, end = beg; end < expr->data + expr->len; ++end)
+	{
+		if (tib_is_func(*end))
+		{
+			++numpar;
+		}
+		else if (')' == *end)
+		{
+			if (--numpar < 0)
+			{
+				rc = TIB_ESYNTAX;
+				break;
+			}
+		}
+		else if (0 == numpar &&
+			(',' == *end || end + 1 == expr->data + expr->len))
+		{
+			if (num_params-- == 0)
+			{
+				rc = TIB_EARGNUM;
+				break;
+			}
 
-          int start = beg - expr->data, stop = end - expr->data;
-          if (end + 1 == expr->data + expr->len)
-            ++stop;
+			int start = beg - expr->data, stop = end - expr->data;
+			if (end + 1 == expr->data + expr->len)
+				++stop;
 
-          struct tib_expr arg;
-          tib_subexpr (&arg, expr, start, stop);
+			struct tib_expr arg;
+			tib_subexpr(&arg, expr, start, stop);
 
-          TIB *t = tib_eval (&arg);
-          if (!t)
-            {
-              rc = tib_errno;
-              break;
-            }
+			TIB *t = tib_eval(&arg);
+			if (!t)
+			{
+				rc = tib_errno;
+				break;
+			}
 
-          if (tib_type (t) != TIB_TYPE_COMPLEX)
-            {
-              tib_decref (t);
-              tib_errno = TIB_ETYPE;
-              break;
-            }
+			if (tib_type(t) != TIB_TYPE_COMPLEX)
+			{
+				tib_decref(t);
+				tib_errno = TIB_ETYPE;
+				break;
+			}
 
-          gsl_complex *out = va_arg (ap, gsl_complex *);
-          *out = tib_complex_value (t);
-          tib_decref (t);
+			gsl_complex *out = va_arg(ap, gsl_complex *);
+			*out = tib_complex_value(t);
+			tib_decref(t);
 
-          beg = end + 1;
-        }
-    }
-  va_end (ap);
+			beg = end + 1;
+		}
+	}
+	va_end(ap);
 
-  return rc;
+	return rc;
 }
 
 static TIB *
-single_parameter_function (const struct tib_expr *expr,
-                           gsl_complex (*f) (gsl_complex))
+single_parameter_function(const struct tib_expr *expr,
+			gsl_complex(*f)(gsl_complex))
 {
-  gsl_complex z;
+	gsl_complex z;
 
-  tib_errno = split_number_args (expr, 1, &z);
-  if (tib_errno)
-    return NULL;
+	tib_errno = split_number_args(expr, 1, &z);
+	if (tib_errno)
+		return NULL;
 
-  z = f (z);
-  return tib_new_complex (GSL_REAL (z), GSL_IMAG (z));
+	z = f(z);
+	return tib_new_complex(GSL_REAL(z), GSL_IMAG(z));
 }
 
 static TIB *
-func_sin (const struct tib_expr *expr)
+func_sin(const struct tib_expr *expr)
 {
-  return single_parameter_function (expr, gsl_complex_sin);
+	return single_parameter_function(expr, gsl_complex_sin);
 }
 
 static TIB *
-func_cos (const struct tib_expr *expr)
+func_cos(const struct tib_expr *expr)
 {
-  return single_parameter_function (expr, gsl_complex_cos);
+	return single_parameter_function(expr, gsl_complex_cos);
 }
 
 static TIB *
-func_tan (const struct tib_expr *expr)
+func_tan(const struct tib_expr *expr)
 {
-  return single_parameter_function (expr, gsl_complex_tan);
+	return single_parameter_function(expr, gsl_complex_tan);
 }
 
 static int
-is_int (gsl_complex z)
+is_int(gsl_complex z)
 {
-  return GSL_IMAG (z) == 0 && fmod (GSL_REAL (z), 1.0) == 0;
+	return GSL_IMAG(z) == 0 && fmod(GSL_REAL(z), 1.0) == 0;
 }
 
 static TIB *
-func_randint (const struct tib_expr *expr)
+func_randint(const struct tib_expr *expr)
 {
-  int len = expr->len, num_commas = 0;
+	int len = expr->len, num_commas = 0;
 
-  for (int i = 0; i < len; ++i)
-    {
-      if (',' == expr->data[i])
-        {
-          if (++num_commas > 2)
-            break;
-        }
-    }
+	for (int i = 0; i < len; ++i)
+	{
+		if (',' == expr->data[i])
+		{
+			if (++num_commas > 2)
+				break;
+		}
+	}
 
-  if (num_commas != 2)
-    {
-      tib_errno = TIB_EARGNUM;
-      return NULL;
-    }
+	if (num_commas != 2)
+	{
+		tib_errno = TIB_EARGNUM;
+		return NULL;
+	}
 
-  gsl_complex min, max, count;
-  tib_errno = split_number_args (expr, 3, &min, &max, &count);
-  if (tib_errno)
-    return NULL;
+	gsl_complex min, max, count;
+	tib_errno = split_number_args(expr, 3, &min, &max, &count);
+	if (tib_errno)
+		return NULL;
 
-  if (!(is_int (min) && is_int (max) && is_int (count))
-      || GSL_REAL (count) < 0)
-    return NULL;
+	if (!(is_int(min) && is_int(max) && is_int(count))
+		|| GSL_REAL(count) < 0)
+		return NULL;
 
-  double diff = GSL_REAL (max) - GSL_REAL (min);
+	double diff = GSL_REAL(max) - GSL_REAL(min);
 
-  len = (unsigned int) GSL_REAL (count);
-  gsl_complex vals[len];
+	len = (unsigned int) GSL_REAL(count);
+	gsl_complex vals[len];
 
-  for (int i = 0; i < len; ++i)
-    {
-      GSL_SET_COMPLEX (&vals[i], (double) gsl_rng_get (rng), 0);
+	for (int i = 0; i < len; ++i)
+	{
+		GSL_SET_COMPLEX(&vals[i], (double) gsl_rng_get(rng), 0);
 
-      while (GSL_REAL (vals[i]) < GSL_REAL (min))
-        GSL_SET_REAL (&vals[i], GSL_REAL (vals[i]) + diff);
-      while (GSL_REAL (vals[i]) > GSL_REAL (max))
-        GSL_SET_REAL (&vals[i], GSL_REAL (vals[i]) - diff);
-    }
+		while (GSL_REAL(vals[i]) < GSL_REAL(min))
+			GSL_SET_REAL(&vals[i], GSL_REAL(vals[i]) + diff);
 
-  return tib_new_list (vals, len);
+		while (GSL_REAL(vals[i]) > GSL_REAL(max))
+			GSL_SET_REAL(&vals[i], GSL_REAL(vals[i]) - diff);
+	}
+
+	return tib_new_list(vals, len);
 }
 
 int
-tib_registry_init ()
+tib_registry_init()
 {
-  int rc;
+	int rc;
 
-  if (registry.nodes != NULL || rng != NULL)
-    tib_registry_free ();
+	if (registry.nodes != NULL || rng != NULL)
+		tib_registry_free();
 
-  rng = gsl_rng_alloc (gsl_rng_taus2);
-  if (NULL == rng)
-    return TIB_EALLOC;
+	rng = gsl_rng_alloc(gsl_rng_taus2);
+	if (NULL == rng)
+		return TIB_EALLOC;
 
-  gsl_rng_set (rng, (unsigned long) time (NULL));
+	gsl_rng_set(rng, (unsigned long) time(NULL));
 
-#define ADD(K,F) rc = tib_registry_add (K, F); if (rc) goto fail;
+#define ADD(K,F) rc = tib_registry_add(K, F); if (rc) goto fail;
 
-  ADD ('(', func_paren);
-  ADD (TIB_CHAR_SIN, func_sin);
-  ADD (TIB_CHAR_COS, func_cos);
-  ADD (TIB_CHAR_TAN, func_tan);
-  ADD (TIB_CHAR_RANDINT, func_randint);
+	ADD('(', func_paren);
+	ADD(TIB_CHAR_SIN, func_sin);
+	ADD(TIB_CHAR_COS, func_cos);
+	ADD(TIB_CHAR_TAN, func_tan);
+	ADD(TIB_CHAR_RANDINT, func_randint);
 
 #undef ADD
 
  fail:
-  if (rc)
-    tib_registry_free ();
+	if (rc)
+		tib_registry_free();
 
-  return rc;
+	return rc;
 }
 
 void
-tib_registry_free ()
+tib_registry_free()
 {
-  if (registry.nodes)
-    free (registry.nodes);
-  if (rng)
-    gsl_rng_free (rng);
+	if (registry.nodes)
+		free(registry.nodes);
+	if (rng)
+		gsl_rng_free(rng);
 
-  registry.len = 0;
-  registry.nodes = NULL;
-  rng = NULL;
+	registry.len = 0;
+	registry.nodes = NULL;
+	rng = NULL;
 }
 
 int
-tib_registry_add (int key, tib_Function f)
+tib_registry_add(int key, tib_Function f)
 {
-  struct registry_node *old = registry.nodes;
+	struct registry_node *old = registry.nodes;
 
-  ++registry.len;
-  registry.nodes = realloc (registry.nodes,
-                            registry.len * sizeof (struct registry_node));
-  if (NULL == registry.nodes)
-    {
-      registry.nodes = old;
-      --registry.len;
-      return TIB_EALLOC;
-    }
+	++registry.len;
+	registry.nodes = realloc(registry.nodes,
+				registry.len * sizeof(struct registry_node));
+	if (NULL == registry.nodes)
+	{
+		registry.nodes = old;
+		--registry.len;
+		return TIB_EALLOC;
+	}
 
-  struct registry_node new =
-    {
-      .key = key,
-      .f = f
-    };
+	struct registry_node new = {
+		.key = key,
+		.f = f
+	};
 
-  registry.nodes[registry.len - 1] = new;
-  return 0;
+	registry.nodes[registry.len - 1] = new;
+	return 0;
 }
 
 bool
-tib_is_func (int key)
+tib_is_func(int key)
 {
-  size_t i;
-  for (i = 0; i < registry.len; ++i)
-    if (key == registry.nodes[i].key)
-      return true;
+	size_t i;
+	for (i = 0; i < registry.len; ++i)
+		if (key == registry.nodes[i].key)
+			return true;
 
-  return false;
+	return false;
 }
 
 TIB *
-tib_call (int key, const struct tib_expr *expr)
+tib_call(int key, const struct tib_expr *expr)
 {
-  size_t i;
-  for (i = 0; i < registry.len; ++i)
-    if (key == registry.nodes[i].key)
-      return registry.nodes[i].f (expr);
+	size_t i;
+	for (i = 0; i < registry.len; ++i)
+		if (key == registry.nodes[i].key)
+			return registry.nodes[i].f(expr);
 
-  tib_errno = TIB_EBADFUNC;
-  return NULL;
+	tib_errno = TIB_EBADFUNC;
+	return NULL;
 }

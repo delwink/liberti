@@ -1,6 +1,6 @@
 /*
  *  LiberTI - Libre TI calculator emulator designed for LibreCalc
- *  Copyright (C) 2015 Delwink, LLC
+ *  Copyright (C) 2015, 2017 Delwink, LLC
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as published by
@@ -20,8 +20,8 @@
 
 struct point2d
 {
-  int x;
-  int y;
+	int x;
+	int y;
 };
 
 #endif

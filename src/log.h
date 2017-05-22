@@ -1,6 +1,6 @@
 /*
  *  LiberTI - TI-like calculator designed for LibreCalc
- *  Copyright (C) 2015 Delwink, LLC
+ *  Copyright (C) 2015, 2017 Delwink, LLC
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as published by
@@ -23,18 +23,18 @@
 extern bool debug_mode;
 
 int
-info (const char *fmt, ...);
+info(const char *fmt, ...);
 
 int
-warn (const char *fmt, ...);
+warn(const char *fmt, ...);
 
 int
-error (const char *fmt, ...);
+error(const char *fmt, ...);
 
 int
-critical (const char *fmt, ...);
+critical(const char *fmt, ...);
 
 int
-debug (const char *fmt, ...);
+debug(const char *fmt, ...);
 
 #endif

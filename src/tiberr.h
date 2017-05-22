@@ -1,6 +1,6 @@
 /*
  *  libtib - Read, write, and evaluate TI BASIC programs
- *  Copyright (C) 2015-2016 Delwink, LLC
+ *  Copyright (C) 2015-2017 Delwink, LLC
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as published by
@@ -19,22 +19,22 @@
 #define DELWINK_TIB_ERR_H
 
 enum tib_err
-  {
-    TIB_EALLOC   = -1,
-    TIB_EINDEX   = -2,
-    TIB_ESYNTAX  = -3,
-    TIB_ETYPE    = -4,
-    TIB_EDIM     = -5,
-    TIB_ENULLPTR = -6,
-    TIB_EDOMAIN  = -7,
-    TIB_EBADCHAR = -8,
-    TIB_EWRITE   = -9,
-    TIB_EBADFILE = -10,
-    TIB_EBADFUNC = -11,
-    TIB_EARGNUM  = -12,
-    TIB_DBYZERO  = -13,
-    TIB_EOVER    = -14
-  };
+{
+	TIB_EALLOC   = -1,
+	TIB_EINDEX   = -2,
+	TIB_ESYNTAX  = -3,
+	TIB_ETYPE    = -4,
+	TIB_EDIM     = -5,
+	TIB_ENULLPTR = -6,
+	TIB_EDOMAIN  = -7,
+	TIB_EBADCHAR = -8,
+	TIB_EWRITE   = -9,
+	TIB_EBADFILE = -10,
+	TIB_EBADFUNC = -11,
+	TIB_EARGNUM  = -12,
+	TIB_DBYZERO  = -13,
+	TIB_EOVER    = -14
+};
 
 extern int tib_errno;
 

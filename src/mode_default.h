@@ -1,6 +1,6 @@
 /*
  *  LiberTI - TI-like calculator designed for LibreCalc
- *  Copyright (C) 2016 Delwink, LLC
+ *  Copyright (C) 2016-2017 Delwink, LLC
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as published by
@@ -21,9 +21,9 @@
 #include "screen.h"
 
 SDL_Surface *
-default_draw (const struct screen *screen);
+default_draw(const struct screen *screen);
 
 int
-default_input (struct screen *screen, SDL_KeyboardEvent *key);
+default_input(struct screen *screen, SDL_KeyboardEvent *key);
 
 #endif

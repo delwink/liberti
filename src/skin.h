@@ -1,6 +1,6 @@
 /*
  *  LiberTI - TI-like calculator designed for LibreCalc
- *  Copyright (C) 2015-2016 Delwink, LLC
+ *  Copyright (C) 2015-2017 Delwink, LLC
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as published by
@@ -27,40 +27,40 @@
 
 struct skin_button_list
 {
-  struct button *button;
-  struct skin_button_list *next;
+	struct button *button;
+	struct skin_button_list *next;
 };
 
 struct skin_screen_list
 {
-  struct screen screen;
-  struct skin_screen_list *next;
+	struct screen screen;
+	struct skin_screen_list *next;
 };
 
 typedef struct
 {
-  SDL_Surface *background;
-  struct screen *active_screen;
-  struct skin_screen_list *screens;
-  struct skin_button_list *buttons;
-  struct state *state;
+	SDL_Surface *background;
+	struct screen *active_screen;
+	struct skin_screen_list *screens;
+	struct skin_button_list *buttons;
+	struct state *state;
 
-  struct point2d size;
+	struct point2d size;
 } Skin;
 
 Skin *
-open_skin (const char *path, struct state *state, struct point2d size);
+open_skin(const char *path, struct state *state, struct point2d size);
 
 void
-free_skin (Skin *self);
+free_skin(Skin *self);
 
 int
-Skin_click (Skin *self, struct point2d pos);
+Skin_click(Skin *self, struct point2d pos);
 
 int
-Skin_input (Skin *self, SDL_KeyboardEvent *event);
+Skin_input(Skin *self, SDL_KeyboardEvent *event);
 
 SDL_Surface *
-Skin_get_frame (Skin *self);
+Skin_get_frame(Skin *self);
 
 #endif

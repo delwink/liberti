@@ -1,6 +1,6 @@
 /*
  *  LiberTI - TI-like calculator designed for LibreCalc
- *  Copyright (C) 2016 Delwink, LLC
+ *  Copyright (C) 2016-2017 Delwink, LLC
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as published by
@@ -28,266 +28,275 @@
 #include "util.h"
 
 static SDL_Surface *
-render_line (const struct tib_expr *line, unsigned int *width)
+render_line(const struct tib_expr *line, unsigned int *width)
 {
-  int rc;
-  char *s = get_expr_display_str (line);
-  if (!s)
-    {
-      error ("Error converting expression to string");
-      return NULL;
-    }
+	int rc;
+	char *s = get_expr_display_str(line);
+	if (!s)
+	{
+		error("Error converting expression to string");
+		return NULL;
+	}
 
-  unsigned int len = strlen (s);
-  SDL_Surface *parts[len + 1];
-  parts[len] = get_font_char (' ');
+	unsigned int len = strlen(s);
+	SDL_Surface *parts[len + 1];
+	parts[len] = get_font_char(' ');
 
-  SDL_Rect pos;
-  pos.x = 0;
-  pos.y = 8;
+	SDL_Rect pos;
+	pos.x = 0;
+	pos.y = 8;
 
-  for (unsigned int i = 0; i < len; ++i)
-    {
-      SDL_Surface *part = get_font_char ((unsigned char) s[i]);
+	for (unsigned int i = 0; i < len; ++i)
+	{
+		SDL_Surface *part = get_font_char((unsigned char) s[i]);
 
-      pos.x += 6;
-      if (pos.x >= 96)
-        {
-          pos.y += 8;
-          pos.x = 6;
-        }
+		pos.x += 6;
+		if (pos.x >= 96)
+		{
+			pos.y += 8;
+			pos.x = 6;
+		}
 
-      parts[i] = part;
-    }
+		parts[i] = part;
+	}
 
-  SDL_Surface *final = SDL_CreateRGBSurface (0, 96, pos.y, 32, 0, 0, 0, 0);
-  if (!final)
-    {
-      error ("Failed to initialize expression render surface: %s",
-             SDL_GetError ());
-      goto end;
-    }
+	SDL_Surface *final = SDL_CreateRGBSurface(0, 96, pos.y, 32, 0, 0, 0,
+						0);
+	if (!final)
+	{
+		error("Failed to initialize expression render surface: %s",
+			SDL_GetError());
+		goto end;
+	}
 
-  SDL_LockSurface (final);
+	SDL_LockSurface(final);
 
-  rc = SDL_FillRect (final, NULL, SDL_MapRGB (final->format, 255, 255, 255));
-  if (rc < 0)
-    error ("Failed to set background of expression render surface: %s",
-           SDL_GetError ());
+	rc = SDL_FillRect(final, NULL,
+			SDL_MapRGB(final->format, 255, 255, 255));
+	if (rc < 0)
+		error("Failed to set background of expression render surface: %s",
+			SDL_GetError());
 
-  SDL_UnlockSurface (final);
+	SDL_UnlockSurface(final);
 
-  pos.x = 0;
-  pos.y = 0;
-  for (unsigned int i = 0; i <= len; ++i)
-    {
-      if (pos.x + 6 > 96)
-        {
-          pos.x = 0;
-          pos.y += 8;
-        }
+	pos.x = 0;
+	pos.y = 0;
+	for (unsigned int i = 0; i <= len; ++i)
+	{
+		if (pos.x + 6 > 96)
+		{
+			pos.x = 0;
+			pos.y += 8;
+		}
 
-      rc = SDL_BlitSurface (parts[i], NULL, final, &pos);
-      if (rc < 0)
-        {
-          error ("Failed to blit expression portion: %s", SDL_GetError ());
-          continue;
-        }
+		rc = SDL_BlitSurface(parts[i], NULL, final, &pos);
+		if (rc < 0)
+		{
+			error("Failed to blit expression portion: %s",
+				SDL_GetError());
+			continue;
+		}
 
-      pos.x += 6;
-    }
+		pos.x += 6;
+	}
 
-  *width = min (16, len) * 6;
+	*width = min(16, len) * 6;
 
  end:
-  free (s);
-  return final;
+	free(s);
+	return final;
 }
 
 static void
-draw_line (const struct tib_expr *line, SDL_Surface *final,
-           unsigned int *height, bool right_align)
+draw_line(const struct tib_expr *line, SDL_Surface *final,
+	unsigned int *height, bool right_align)
 {
-  unsigned int width;
+	unsigned int width;
 
-  SDL_Surface *line_render = render_line (line, &width);
-  if (line_render)
-    {
-      SDL_Rect pos;
-      if (right_align)
-        pos.x = 96 - width;
-      else
-        pos.x = 0;
+	SDL_Surface *line_render = render_line(line, &width);
+	if (line_render)
+	{
+		SDL_Rect pos;
+		if (right_align)
+			pos.x = 96 - width;
+		else
+			pos.x = 0;
 
-      *height += line_render->h;
-      pos.y = 64 - *height;
+		*height += line_render->h;
+		pos.y = 64 - *height;
 
-      int rc = SDL_BlitSurface (line_render, NULL, final, &pos);
-      if (rc < 0)
-        error ("Failed to draw line on screen frame: %s", SDL_GetError ());
+		int rc = SDL_BlitSurface(line_render, NULL, final, &pos);
+		if (rc < 0)
+			error("Failed to draw line on screen frame: %s",
+				SDL_GetError());
 
-      SDL_FreeSurface (line_render);
-    }
+		SDL_FreeSurface(line_render);
+	}
 }
 
 static void
-draw_cursor (const struct state *state, SDL_Surface *frame)
+draw_cursor(const struct state *state, SDL_Surface *frame)
 {
-  if (!state->blink_state)
-    return;
+	if (!state->blink_state)
+		return;
 
-  SDL_Keymod mod = SDL_GetModState ();
-  int c = 1;
+	SDL_Keymod mod = SDL_GetModState();
+	int c = 1;
 
-  if (state->insert_mode)
-    c += 4;
+	if (state->insert_mode)
+		c += 4;
 
-  if (STATE_2ND == state->action_state || mod & KMOD_CTRL)
-    ++c;
-  else if (STATE_ALPHA == state->action_state || mod & KMOD_SHIFT)
-    c += 2;
+	if (STATE_2ND == state->action_state || mod & KMOD_CTRL)
+		++c;
+	else if (STATE_ALPHA == state->action_state || mod & KMOD_SHIFT)
+		c += 2;
 
-  int x = 0;
-  for (int i = 0; i < state->entry_cursor; ++i)
-    {
-      const char *special = display_special_char (state->entry.data[i]);
-      if (special)
-        x += strlen (special);
-      else
-        ++x;
+	int x = 0;
+	for (int i = 0; i < state->entry_cursor; ++i)
+	{
+		const char *special =
+			display_special_char(state->entry.data[i]);
 
-      if (x >= 16)
-        x %= 16;
-    }
+		if (special)
+			x += strlen(special);
+		else
+			++x;
 
-  SDL_Rect pos = { .x = (6 * x), .y = (64 - 8) };
-  SDL_Surface *tile = get_font_char (c);
+		x %= 16;
+	}
 
-  int rc = SDL_BlitSurface (tile, NULL, frame, &pos);
-  if (rc < 0)
-    error ("Failed to draw cursor on screen frame: %s", SDL_GetError ());
+	SDL_Rect pos = { .x = (6 * x), .y = (64 - 8) };
+	SDL_Surface *tile = get_font_char(c);
+
+	int rc = SDL_BlitSurface(tile, NULL, frame, &pos);
+	if (rc < 0)
+		error("Failed to draw cursor on screen frame: %s",
+			SDL_GetError());
 }
 
 SDL_Surface *
-default_draw (const struct screen *screen)
+default_draw(const struct screen *screen)
 {
-  int rc;
-  SDL_Surface *final;
+	int rc;
+	SDL_Surface *final;
 
-  final = SDL_CreateRGBSurface (0, 96, 64, 32, 0, 0, 0, 0);
-  if (!final)
-    {
-      error ("Failed to initialize screen frame: %s", SDL_GetError ());
-      return NULL;
-    }
+	final = SDL_CreateRGBSurface(0, 96, 64, 32, 0, 0, 0, 0);
+	if (!final)
+	{
+		error("Failed to initialize screen frame: %s", SDL_GetError());
+		return NULL;
+	}
 
-  rc = SDL_FillRect (final, NULL, SDL_MapRGB (final->format, 255, 255, 255));
-  if (rc < 0)
-    error ("Failed to fill screen frame with white background: %s",
-           SDL_GetError ());
+	rc = SDL_FillRect(final, NULL,
+			  SDL_MapRGB(final->format, 255, 255, 255));
+	if (rc < 0)
+		error("Failed to fill screen frame with white background: %s",
+			SDL_GetError());
 
-  struct state *state = screen->state;
-  unsigned int height = 0;
-  draw_line (&state->entry, final, &height, false);
-  draw_cursor (state, final);
+	struct state *state = screen->state;
+	unsigned int height = 0;
+	draw_line(&state->entry, final, &height, false);
+	draw_cursor(state, final);
 
-  for (int i = state->history_len - 1; i >= 0 && height < 64; --i)
-    {
-      draw_line (&state->history[i].answer_string, final, &height, true);
+	for (int i = state->history_len - 1; i >= 0 && height < 64; --i)
+	{
+		draw_line(&state->history[i].answer_string, final, &height,
+			true);
 
-      if (height < 64)
-        draw_line (&state->history[i].entry, final, &height, false);
-    }
+		if (height < 64)
+			draw_line(&state->history[i].entry, final, &height,
+				false);
+	}
 
-  return final;
+	return final;
 }
 
 int
-default_input (struct screen *screen, SDL_KeyboardEvent *key)
+default_input(struct screen *screen, SDL_KeyboardEvent *key)
 {
-  struct state *state = screen->state;
-  SDL_Keycode code = key->keysym.sym;
-  SDL_Keymod mod = key->keysym.mod;
+	struct state *state = screen->state;
+	SDL_Keycode code = key->keysym.sym;
+	SDL_Keymod mod = key->keysym.mod;
 
-  switch (state->action_state)
-    {
-    case STATE_2ND:
-      mod |= KMOD_LCTRL;
-      break;
+	switch (state->action_state)
+	{
+	case STATE_2ND:
+		mod |= KMOD_LCTRL;
+		break;
 
-    case STATE_ALPHA:
-      mod |= KMOD_LSHIFT;
-      break;
+	case STATE_ALPHA:
+		mod |= KMOD_LSHIFT;
+		break;
 
-    default:
-      break;
-    }
+	default:
+		break;
+	}
 
-  switch (code)
-    {
-    case SDLK_BACKSPACE:
-      if (!state->entry_cursor)
-        return 0;
+	switch (code)
+	{
+	case SDLK_BACKSPACE:
+		if (!state->entry_cursor)
+			return 0;
 
-      --state->entry_cursor;
-      // SPILLS OVER!
-    case SDLK_DELETE:
-      if (state->entry_cursor < state->entry.len)
-        tib_expr_delete (&state->entry, state->entry_cursor);
-      return 0;
+		--state->entry_cursor;
+		// SPILLS OVER!
+	case SDLK_DELETE:
+		if (state->entry_cursor < state->entry.len)
+			tib_expr_delete(&state->entry, state->entry_cursor);
+		return 0;
 
-    case SDLK_END:
-      state->entry_cursor = state->entry.len;
-      return 0;
+	case SDLK_END:
+		state->entry_cursor = state->entry.len;
+		return 0;
 
-    case SDLK_HOME:
-      state->entry_cursor = 0;
-      return 0;
+	case SDLK_HOME:
+		state->entry_cursor = 0;
+		return 0;
 
-    case SDLK_INSERT:
-      state->insert_mode = !state->insert_mode;
-      return 0;
+	case SDLK_INSERT:
+		state->insert_mode = !state->insert_mode;
+		return 0;
 
-    case SDLK_LEFT:
-      entry_move_cursor (state, LEFT);
-      return 0;
+	case SDLK_LEFT:
+		entry_move_cursor(state, LEFT);
+		return 0;
 
-    case SDLK_RETURN:
-    case SDLK_KP_ENTER:
-      if (mod & KMOD_CTRL)
-        {
-          return entry_recall (state);
-        }
-      else
-        {
-          if (0 == state->entry.len)
-            {
-              int rc = entry_write (state, TIB_CHAR_ANS);
-              if (rc)
-                return rc;
-            }
+	case SDLK_RETURN:
+	case SDLK_KP_ENTER:
+		if (mod & KMOD_CTRL)
+		{
+			return entry_recall(state);
+		}
+		else
+		{
+			if (0 == state->entry.len)
+			{
+				int rc = entry_write(state, TIB_CHAR_ANS);
+				if (rc)
+					return rc;
+			}
 
-          return state_calc_entry (state);
-        }
+			return state_calc_entry(state);
+		}
 
-    case SDLK_RIGHT:
-      entry_move_cursor (state, RIGHT);
-      return 0;
-    }
+	case SDLK_RIGHT:
+		entry_move_cursor(state, RIGHT);
+		return 0;
+	}
 
-  int normal = normalize_keycode (code, mod);
-  if (normal)
-    {
-      if (is_math_operator (normal) && 0 == state->entry.len
-          && !(mod & KMOD_CTRL))
-        {
-          int rc = entry_write (state, TIB_CHAR_ANS);
-          if (rc)
-            return rc;
-        }
+	int normal = normalize_keycode(code, mod);
+	if (normal)
+	{
+		if (is_math_operator(normal) && 0 == state->entry.len
+			&& !(mod & KMOD_CTRL))
+		{
+			int rc = entry_write(state, TIB_CHAR_ANS);
+			if (rc)
+				return rc;
+		}
 
-      return entry_write (state, normal);
-    }
+		return entry_write(state, normal);
+	}
 
-  return 0;
+	return 0;
 }

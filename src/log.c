@@ -1,6 +1,6 @@
 /*
  *  LiberTI - TI-like calculator designed for LibreCalc
- *  Copyright (C) 2015-2016 Delwink, LLC
+ *  Copyright (C) 2015-2017 Delwink, LLC
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as published by
@@ -23,46 +23,46 @@
 
 bool debug_mode = false;
 
-#define log(FMT,FILE,PRE)                       \
-  {                                             \
-    fputs (PRE, FILE);                          \
-    va_list ap;                                 \
-    va_start (ap, FMT);                         \
-    int n = vfprintf (FILE, FMT, ap);           \
-    va_end (ap);                                \
-    fputc ('\n', FILE);                         \
-    return n;                                   \
-  }
+#define log(FMT,FILE,PRE)				\
+	{						\
+		fputs(PRE, FILE);			\
+		va_list ap;				\
+		va_start(ap, FMT);			\
+		int n = vfprintf(FILE, FMT, ap);	\
+		va_end(ap);				\
+		fputc('\n', FILE);			\
+		return n;				\
+	}
 
 int
-info (const char *fmt, ...)
+info(const char *fmt, ...)
 {
-  log (fmt, stdout, "[info]: ");
+	log(fmt, stdout, "[info]: ");
 }
 
 int
-warn (const char *fmt, ...)
+warn(const char *fmt, ...)
 {
-  log (fmt, stdout, "[warn]: ");
+	log(fmt, stdout, "[warn]: ");
 }
 
 int
-error (const char *fmt, ...)
+error(const char *fmt, ...)
 {
-  log (fmt, stderr, "[error]: ");
+	log(fmt, stderr, "[error]: ");
 }
 
 int
-critical (const char *fmt, ...)
+critical(const char *fmt, ...)
 {
-  log (fmt, stderr, "[critical]: ");
+	log(fmt, stderr, "[critical]: ");
 }
 
 int
-debug (const char *fmt, ...)
+debug(const char *fmt, ...)
 {
-  if (!debug_mode)
-    return 0;
+	if (!debug_mode)
+		return 0;
 
-  log (fmt, stdout, "[debug]: ");
+	log(fmt, stdout, "[debug]: ");
 }

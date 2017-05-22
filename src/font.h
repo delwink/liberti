@@ -1,6 +1,6 @@
 /*
  *  LiberTI - TI-like calculator designed for LibreCalc
- *  Copyright (C) 2016 Delwink, LLC
+ *  Copyright (C) 2016-2017 Delwink, LLC
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as published by
@@ -21,12 +21,12 @@
 #include <SDL.h>
 
 int
-font_init (void);
+font_init(void);
 
 void
-font_free (void);
+font_free(void);
 
 SDL_Surface *
-get_font_char (int c);
+get_font_char(int c);
 
 #endif

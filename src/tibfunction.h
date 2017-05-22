@@ -1,6 +1,6 @@
 /*
  *  libtib - Read, write, and evaluate TI BASIC programs
- *  Copyright (C) 2015-2016 Delwink, LLC
+ *  Copyright (C) 2015-2017 Delwink, LLC
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as published by
@@ -23,21 +23,21 @@
 #include "tibexpr.h"
 #include "tibtype.h"
 
-typedef TIB *(*tib_Function) (const struct tib_expr *);
+typedef TIB *(*tib_Function)(const struct tib_expr *);
 
 int
-tib_registry_init (void);
+tib_registry_init(void);
 
 void
-tib_registry_free (void);
+tib_registry_free(void);
 
 int
-tib_registry_add (int key, tib_Function f);
+tib_registry_add(int key, tib_Function f);
 
 bool
-tib_is_func (int key);
+tib_is_func(int key);
 
 TIB *
-tib_call (int key, const struct tib_expr *expr);
+tib_call(int key, const struct tib_expr *expr);
 
 #endif

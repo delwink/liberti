@@ -1,6 +1,6 @@
 /*
  *  libtib - Read, write, and evaluate TI BASIC programs
- *  Copyright (C) 2015-2016 Delwink, LLC
+ *  Copyright (C) 2015-2017 Delwink, LLC
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as published by
@@ -21,9 +21,9 @@
 #include "tibexpr.h"
 
 int
-tib_fread (struct tib_expr *out, FILE *program, unsigned long *parsed);
+tib_fread(struct tib_expr *out, FILE *program, unsigned long *parsed);
 
 int
-tib_fwrite (FILE *out, const struct tib_expr *program, unsigned long *written);
+tib_fwrite(FILE *out, const struct tib_expr *program, unsigned long *written);
 
 #endif

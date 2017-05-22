@@ -1,6 +1,6 @@
 /*
  *  libtib - Read, write, and evaluate TI BASIC programs
- *  Copyright (C) 2015-2016 Delwink, LLC
+ *  Copyright (C) 2015-2017 Delwink, LLC
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as published by
@@ -20,40 +20,40 @@
 
 #include "tibtype.h"
 
-#define tib_foreachlst(L,I) for (I = 0; i < tib_lst_len (L); ++I)
+#define tib_foreachlst(L,I) for ((I) = 0; (I) < tib_lst_len (L); ++(I))
 
 struct tib_el
 {
-  TIB *val;
-  struct tib_el *next;
-  struct tib_el *prev;
+	TIB *val;
+	struct tib_el *next;
+	struct tib_el *prev;
 };
 
 struct tib_lst
 {
-  struct tib_el *beg;
-  struct tib_el *end;
+	struct tib_el *beg;
+	struct tib_el *end;
 };
 
 struct tib_lst *
-tib_new_lst (void);
+tib_new_lst(void);
 
 void
-tib_free_lst (struct tib_lst *lst);
+tib_free_lst(struct tib_lst *lst);
 
 int
-tib_lst_insert (struct tib_lst *lst, TIB *t, int index);
+tib_lst_insert(struct tib_lst *lst, TIB *t, int index);
 
 int
-tib_lst_push (struct tib_lst *lst, TIB *t);
+tib_lst_push(struct tib_lst *lst, TIB *t);
 
 void
-tib_lst_remove (struct tib_lst *lst, int index);
+tib_lst_remove(struct tib_lst *lst, int index);
 
 int
-tib_lst_len (const struct tib_lst *lst);
+tib_lst_len(const struct tib_lst *lst);
 
 TIB *
-tib_lst_ref (const struct tib_lst *lst, int index);
+tib_lst_ref(const struct tib_lst *lst, int index);
 
 #endif

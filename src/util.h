@@ -1,6 +1,6 @@
 /*
  *  LiberTI - TI-like calculator designed for LibreCalc
- *  Copyright (C) 2016 Delwink, LLC
+ *  Copyright (C) 2016-2017 Delwink, LLC
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as published by
@@ -21,21 +21,21 @@
 #include "tibexpr.h"
 
 int
-load_expr (struct tib_expr *dest, const char *src);
+load_expr(struct tib_expr *dest, const char *src);
 
 int
-load_expr_num (struct tib_expr *dest, const char *src);
+load_expr_num(struct tib_expr *dest, const char *src);
 
 const char *
-display_special_char (int c);
+display_special_char(int c);
 
 char *
-get_expr_display_str (const struct tib_expr *expr);
+get_expr_display_str(const struct tib_expr *expr);
 
 int
-max (int x, int y);
+max(int x, int y);
 
 int
-min (int x, int y);
+min(int x, int y);
 
 #endif

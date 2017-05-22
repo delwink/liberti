@@ -1,6 +1,6 @@
 /*
  *  LiberTI - TI-like calculator designed for LibreCalc
- *  Copyright (C) 2016 Delwink, LLC
+ *  Copyright (C) 2016-2017 Delwink, LLC
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as published by
@@ -21,6 +21,6 @@
 #include <SDL.h>
 
 int
-normalize_keycode (SDL_Keycode code, SDL_Keymod mod);
+normalize_keycode(SDL_Keycode code, SDL_Keymod mod);
 
 #endif

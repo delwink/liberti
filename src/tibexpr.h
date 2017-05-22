@@ -1,6 +1,6 @@
 /*
  *  libtib - Read, write, and evaluate TI BASIC programs
- *  Copyright (C) 2015-2016 Delwink, LLC
+ *  Copyright (C) 2015-2017 Delwink, LLC
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as published by
@@ -24,50 +24,49 @@
 
 struct tib_expr
 {
-  int *data;
-  int len;
-  int bufsize;
+	int *data;
+	int len;
+	int bufsize;
 };
 
 int
-tib_expr_init (struct tib_expr *self);
+tib_expr_init(struct tib_expr *self);
 
 void
-tib_expr_destroy (struct tib_expr *self);
+tib_expr_destroy(struct tib_expr *self);
 
 int
-tib_exprcpy (struct tib_expr *dest, const struct tib_expr *src);
+tib_exprcpy(struct tib_expr *dest, const struct tib_expr *src);
 
 int
-tib_exprcat (struct tib_expr *dest, const struct tib_expr *src);
+tib_exprcat(struct tib_expr *dest, const struct tib_expr *src);
 
 char *
-tib_expr_tostr_f (const struct tib_expr *self,
-                  const char *(*get_special) (int));
+tib_expr_tostr_f(const struct tib_expr *self, const char *(*get_special)(int));
 
 char *
-tib_expr_tostr (const struct tib_expr *self);
+tib_expr_tostr(const struct tib_expr *self);
 
 int
-tib_expr_parse_complex (const struct tib_expr *self, gsl_complex *out);
+tib_expr_parse_complex(const struct tib_expr *self, gsl_complex *out);
 
 int
-tib_expr_delete (struct tib_expr *self, int i);
+tib_expr_delete(struct tib_expr *self, int i);
 
 int
-tib_expr_insert (struct tib_expr *self, int i, int c);
+tib_expr_insert(struct tib_expr *self, int i, int c);
 
 int
-tib_expr_push (struct tib_expr *self, int c);
+tib_expr_push(struct tib_expr *self, int c);
 
 int
-tib_expr_indexof (const struct tib_expr *self, int c);
+tib_expr_indexof(const struct tib_expr *self, int c);
 
 int
-tib_expr_indexof_r (const struct tib_expr *self, int c);
+tib_expr_indexof_r(const struct tib_expr *self, int c);
 
 int
-tib_subexpr (struct tib_expr *dest, const struct tib_expr *src, int beg,
-             int end);
+tib_subexpr(struct tib_expr *dest, const struct tib_expr *src, int beg,
+	int end);
 
 #endif

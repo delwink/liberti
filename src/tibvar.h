@@ -1,6 +1,6 @@
 /*
  *  libtib - Read, write, and evaluate TI BASIC programs
- *  Copyright (C) 2015 Delwink, LLC
+ *  Copyright (C) 2015, 2017 Delwink, LLC
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as published by
@@ -24,23 +24,23 @@
 
 typedef struct
 {
-  int key;
-  TIB *value;
+	int key;
+	TIB *value;
 } tib_Variable;
 
 int
-tib_var_init (void);
+tib_var_init(void);
 
 void
-tib_var_free (void);
+tib_var_free(void);
 
 int
-tib_var_set (int key, const TIB *value);
+tib_var_set(int key, const TIB *value);
 
 TIB *
-tib_var_get (int key);
+tib_var_get(int key);
 
 bool
-tib_is_var (int key);
+tib_is_var(int key);
 
 #endif

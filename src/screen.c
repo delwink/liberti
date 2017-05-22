@@ -1,6 +1,6 @@
 /*
  *  LiberTI - TI-like calculator designed for LibreCalc
- *  Copyright (C) 2016 Delwink, LLC
+ *  Copyright (C) 2016-2017 Delwink, LLC
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as published by
@@ -22,26 +22,25 @@
 
 struct _screen_mode
 {
-  SDL_Surface * (*draw) (const struct screen *);
-  int (*input) (struct screen *, SDL_KeyboardEvent *);
+	SDL_Surface *(*draw)(const struct screen *);
+	int (*input)(struct screen *, SDL_KeyboardEvent *);
 };
 
-const struct _screen_mode SCREEN_MODES[NUM_SCREEN_MODES] =
-  {
-    {
-      .draw = default_draw,
-      .input = default_input
-    }
-  };
+const struct _screen_mode SCREEN_MODES[NUM_SCREEN_MODES] = {
+	{
+		.draw = default_draw,
+		.input = default_input
+	}
+};
 
 SDL_Surface *
-screen_draw (const struct screen *screen)
+screen_draw(const struct screen *screen)
 {
-  return SCREEN_MODES[screen->mode].draw (screen);
+	return SCREEN_MODES[screen->mode].draw(screen);
 }
 
 int
-screen_input (struct screen *screen, SDL_KeyboardEvent *event)
+screen_input(struct screen *screen, SDL_KeyboardEvent *event)
 {
-  return SCREEN_MODES[screen->mode].input (screen, event);
+	return SCREEN_MODES[screen->mode].input(screen, event);
 }
